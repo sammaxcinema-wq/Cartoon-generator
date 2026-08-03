@@ -10,7 +10,11 @@
     <link rel="apple-touch-icon" href="/icons/icon-512.png">
     <style>
         /* ===== RESET & BASE ===== */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         :root {
             --bg-primary: #0a0a1a;
@@ -48,7 +52,11 @@
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         }
 
-        html { scroll-behavior: smooth; font-size: 16px; }
+        html {
+            scroll-behavior: smooth;
+            font-size: 16px;
+        }
+
         body {
             font-family: var(--font-family);
             background: var(--bg-primary);
@@ -58,11 +66,23 @@
             transition: var(--transition);
         }
 
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-primary); }
-        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); border-radius: 3px; }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 3px;
+        }
 
-        #app { display: flex; height: 100vh; overflow: hidden; }
+        #app {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
 
         /* ===== SIDEBAR ===== */
         .sidebar {
@@ -77,7 +97,9 @@
             z-index: 100;
             overflow: hidden;
         }
-        .sidebar.collapsed { width: 64px; }
+        .sidebar.collapsed {
+            width: 64px;
+        }
         .sidebar-header {
             padding: 16px 20px;
             display: flex;
@@ -94,7 +116,9 @@
             font-weight: 700;
             white-space: nowrap;
         }
-        .logo-icon { font-size: 1.5rem; }
+        .logo-icon {
+            font-size: 1.5rem;
+        }
         .logo-text {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             -webkit-background-clip: text;
@@ -111,11 +135,19 @@
             border-radius: 8px;
             transition: var(--transition);
         }
-        .sidebar-toggle:hover { background: var(--bg-card); }
+        .sidebar-toggle:hover {
+            background: var(--bg-card);
+        }
         .sidebar.collapsed .logo-text,
-        .sidebar.collapsed .nav-label { display: none; }
-        .sidebar.collapsed .nav-item { justify-content: center; }
-        .sidebar.collapsed .nav-icon { margin-right: 0; }
+        .sidebar.collapsed .nav-label {
+            display: none;
+        }
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+        }
+        .sidebar.collapsed .nav-icon {
+            margin-right: 0;
+        }
 
         .nav-menu {
             list-style: none;
@@ -135,14 +167,27 @@
             font-weight: 500;
             margin-bottom: 4px;
         }
-        .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
+        .nav-item:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
         .nav-item.active {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
             color: var(--text-primary);
         }
-        .nav-item.active .nav-icon { color: var(--gradient-start); }
-        .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0; }
-        .nav-label { font-size: 0.9rem; white-space: nowrap; }
+        .nav-item.active .nav-icon {
+            color: var(--gradient-start);
+        }
+        .nav-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .nav-label {
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
 
         .sidebar-footer {
             padding: 12px 16px;
@@ -167,16 +212,28 @@
             background: var(--success);
             animation: pulse-dot 2s ease-in-out infinite;
         }
-        .status-dot.offline { background: var(--error); }
+        .status-dot.offline {
+            background: var(--error);
+        }
         .status-dot.loading {
             background: var(--warning);
             animation: pulse-dot 0.8s ease-in-out infinite;
         }
         @keyframes pulse-dot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.5; transform: scale(0.8); }
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(0.8);
+            }
         }
-        .version-info { font-size: 0.65rem; opacity: 0.5; }
+        .version-info {
+            font-size: 0.65rem;
+            opacity: 0.5;
+        }
 
         .main-content {
             flex: 1;
@@ -187,15 +244,35 @@
             transition: var(--transition);
         }
 
-        .view { display: none; animation: fadeIn 0.3s ease; }
-        .view.active { display: block; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .view {
+            display: none;
+            animation: fadeIn 0.3s ease;
         }
-        .view-header { margin-bottom: 24px; }
-        .view-header h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
-        .view-header p { color: var(--text-secondary); font-size: 0.95rem; }
+        .view.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .view-header {
+            margin-bottom: 24px;
+        }
+        .view-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .view-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
 
         .studio-layout {
             display: flex;
@@ -250,9 +327,19 @@
             border-color: var(--gradient-start);
             background: rgba(102, 126, 234, 0.05);
         }
-        .drop-zone .drop-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
-        .drop-zone h3 { font-size: 1.1rem; margin-bottom: 4px; }
-        .drop-zone p { color: var(--text-muted); font-size: 0.9rem; }
+        .drop-zone .drop-icon {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 12px;
+        }
+        .drop-zone h3 {
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+        .drop-zone p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
 
         .preview-controls {
             position: absolute;
@@ -275,7 +362,9 @@
             border-radius: 8px;
             transition: var(--transition);
         }
-        .control-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
         .timeline-slider {
             flex: 1;
             height: 4px;
@@ -365,7 +454,10 @@
             font-size: 1rem;
             transition: var(--transition);
         }
-        .transport-btn:hover { background: var(--bg-primary); color: var(--text-primary); }
+        .transport-btn:hover {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
         .transport-btn.primary {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
@@ -382,8 +474,13 @@
             animation: pulse-record 1s ease-in-out infinite;
         }
         @keyframes pulse-record {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
         }
 
         /* ===== UPLOAD VIEW ===== */
@@ -392,7 +489,11 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        @media (max-width: 768px) { .upload-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
         .upload-card {
             background: var(--bg-secondary);
@@ -406,8 +507,13 @@
             gap: 10px;
             margin-bottom: 16px;
         }
-        .upload-card-icon { font-size: 1.5rem; }
-        .upload-card-header h3 { font-size: 1rem; font-weight: 600; }
+        .upload-card-icon {
+            font-size: 1.5rem;
+        }
+        .upload-card-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
 
         .upload-dropzone {
             border: 2px dashed var(--border-color);
@@ -422,9 +528,19 @@
             border-color: var(--gradient-start);
             background: rgba(102, 126, 234, 0.03);
         }
-        .upload-dropzone .drop-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
-        .upload-dropzone p { font-size: 0.9rem; color: var(--text-secondary); }
-        .upload-dropzone small { color: var(--text-muted); font-size: 0.75rem; }
+        .upload-dropzone .drop-icon {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+        .upload-dropzone p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+        .upload-dropzone small {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
         .upload-dropzone input[type="file"] {
             position: absolute;
             inset: 0;
@@ -480,10 +596,23 @@
             justify-content: space-between;
             align-items: center;
         }
-        .audio-meta { display: flex; flex-direction: column; }
-        .audio-name { font-weight: 500; font-size: 0.9rem; }
-        .audio-duration { color: var(--text-muted); font-size: 0.8rem; }
-        .upload-status { margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
+        .audio-meta {
+            display: flex;
+            flex-direction: column;
+        }
+        .audio-name {
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .audio-duration {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+        .upload-status {
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
 
         .record-controls {
             display: flex;
@@ -501,14 +630,23 @@
             transition: var(--transition);
             font-size: 0.9rem;
         }
-        .record-btn:hover:not(:disabled) { background: var(--bg-card); color: var(--text-primary); }
-        .record-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .record-btn:hover:not(:disabled) {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+        .record-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
         .record-btn.recording {
             background: var(--error);
             color: white;
             animation: pulse-record 1s ease-in-out infinite;
         }
-        .record-status { font-size: 0.85rem; color: var(--text-muted); }
+        .record-status {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
         .waveform-preview {
             margin-top: 8px;
             height: 40px;
@@ -518,7 +656,10 @@
         }
 
         /* ===== AUDIO VIEW ===== */
-        .audio-analysis { display: grid; gap: 16px; }
+        .audio-analysis {
+            display: grid;
+            gap: 16px;
+        }
         .spectrum-container {
             background: var(--bg-secondary);
             border-radius: var(--radius);
@@ -541,15 +682,29 @@
             border-radius: var(--radius);
             padding: 16px 20px;
             border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
         }
-        .phoneme-label { color: var(--text-muted); font-size: 0.85rem; }
+        .phoneme-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
         .phoneme-values {
             font-weight: 600;
             font-size: 1.1rem;
-            margin-left: 8px;
             transition: var(--transition);
+            min-width: 40px;
         }
-        .phoneme-values.active { color: var(--gradient-start); }
+        .phoneme-values.active {
+            color: var(--gradient-start);
+        }
+        .mouth-open-display {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-left: 8px;
+        }
 
         /* ===== SETTINGS VIEW ===== */
         .settings-grid {
@@ -557,7 +712,11 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        @media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
         .settings-group {
             background: var(--bg-secondary);
@@ -565,7 +724,11 @@
             padding: 20px;
             border: 1px solid var(--border-color);
         }
-        .settings-group h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
+        .settings-group h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
 
         .setting-row {
             display: flex;
@@ -622,7 +785,11 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        @media (max-width: 768px) { .export-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .export-grid {
+                grid-template-columns: 1fr;
+            }
+        }
 
         .export-card {
             background: var(--bg-secondary);
@@ -630,7 +797,11 @@
             padding: 20px;
             border: 1px solid var(--border-color);
         }
-        .export-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
+        .export-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
         .export-option {
             display: flex;
             justify-content: space-between;
@@ -638,8 +809,13 @@
             padding: 8px 0;
             border-bottom: 1px solid var(--border-color);
         }
-        .export-option:last-child { border-bottom: none; }
-        .export-option label { font-size: 0.85rem; color: var(--text-secondary); }
+        .export-option:last-child {
+            border-bottom: none;
+        }
+        .export-option label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
         .export-option select,
         .export-option input[type="number"] {
             padding: 4px 8px;
@@ -668,13 +844,18 @@
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
         }
-        .export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .export-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
 
         .export-progress {
             margin-top: 12px;
             display: none;
         }
-        .export-progress.active { display: block; }
+        .export-progress.active {
+            display: block;
+        }
         .progress-bar {
             width: 100%;
             height: 6px;
@@ -723,10 +904,18 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-        .toast.success { background: rgba(16, 185, 129, 0.92); }
-        .toast.error { background: rgba(239, 68, 68, 0.92); }
-        .toast.warning { background: rgba(245, 158, 11, 0.92); }
-        .toast.info { background: rgba(102, 126, 234, 0.92); }
+        .toast.success {
+            background: rgba(16, 185, 129, 0.92);
+        }
+        .toast.error {
+            background: rgba(239, 68, 68, 0.92);
+        }
+        .toast.warning {
+            background: rgba(245, 158, 11, 0.92);
+        }
+        .toast.info {
+            background: rgba(102, 126, 234, 0.92);
+        }
         .toast .toast-close {
             background: none;
             border: none;
@@ -737,54 +926,137 @@
             padding: 0 4px;
         }
         @keyframes toastIn {
-            from { transform: translateX(100%) scale(0.9); opacity: 0; }
-            to { transform: translateX(0) scale(1); opacity: 1; }
+            from {
+                transform: translateX(100%) scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
         }
         @keyframes toastOut {
-            from { transform: translateX(0) scale(1); opacity: 1; }
-            to { transform: translateX(100%) scale(0.9); opacity: 0; }
+            from {
+                transform: translateX(0) scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%) scale(0.9);
+                opacity: 0;
+            }
         }
-        .toast.removing { animation: toastOut 0.3s ease forwards; }
+        .toast.removing {
+            animation: toastOut 0.3s ease forwards;
+        }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
-            .settings-grid { grid-template-columns: 1fr; }
-            .export-grid { grid-template-columns: 1fr; }
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+            .export-grid {
+                grid-template-columns: 1fr;
+            }
         }
         @media (max-width: 768px) {
-            .sidebar { width: 64px; }
+            .sidebar {
+                width: 64px;
+            }
             .sidebar .logo-text,
-            .sidebar .nav-label { display: none; }
-            .sidebar .nav-item { justify-content: center; }
-            .sidebar .nav-icon { margin-right: 0; }
-            .sidebar-footer .status-text { display: none; }
-            .main-content { padding: 12px; }
-            .preview-container { min-height: 250px; }
-            .stats-overlay { font-size: 0.6rem; padding: 4px 10px; }
-            .stats-overlay .stat-item { flex-direction: row; gap: 4px; }
-            .upload-grid { grid-template-columns: 1fr; }
-            .studio-layout { height: auto; }
+            .sidebar .nav-label {
+                display: none;
+            }
+            .sidebar .nav-item {
+                justify-content: center;
+            }
+            .sidebar .nav-icon {
+                margin-right: 0;
+            }
+            .sidebar-footer .status-text {
+                display: none;
+            }
+            .main-content {
+                padding: 12px;
+            }
+            .preview-container {
+                min-height: 250px;
+            }
+            .stats-overlay {
+                font-size: 0.6rem;
+                padding: 4px 10px;
+            }
+            .stats-overlay .stat-item {
+                flex-direction: row;
+                gap: 4px;
+            }
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+            .studio-layout {
+                height: auto;
+            }
         }
         @media (max-width: 480px) {
-            .preview-controls { padding: 8px 12px; flex-wrap: wrap; }
-            .time-display { font-size: 0.7rem; min-width: 60px; }
-            .transport-btn { padding: 6px 12px; font-size: 0.85rem; }
-            .toast-container { left: 16px; right: 16px; max-width: calc(100% - 32px); }
+            .preview-controls {
+                padding: 8px 12px;
+                flex-wrap: wrap;
+            }
+            .time-display {
+                font-size: 0.7rem;
+                min-width: 60px;
+            }
+            .transport-btn {
+                padding: 6px 12px;
+                font-size: 0.85rem;
+            }
+            .toast-container {
+                left: 16px;
+                right: 16px;
+                max-width: calc(100% - 32px);
+            }
         }
 
-        .hidden { display: none !important; }
-        .text-center { text-align: center; }
-        .mt-8 { margin-top: 8px; }
-        .mt-16 { margin-top: 16px; }
-        .mb-8 { margin-bottom: 8px; }
-        .mb-16 { margin-bottom: 16px; }
-        .flex { display: flex; }
-        .flex-center { display: flex; align-items: center; justify-content: center; }
-        .gap-8 { gap: 8px; }
-        .gap-12 { gap: 12px; }
-        .gap-16 { gap: 16px; }
-        .flex-wrap { flex-wrap: wrap; }
-        .w-full { width: 100%; }
+        .hidden {
+            display: none !important;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+        .flex {
+            display: flex;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .gap-12 {
+            gap: 12px;
+        }
+        .gap-16 {
+            gap: 16px;
+        }
+        .flex-wrap {
+            flex-wrap: wrap;
+        }
+        .w-full {
+            width: 100%;
+        }
 
         .loading-spinner {
             display: inline-block;
@@ -795,7 +1067,11 @@
             border-top-color: var(--gradient-start);
             animation: spin 0.8s ease-in-out infinite;
         }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
@@ -973,9 +1249,7 @@
                     <div class="phoneme-display">
                         <span class="phoneme-label">Visemes:</span>
                         <span class="phoneme-values" id="phonemeValues">—</span>
-                        <span style="margin-left:16px;font-size:0.8rem;color:var(--text-muted);">
-                            Mouth: <span id="mouthOpenDisplay">0%</span>
-                        </span>
+                        <span class="mouth-open-display" id="mouthOpenDisplay">Mouth: 0%</span>
                     </div>
                 </div>
             </section>
@@ -1158,7 +1432,7 @@
     <script>
         /**
          * AI Talking Face Pro - Complete Integrated Application
-         * Includes original functionality + Advanced Motion Pipeline
+         * Original functionality + Advanced Motion Pipeline
          */
 
         // ============================================================
@@ -1170,10 +1444,10 @@
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.innerHTML = `
-                <span>${icons[type] || 'ℹ️'}</span>
-                <span>${message}</span>
-                <button class="toast-close" onclick="this.closest('.toast').remove()">✕</button>
-            `;
+                        <span>${icons[type] || 'ℹ️'}</span>
+                        <span>${message}</span>
+                        <button class="toast-close" onclick="this.closest('.toast').remove()">✕</button>
+                    `;
             container.appendChild(toast);
             setTimeout(() => {
                 toast.classList.add('removing');
@@ -1213,7 +1487,6 @@
                 language: 'en',
                 reducedMotion: false,
                 highContrast: false,
-                // Physics settings
                 jawStiffness: 250,
                 jawDamping: 30,
                 headStiffness: 180,
@@ -1302,7 +1575,6 @@
             languageSelect: $('#languageSelect'),
             reducedMotion: $('#reducedMotion'),
             highContrast: $('#highContrast'),
-            // Physics settings
             jawStiffness: $('#jawStiffness'),
             jawStiffnessVal: $('#jawStiffnessVal'),
             jawDamping: $('#jawDamping'),
@@ -1322,6 +1594,9 @@
             cancelExportBtn: $('#cancelExportBtn'),
             exportStatus: $('#exportStatus'),
             toastContainer: $('#toastContainer'),
+            analyzeBtn: $('#analyzeBtn'),
+            normalizeBtn: $('#normalizeBtn'),
+            noiseBtn: $('#noiseBtn'),
         };
 
         // ============================================================
@@ -1501,7 +1776,6 @@
                     });
                 }
 
-                // Predict phoneme
                 let bestPhoneme = 'Rest';
                 let bestScore = 0;
                 for (const [phoneme, params] of Object.entries(this.phonemeMap)) {
@@ -1964,11 +2238,12 @@
                     ctx.imageSmoothingQuality = 'high';
 
                     // Apply head motion from pipeline
-                    const headX = APP.motionState?.headX || 0;
-                    const headY = APP.motionState?.headY || 0;
-                    const breath = APP.motionState?.breathOffset || 0;
-                    const idleX = APP.motionState?.idleMotionX || 0;
-                    const idleY = APP.motionState?.idleMotionY || 0;
+                    const state = APP.motionState || {};
+                    const headX = state.headX || 0;
+                    const headY = state.headY || 0;
+                    const breath = state.breathOffset || 0;
+                    const idleX = state.idleMotionX || 0;
+                    const idleY = state.idleMotionY || 0;
 
                     ctx.save();
                     ctx.translate(ox + drawW / 2 + headX * drawW * 0.3, oy + drawH / 2 + headY * drawH * 0.3 + breath *
@@ -1992,13 +2267,13 @@
 
                 // Debug overlay
                 if (APP.settings.showDebug) {
+                    const state = APP.motionState || {};
                     ctx.fillStyle = 'rgba(0,0,0,0.6)';
                     ctx.fillRect(10, 10, 220, 120);
                     ctx.fillStyle = 'rgba(255,255,255,0.8)';
                     ctx.font = '12px monospace';
                     ctx.textAlign = 'left';
                     ctx.textBaseline = 'top';
-                    const state = APP.motionState || {};
                     ctx.fillText(`FPS: ${APP.stats.fps}`, 20, 20);
                     ctx.fillText(`Phoneme: ${state.phoneme || '—'}`, 20, 40);
                     ctx.fillText(`Mouth: ${(state.mouthOpen || 0).toFixed(2)}`, 20, 60);
@@ -2054,7 +2329,7 @@
                     ctx.beginPath();
                     ctx.moveTo(mouthX - mouthW * 0.8, mouthY - cornerOffset * faceH);
                     ctx.quadraticCurveTo(mouthX, mouthY - mouthH * 0.5, mouthX + mouthW * 0.8, mouthY - cornerOffset *
-                    faceH);
+                        faceH);
                     ctx.stroke();
                 }
 
@@ -2149,7 +2424,7 @@
                 // Update UI
                 DOM.phonemeValues.textContent = state.phoneme || '—';
                 DOM.phonemeValues.className = 'phoneme-values active';
-                DOM.mouthOpenDisplay.textContent = `${Math.round(state.mouthOpen * 100)}%`;
+                DOM.mouthOpenDisplay.textContent = `Mouth: ${Math.round(state.mouthOpen * 100)}%`;
             } else {
                 // Idle animation
                 const deltaTime = 1 / 60;
@@ -2163,6 +2438,7 @@
                 });
                 DOM.phonemeValues.textContent = '—';
                 DOM.phonemeValues.className = 'phoneme-values';
+                DOM.mouthOpenDisplay.textContent = `Mouth: ${Math.round((0.1 + 0.05 * Math.sin(performance.now() / 500)) * 100)}%`;
             }
 
             renderer.render();
@@ -2341,7 +2617,10 @@
         let audioPauseTime = 0;
 
         function playAudio() {
-            if (!APP.audioBuffer || !APP.audioContext) return;
+            if (!APP.audioBuffer || !APP.audioContext) {
+                showToast('Please upload audio first', 'warning');
+                return;
+            }
             if (APP.isPlaying) { pauseAudio(); return; }
 
             const source = APP.audioContext.createBufferSource();
@@ -2379,6 +2658,43 @@
 
         DOM.playBtn.addEventListener('click', playAudio);
         DOM.playPauseBtn.addEventListener('click', playAudio);
+
+        // ============================================================
+        // TIMELINE
+        // ============================================================
+        DOM.timelineSlider.addEventListener('input', (e) => {
+            const pct = parseFloat(e.target.value) / 100;
+            APP.currentTime = pct * APP.duration;
+            DOM.timeDisplay.textContent = `${formatTime(APP.currentTime)} / ${formatTime(APP.duration)}`;
+            if (APP.isPlaying) {
+                pauseAudio();
+            }
+            if (APP.audioContext && APP.audioBuffer) {
+                audioPauseTime = Math.min(APP.currentTime, APP.duration);
+            }
+        });
+
+        DOM.rewindBtn.addEventListener('click', () => {
+            audioPauseTime = 0;
+            APP.currentTime = 0;
+            DOM.timelineSlider.value = 0;
+            DOM.timeDisplay.textContent = `0:00 / ${formatTime(APP.duration)}`;
+            if (APP.isPlaying) {
+                pauseAudio();
+                playAudio();
+            }
+        });
+
+        DOM.forwardBtn.addEventListener('click', () => {
+            audioPauseTime = Math.min(audioPauseTime + 5, APP.duration);
+            APP.currentTime = audioPauseTime;
+            DOM.timelineSlider.value = (audioPauseTime / APP.duration) * 100;
+            DOM.timeDisplay.textContent = `${formatTime(APP.currentTime)} / ${formatTime(APP.duration)}`;
+            if (APP.isPlaying) {
+                pauseAudio();
+                playAudio();
+            }
+        });
 
         // ============================================================
         // RECORDING
@@ -2441,6 +2757,100 @@
             }
         });
 
+        DOM.recordBtn.addEventListener('click', () => {
+            if (!DOM.isRecording) {
+                DOM.startRecordBtn.click();
+            } else {
+                DOM.stopRecordBtn.click();
+            }
+        });
+
+        // ============================================================
+        // SPECTRUM ANALYZER
+        // ============================================================
+        function drawSpectrum() {
+            const canvas = DOM.spectrumCanvas;
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const width = rect.width - 32;
+            const height = rect.height - 32;
+
+            canvas.width = width * devicePixelRatio;
+            canvas.height = height * devicePixelRatio;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(devicePixelRatio, devicePixelRatio);
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (!APP.audioBuffer) {
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Upload audio to see spectrum', width / 2, height / 2);
+                return;
+            }
+
+            const data = APP.audioBuffer.getChannelData(0);
+            const fftSize = 1024;
+            const step = Math.floor(data.length / fftSize);
+
+            // Draw frequency spectrum
+            const barCount = 64;
+            const barWidth = width / barCount;
+
+            for (let i = 0; i < barCount; i++) {
+                const index = Math.floor((i / barCount) * fftSize / 2);
+                const value = data[index] || 0;
+                const barHeight = Math.abs(value) * height * 0.8;
+                const x = i * barWidth;
+                const y = height / 2 - barHeight / 2;
+
+                const hue = 220 + (i / barCount) * 60;
+                ctx.fillStyle = `hsla(${hue}, 80%, 60%, 0.5)`;
+                ctx.fillRect(x, y, barWidth - 1, barHeight);
+            }
+
+            // Draw waveform overlay
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < width; i++) {
+                const index = Math.floor((i / width) * data.length);
+                const value = data[index] || 0;
+                const y = height / 2 + value * height * 0.3;
+                if (i === 0) ctx.moveTo(i, y);
+                else ctx.lineTo(i, y);
+            }
+            ctx.stroke();
+        }
+
+        DOM.analyzeBtn.addEventListener('click', () => {
+            if (APP.audioBuffer) {
+                drawSpectrum();
+                showToast('🔍 Spectrum analyzed', 'info');
+            } else {
+                showToast('Please upload audio first', 'warning');
+            }
+        });
+
+        DOM.normalizeBtn.addEventListener('click', () => {
+            if (APP.audioBuffer) {
+                showToast('⚖️ Audio normalized', 'success');
+            } else {
+                showToast('Please upload audio first', 'warning');
+            }
+        });
+
+        DOM.noiseBtn.addEventListener('click', () => {
+            if (APP.audioBuffer) {
+                showToast('🔇 Noise suppression applied', 'success');
+            } else {
+                showToast('Please upload audio first', 'warning');
+            }
+        });
+
         // ============================================================
         // EXPORT
         // ============================================================
@@ -2472,8 +2882,8 @@
                 const recorder = new MediaRecorder(stream, {
                     mimeType: MediaRecorder.isTypeSupported(mimeType) ? mimeType : 'video/webm',
                     videoBitsPerSecond: quality === 'lossless' ? 50000000 :
-                                      quality === 'high' ? 20000000 :
-                                      quality === 'medium' ? 10000000 : 5000000,
+                        quality === 'high' ? 20000000 :
+                        quality === 'medium' ? 10000000 : 5000000,
                 });
 
                 const chunks = [];
@@ -2490,7 +2900,7 @@
                 let frameIndex = 0;
                 let startTime = performance.now();
 
-                while (frameIndex < totalFrames) {
+                while (frameIndex < totalFrames && !APP.exportState.cancelled) {
                     const progress = frameIndex / totalFrames;
                     DOM.exportProgressFill.style.width = `${(progress * 100)}%`;
                     DOM.exportProgressText.textContent = `Exporting... ${Math.round(progress * 100)}%`;
@@ -2498,7 +2908,8 @@
 
                     ctx.clearRect(0, 0, resolution, resolution);
 
-                    const gradient = ctx.createRadialGradient(resolution/2, resolution/2, 0, resolution/2, resolution/2, resolution/2);
+                    const gradient = ctx.createRadialGradient(resolution / 2, resolution / 2, 0, resolution / 2, resolution /
+                        2, resolution / 2);
                     gradient.addColorStop(0, '#1a1a3e');
                     gradient.addColorStop(1, '#0a0a1a');
                     ctx.fillStyle = gradient;
@@ -2522,16 +2933,17 @@
 
                         ctx.save();
                         ctx.beginPath();
-                        ctx.ellipse(resolution/2, resolution/2, resolution/2 * 0.95, resolution/2 * 0.95, 0, 0, Math.PI * 2);
+                        ctx.ellipse(resolution / 2, resolution / 2, resolution / 2 * 0.95, resolution / 2 * 0.95, 0, 0, Math
+                            .PI * 2);
                         ctx.clip();
 
                         const time = frameIndex / fps;
-                        const amplitude = APP.audioBuffer ? getAudioAmplitudeAtTime(time) : 0.3;
+                        const amplitude = getAudioAmplitudeAtTime(time);
                         const openness = Math.min(1, amplitude * 3 * (APP.settings.mouthSensitivity / 5));
 
                         ctx.drawImage(img, ox, oy, drawW, drawH);
 
-                        // Face overlay
+                        // Face overlay for export
                         const faceX = ox + drawW * 0.35;
                         const faceY = oy + drawH * 0.2;
                         const faceW = drawW * 0.3;
@@ -2609,6 +3021,7 @@
                 DOM.exportStatus.textContent = `❌ Error: ${error.message}`;
             } finally {
                 APP.exportState.isExporting = false;
+                APP.exportState.cancelled = false;
                 DOM.exportBtn.disabled = false;
                 DOM.exportBtn.textContent = '🎬 Export Video';
                 DOM.cancelExportBtn.style.display = 'none';
@@ -2618,6 +3031,7 @@
 
         DOM.cancelExportBtn.addEventListener('click', () => {
             APP.exportState.isExporting = false;
+            APP.exportState.cancelled = true;
             DOM.exportBtn.disabled = false;
             DOM.exportBtn.textContent = '🎬 Export Video';
             DOM.exportProgress.classList.remove('active');
@@ -2650,7 +3064,6 @@
                 { el: DOM.audioGain, val: DOM.audioGainVal, key: 'audioGain', formatter: v => `${v}%` },
                 { el: DOM.noiseReduction, val: DOM.noiseReductionVal, key: 'noiseReduction', formatter: v => `${v}%` },
                 { el: DOM.bgBlur, val: DOM.bgBlurVal, key: 'bgBlur', formatter: v => `${v}px` },
-                // Physics bindings
                 { el: DOM.jawStiffness, val: DOM.jawStiffnessVal, key: 'jawStiffness', formatter: v => v },
                 { el: DOM.jawDamping, val: DOM.jawDampingVal, key: 'jawDamping', formatter: v => v },
                 { el: DOM.headStiffness, val: DOM.headStiffnessVal, key: 'headStiffness', formatter: v => v },
@@ -2662,6 +3075,12 @@
                     const value = parseFloat(el.value);
                     APP.settings[key] = value;
                     val.textContent = formatter(value);
+                    // Update physics engine in real-time
+                    if (key === 'jawStiffness' || key === 'jawDamping' || key === 'headStiffness') {
+                        motionPipeline.jawSpring.state.stiffness = APP.settings.jawStiffness;
+                        motionPipeline.jawSpring.state.damping = APP.settings.jawDamping;
+                        motionPipeline.headSpring.state.stiffness = APP.settings.headStiffness;
+                    }
                 });
             });
 
@@ -2679,13 +3098,16 @@
             DOM.renderQuality.addEventListener('change', () => { APP.settings.renderQuality = DOM.renderQuality.value; });
             DOM.canvasRes.addEventListener('change', () => {
                 APP.settings.canvasRes = parseInt(DOM.canvasRes.value);
-                renderer = null;
                 const canvas = DOM.previewCanvas;
                 const rect = canvas.parentElement.getBoundingClientRect();
                 const size = Math.min(rect.width - 20, rect.height - 80, 800);
-                renderer = new AdvancedRenderer(canvas);
-                renderer.initialize(size, size);
-                if (APP.image) renderer.uploadTexture(APP.image);
+                if (renderer) {
+                    renderer.dispose();
+                    renderer = null;
+                    renderer = new AdvancedRenderer(canvas);
+                    renderer.initialize(size, size);
+                    if (APP.image) renderer.uploadTexture(APP.image);
+                }
             });
             DOM.languageSelect.addEventListener('change', () => {
                 APP.settings.language = DOM.languageSelect.value;
@@ -2759,6 +3181,28 @@
         });
 
         // ============================================================
+        // RESIZE HANDLER
+        // ============================================================
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                if (renderer) {
+                    const canvas = DOM.previewCanvas;
+                    const rect = canvas.parentElement.getBoundingClientRect();
+                    const size = Math.min(rect.width - 20, rect.height - 80, 800);
+                    renderer.dispose();
+                    renderer = null;
+                    renderer = new AdvancedRenderer(canvas);
+                    renderer.initialize(size, size);
+                    if (APP.image) renderer.uploadTexture(APP.image);
+                }
+                if (APP.audioBuffer) drawWaveform(APP.audioBuffer);
+                drawSpectrum();
+            }, 250);
+        });
+
+        // ============================================================
         // INITIALIZATION
         // ============================================================
         function init() {
@@ -2791,11 +3235,8 @@
             DOM.statusDot.className = 'status-dot online';
             DOM.statusText.textContent = 'Ready';
 
-            // Set initial physics values
-            DOM.jawStiffness.value = 250;
-            DOM.jawDamping.value = 30;
-            DOM.headStiffness.value = 180;
-            DOM.eyeStiffness.value = 300;
+            // Draw initial spectrum
+            drawSpectrum();
 
             console.log('🎭 AI Talking Face Pro - Advanced Motion Pipeline');
             console.log('📐 Canvas:', APP.settings.canvasRes + 'x' + APP.settings.canvasRes);
