@@ -6,7 +6,7 @@
     <title>🎭 AI Talking Face Pro - Lip Sync Studio</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0a0a1a">
-    <meta name="description" content="Browser-based AI lip sync and talking face animation">
+    <meta name="description" content="Browser-based AI lip sync and facial animation studio">
     <link rel="apple-touch-icon" href="/icons/icon-512.png">
     <style>
         /* ===== RESET & BASE ===== */
@@ -1556,22 +1556,41 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- ============================================================ -->
-    <!-- JavaScript -->
+    <!-- JAVASCRIPT - Complete Application -->
     <!-- ============================================================ -->
     <script>
         /**
-         * AI Talking Face Pro - Main Application
-         * Complete browser-based lip sync engine
+         * AI Talking Face Pro - Complete Application
+         * Includes: Audio-Viseme Engine, WebGL Renderer, Advanced Export, Error Boundaries
          */
+
+        // ============================================================
+        // TOAST SYSTEM
+        // ============================================================
+        function showToast(message, type = 'info', duration = 4000) {
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <span>${icons[type] || 'ℹ️'}</span>
+                <span>${message}</span>
+                <button class="toast-close" onclick="this.closest('.toast').remove()">✕</button>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('removing');
+                setTimeout(() => toast.remove(), 400);
+            }, duration);
+        }
 
         // ============================================================
         // APP STATE
         // ============================================================
         const APP = {
             image: null,
-            audio: null,
-            audioContext: null,
             audioBuffer: null,
+            audioContext: null,
             isPlaying: false,
             isRecording: false,
             currentTime: 0,
@@ -1580,9 +1599,7 @@
             frameCount: 0,
             lastFrameTime: 0,
             animationId: null,
-            faceData: null,
-            mouthShapes: [],
-            currentViseme: 'A',
+            currentViseme: 'Rest',
             settings: {
                 animSpeed: 1.0,
                 blinkFreq: 30,
@@ -1622,12 +1639,10 @@
             sidebarToggle: $('#sidebarToggle'),
             navItems: $$('.nav-item'),
             views: $$('.view'),
-
             previewCanvas: $('#previewCanvas'),
             previewOverlay: $('#previewOverlay'),
             dropZone: $('#dropZone'),
             imageUpload: $('#imageUpload'),
-
             playBtn: $('#playBtn'),
             timelineSlider: $('#timelineSlider'),
             timeDisplay: $('#timeDisplay'),
@@ -1635,25 +1650,20 @@
             rewindBtn: $('#rewindBtn'),
             forwardBtn: $('#forwardBtn'),
             recordBtn: $('#recordBtn'),
-
             waveformCanvas: $('#waveformCanvas'),
             spectrumCanvas: $('#spectrumCanvas'),
             phonemeValues: $('#phonemeValues'),
-
             fpsCounter: $('#fpsCounter'),
             memoryUsage: $('#memoryUsage'),
             gpuStatus: $('#gpuStatus'),
             statusDot: $('#statusDot'),
             statusText: $('#statusText'),
-
-            // Upload
             imageDropzone: $('#imageDropzone'),
             imageFileInput: $('#imageFileInput'),
             imagePreviewContainer: $('#imagePreviewContainer'),
             imagePreview: $('#imagePreview'),
             removeImageBtn: $('#removeImageBtn'),
             imageStatus: $('#imageStatus'),
-
             audioDropzone: $('#audioDropzone'),
             audioFileInput: $('#audioFileInput'),
             audioInfoContainer: $('#audioInfoContainer'),
@@ -1661,14 +1671,11 @@
             audioDuration: $('#audioDuration'),
             removeAudioBtn: $('#removeAudioBtn'),
             audioStatus: $('#audioStatus'),
-
             startRecordBtn: $('#startRecordBtn'),
             stopRecordBtn: $('#stopRecordBtn'),
             playRecordBtn: $('#playRecordBtn'),
             recordStatus: $('#recordStatus'),
             recordWaveform: $('#recordWaveform'),
-
-            // Settings
             animSpeed: $('#animSpeed'),
             animSpeedVal: $('#animSpeedVal'),
             blinkFreq: $('#blinkFreq'),
@@ -1691,8 +1698,6 @@
             languageSelect: $('#languageSelect'),
             reducedMotion: $('#reducedMotion'),
             highContrast: $('#highContrast'),
-
-            // Export
             exportQuality: $('#exportQuality'),
             exportFps: $('#exportFps'),
             exportResolution: $('#exportResolution'),
@@ -1703,28 +1708,8 @@
             exportProgressText: $('#exportProgressText'),
             cancelExportBtn: $('#cancelExportBtn'),
             exportStatus: $('#exportStatus'),
-
             toastContainer: $('#toastContainer'),
         };
-
-        // ============================================================
-        // TOAST SYSTEM
-        // ============================================================
-        function showToast(message, type = 'info', duration = 4000) {
-            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <span>${icons[type] || 'ℹ️'}</span>
-                <span>${message}</span>
-                <button class="toast-close" onclick="this.closest('.toast').remove()">✕</button>
-            `;
-            DOM.toastContainer.appendChild(toast);
-            setTimeout(() => {
-                toast.classList.add('removing');
-                setTimeout(() => toast.remove(), 400);
-            }, duration);
-        }
 
         // ============================================================
         // THEME
@@ -1767,74 +1752,889 @@
         });
 
         // ============================================================
-        // IMAGE UPLOAD
+        // FORMAT HELPERS
         // ============================================================
-        function handleImageFile(file) {
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${String(s).padStart(2, '0')}`;
+        }
+
+        // ============================================================
+        // ERROR BOUNDARY
+        // ============================================================
+        class ErrorBoundary {
+            constructor(options = {}) {
+                this.options = { maxRetries: 3, retryDelay: 1000, ...options };
+                this.errorCount = 0;
+                this.errorHistory = [];
+            }
+
+            async wrap(fn, context = {}) {
+                let attempts = 0;
+                while (attempts <= this.options.maxRetries) {
+                    try {
+                        const result = await fn();
+                        this.errorCount = 0;
+                        return result;
+                    } catch (error) {
+                        attempts++;
+                        this.errorCount++;
+                        this.errorHistory.push({ timestamp: Date.now(), error: error.message });
+                        console.warn(`Error (attempt ${attempts}):`, error);
+                        if (showToast) {
+                            showToast(`⚠️ Error: ${error.message}`, 'error', 3000);
+                        }
+                        if (attempts > this.options.maxRetries) {
+                            throw new Error(`Failed after ${attempts} attempts: ${error.message}`);
+                        }
+                        await new Promise(r => setTimeout(r, this.options.retryDelay * attempts));
+                    }
+                }
+            }
+        }
+
+        const appErrorBoundary = new ErrorBoundary();
+
+        // ============================================================
+        // MEMORY MANAGER
+        // ============================================================
+        class MemoryManager {
+            constructor() {
+                this.objectURLs = [];
+                this.mediaStreams = [];
+                this.audioNodes = [];
+            }
+
+            trackURL(url) {
+                if (url && url.startsWith('blob:')) this.objectURLs.push(url);
+                return url;
+            }
+
+            trackStream(stream) {
+                if (stream && stream.getTracks) this.mediaStreams.push(stream);
+                return stream;
+            }
+
+            trackAudioNode(node) {
+                if (node && node.disconnect) this.audioNodes.push(node);
+                return node;
+            }
+
+            cleanup() {
+                for (const url of this.objectURLs) try { URL.revokeObjectURL(url); } catch (e) {}
+                this.objectURLs = [];
+                for (const stream of this.mediaStreams) try { stream.getTracks().forEach(t => t.stop()); } catch (e) {}
+                this.mediaStreams = [];
+                for (const node of this.audioNodes) try { node.disconnect(); } catch (e) {}
+                this.audioNodes = [];
+            }
+        }
+
+        const appMemoryManager = new MemoryManager();
+
+        // ============================================================
+        // AUDIO-VISEME ENGINE
+        // ============================================================
+        class AudioVisemeEngine {
+            constructor() {
+                this.analyser = null;
+                this.dataArray = null;
+                this.frequencyData = null;
+                this.visemeHistory = [];
+                this.smoothViseme = 'Rest';
+                this.initialized = false;
+
+                this.visemeBands = {
+                    'A': { low: 500, high: 1200, weight: 1.2 },
+                    'E': { low: 300, high: 600, weight: 1.0 },
+                    'I': { low: 2000, high: 4000, weight: 1.1 },
+                    'O': { low: 400, high: 900, weight: 0.9 },
+                    'U': { low: 200, high: 500, weight: 0.8 },
+                    'M': { low: 80, high: 250, weight: 1.3 },
+                    'F': { low: 4000, high: 8000, weight: 0.7 },
+                    'S': { low: 3000, high: 7000, weight: 0.6 },
+                    'Rest': { low: 0, high: 100, weight: 0.5 }
+                };
+
+                this.visemeOpenness = {
+                    'A': 0.95, 'E': 0.75, 'I': 0.60, 'O': 0.70,
+                    'U': 0.40, 'M': 0.15, 'F': 0.30, 'S': 0.25, 'Rest': 0.10
+                };
+            }
+
+            initialize(audioContext, audioBuffer, fftSize = 2048) {
+                if (!audioContext || !audioBuffer) throw new Error('Audio context and buffer required');
+
+                const source = audioContext.createBufferSource();
+                source.buffer = audioBuffer;
+
+                this.analyser = audioContext.createAnalyser();
+                this.analyser.fftSize = fftSize;
+                this.analyser.smoothingTimeConstant = 0.8;
+
+                source.connect(this.analyser);
+                this.analyser.connect(audioContext.destination);
+
+                this.frequencyData = new Float32Array(this.analyser.frequencyBinCount);
+                this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
+                this.sourceNode = source;
+                this.audioContext = audioContext;
+                this.initialized = true;
+                this.sampleRate = audioContext.sampleRate;
+
+                source.start(0);
+                return this;
+            }
+
+            analyze(gain = 1.0, sensitivity = 1.0, smoothing = 0.3) {
+                if (!this.initialized || !this.analyser) {
+                    return { viseme: 'Rest', openness: 0.1, confidence: 0, amplitude: 0 };
+                }
+
+                try {
+                    this.analyser.getFloatFrequencyData(this.frequencyData);
+                    const binCount = this.frequencyData.length;
+                    let sum = 0;
+                    for (let i = 0; i < binCount; i++) sum += this.frequencyData[i];
+                    const avgAmplitude = sum / binCount;
+                    const normalizedAmplitude = Math.max(0, Math.min(1,
+                        (avgAmplitude + 100) / 100 * gain * sensitivity * 0.5
+                    ));
+
+                    const bandEnergies = {};
+                    const nyquist = this.sampleRate / 2;
+
+                    for (const [viseme, band] of Object.entries(this.visemeBands)) {
+                        const lowBin = Math.floor((band.low / nyquist) * binCount);
+                        const highBin = Math.min(Math.floor((band.high / nyquist) * binCount), binCount - 1);
+                        let bandSum = 0, count = 0;
+                        for (let i = lowBin; i <= highBin && i < binCount; i++) {
+                            const val = this.frequencyData[i];
+                            if (val > -100) {
+                                bandSum += Math.pow(10, val / 20);
+                                count++;
+                            }
+                        }
+                        bandEnergies[viseme] = count > 0 ? bandSum / count : 0;
+                    }
+
+                    let bestViseme = 'Rest';
+                    let bestScore = -Infinity;
+                    let totalScore = 0;
+
+                    for (const [viseme, energy] of Object.entries(bandEnergies)) {
+                        const band = this.visemeBands[viseme];
+                        const amplitudeFactor = 1 + (normalizedAmplitude * 0.5);
+                        const score = energy * (band.weight || 1) * amplitudeFactor;
+                        const opennessMatch = 1 - Math.abs(normalizedAmplitude - this.visemeOpenness[viseme]);
+                        const finalScore = score * (0.7 + 0.3 * opennessMatch);
+                        totalScore += finalScore;
+                        if (finalScore > bestScore) { bestScore = finalScore;
+                            bestViseme = viseme; }
+                    }
+
+                    this.visemeHistory.push(bestViseme);
+                    if (this.visemeHistory.length > 5) this.visemeHistory.shift();
+
+                    const freqMap = {};
+                    for (const v of this.visemeHistory) freqMap[v] = (freqMap[v] || 0) + 1;
+                    let smoothedViseme = bestViseme;
+                    let maxFreq = 0;
+                    for (const [viseme, count] of Object.entries(freqMap)) {
+                        if (count > maxFreq) { maxFreq = count;
+                            smoothedViseme = viseme; }
+                    }
+
+                    const blendFactor = smoothing || 0.3;
+                    if (this.smoothViseme !== smoothedViseme) {
+                        this.transitionViseme = this.smoothViseme;
+                        this.transitionProgress = 0;
+                        this.smoothViseme = smoothedViseme;
+                    }
+
+                    const confidence = Math.min(1, bestScore / (totalScore / Object.keys(bandEnergies).length + 0.001));
+                    const openness = this.visemeOpenness[this.smoothViseme] || 0.1;
+                    const finalAmplitude = Math.min(1, normalizedAmplitude * gain * (sensitivity / 5));
+
+                    return {
+                        viseme: this.smoothViseme,
+                        openness: openness + (finalAmplitude * 0.1),
+                        confidence: confidence,
+                        amplitude: finalAmplitude,
+                        rawViseme: bestViseme,
+                        bandEnergies: bandEnergies
+                    };
+                } catch (error) {
+                    return { viseme: 'Rest', openness: 0.1, confidence: 0, amplitude: 0 };
+                }
+            }
+
+            dispose() {
+                if (this.sourceNode) { try { this.sourceNode.stop();
+                        this.sourceNode.disconnect(); } catch (e) {} }
+                if (this.analyser) { try { this.analyser.disconnect(); } catch (e) {} }
+                this.initialized = false;
+                this.analyser = null;
+                this.sourceNode = null;
+                this.frequencyData = null;
+            }
+        }
+
+        let audioVisemeEngine = null;
+
+        // ============================================================
+        // ADVANCED RENDERER
+        // ============================================================
+        class AdvancedRenderer {
+            constructor(canvas) {
+                this.canvas = canvas;
+                this.ctx = null;
+                this.gl = null;
+                this.useWebGL = false;
+                this.transform = { scale: 1, rotation: 0, translationX: 0, translationY: 0 };
+                this.animationState = {
+                    mouthOpenness: 0.2,
+                    targetOpenness: 0.2,
+                    blinkAmount: 0,
+                    headTilt: 0,
+                    headSway: 0,
+                    breathing: 0
+                };
+            }
+
+            initialize(width, height, mode = 'auto') {
+                this.canvas.width = width * devicePixelRatio;
+                this.canvas.height = height * devicePixelRatio;
+                this.canvas.style.width = width + 'px';
+                this.canvas.style.height = height + 'px';
+
+                if (mode === 'auto' || mode === 'webgl') {
+                    try {
+                        this.gl = this.canvas.getContext('webgl2', { alpha: true, antialias: true,
+                                premultipliedAlpha: false, powerPreference: 'high-performance' }) ||
+                            this.canvas.getContext('webgl', { alpha: true, antialias: true,
+                                premultipliedAlpha: false, powerPreference: 'high-performance' });
+                        if (this.gl) {
+                            this.useWebGL = true;
+                            this.setupWebGL();
+                            return;
+                        }
+                    } catch (e) {}
+                }
+
+                this.useWebGL = false;
+                this.ctx = this.canvas.getContext('2d', { alpha: false, desynchronized: true,
+                    willReadFrequently: false });
+            }
+
+            setupWebGL() {
+                const gl = this.gl;
+                if (!gl) return;
+
+                const vs = gl.createShader(gl.VERTEX_SHADER);
+                gl.shaderSource(vs, `
+                    attribute vec2 a_position;
+                    attribute vec2 a_texcoord;
+                    uniform mat3 u_transform;
+                    varying vec2 v_texcoord;
+                    void main() {
+                        vec3 pos = u_transform * vec3(a_position, 1.0);
+                        gl_Position = vec4(pos.xy, 0.0, 1.0);
+                        v_texcoord = a_texcoord;
+                    }
+                `);
+                gl.compileShader(vs);
+
+                const fs = gl.createShader(gl.FRAGMENT_SHADER);
+                gl.shaderSource(fs, `
+                    precision highp float;
+                    uniform sampler2D u_texture;
+                    uniform vec4 u_color;
+                    varying vec2 v_texcoord;
+                    void main() {
+                        vec4 color = texture2D(u_texture, v_texcoord);
+                        gl_FragColor = color * u_color;
+                    }
+                `);
+                gl.compileShader(fs);
+
+                this.program = gl.createProgram();
+                gl.attachShader(this.program, vs);
+                gl.attachShader(this.program, fs);
+                gl.linkProgram(this.program);
+
+                this.positionLocation = gl.getAttribLocation(this.program, 'a_position');
+                this.texcoordLocation = gl.getAttribLocation(this.program, 'a_texcoord');
+                this.transformLocation = gl.getUniformLocation(this.program, 'u_transform');
+                this.textureLocation = gl.getUniformLocation(this.program, 'u_texture');
+                this.colorLocation = gl.getUniformLocation(this.program, 'u_color');
+
+                this.vertexBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+                const vertices = new Float32Array([
+                    -1, -1, 0, 1,
+                    1, -1, 1, 1,
+                    -1, 1, 0, 0,
+                    1, 1, 1, 0,
+                ]);
+                gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
+
+                this.texture = gl.createTexture();
+                gl.bindTexture(gl.TEXTURE_2D, this.texture);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+                this.offscreenCanvas = document.createElement('canvas');
+                this.offscreenCtx = this.offscreenCanvas.getContext('2d', { willReadFrequently: true });
+            }
+
+            uploadTexture(image) {
+                const gl = this.gl;
+                if (!gl) return;
+                const canvas = this.offscreenCanvas;
+                const ctx = this.offscreenCtx;
+                canvas.width = image.width;
+                canvas.height = image.height;
+                ctx.drawImage(image, 0, 0);
+                gl.bindTexture(gl.TEXTURE_2D, this.texture);
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+                this.imageTexture = image;
+            }
+
+            render() {
+                if (this.useWebGL && this.gl) {
+                    this.renderWebGL();
+                } else {
+                    this.renderCanvas2D();
+                }
+            }
+
+            renderWebGL() {
+                const gl = this.gl;
+                if (!gl) return;
+                const w = this.canvas.width,
+                    h = this.canvas.height;
+                gl.viewport(0, 0, w, h);
+                gl.clearColor(0.04, 0.04, 0.1, 1);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+                gl.useProgram(this.program);
+
+                const scale = this.transform.scale || 1;
+                const rotation = this.transform.rotation || 0;
+                const tx = this.transform.translationX || 0;
+                const ty = this.transform.translationY || 0;
+                const cos = Math.cos(rotation),
+                    sin = Math.sin(rotation);
+                const matrix = new Float32Array([
+                    cos * scale, -sin * scale, tx,
+                    sin * scale, cos * scale, ty,
+                    0, 0, 1
+                ]);
+                gl.uniformMatrix3fv(this.transformLocation, false, matrix);
+
+                if (this.imageTexture) {
+                    gl.uniform4f(this.colorLocation, 1, 1, 1, 1);
+                    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+                } else {
+                    gl.uniform4f(this.colorLocation, 0.3, 0.3, 0.6, 1);
+                }
+
+                gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
+                gl.enableVertexAttribArray(this.positionLocation);
+                gl.vertexAttribPointer(this.positionLocation, 2, gl.FLOAT, false, 16, 0);
+                gl.enableVertexAttribArray(this.texcoordLocation);
+                gl.vertexAttribPointer(this.texcoordLocation, 2, gl.FLOAT, false, 16, 8);
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+            }
+
+            renderCanvas2D() {
+                const ctx = this.ctx;
+                if (!ctx) return;
+                const w = this.canvas.width,
+                    h = this.canvas.height;
+                ctx.clearRect(0, 0, w, h);
+
+                const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+                gradient.addColorStop(0, '#1a1a3e');
+                gradient.addColorStop(1, '#0a0a1a');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.save();
+                ctx.translate(w / 2, h / 2);
+                ctx.scale(this.transform.scale || 1, this.transform.scale || 1);
+                ctx.rotate(this.transform.rotation || 0);
+                ctx.translate(-w / 2, -h / 2);
+
+                if (APP.image) {
+                    const img = APP.image;
+                    const aspect = img.width / img.height;
+                    let drawW, drawH, ox, oy;
+                    if (aspect > 1) {
+                        drawW = w * 0.9;
+                        drawH = drawW / aspect;
+                        ox = (w - drawW) / 2;
+                        oy = (h - drawH) / 2;
+                    } else {
+                        drawH = h * 0.9;
+                        drawW = drawH * aspect;
+                        ox = (w - drawW) / 2;
+                        oy = (h - drawH) / 2;
+                    }
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, ox, oy, drawW, drawH);
+                    this.renderFaceOverlay(ctx, w, h, drawW, drawH, ox, oy);
+                }
+                ctx.restore();
+            }
+
+            renderFaceOverlay(ctx, w, h, drawW, drawH, ox, oy) {
+                const state = this.animationState;
+                const faceX = ox + drawW * 0.35;
+                const faceY = oy + drawH * 0.2;
+                const faceW = drawW * 0.3;
+                const faceH = drawH * 0.35;
+                const openness = state.targetOpenness || 0.2;
+                const blinkAmount = state.blinkAmount || 0;
+
+                // Mouth
+                const mouthX = faceX + faceW * 0.5;
+                const mouthY = faceY + faceH * 0.7;
+                const mouthW = faceW * 0.3;
+                const mouthH = faceH * 0.12 * (1 + openness * 2);
+
+                ctx.save();
+                ctx.shadowColor = 'rgba(200, 80, 80, 0.2)';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
+                ctx.fill();
+
+                if (openness > 0.3) {
+                    const innerH = mouthH * 0.6;
+                    ctx.beginPath();
+                    ctx.ellipse(mouthX, mouthY + mouthH * 0.1, mouthW * 0.6, innerH, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(140, 40, 40, ${0.3 + openness * 0.4})`;
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                // Eyes
+                const eyeY = faceY + faceH * 0.35;
+                const eyeW = faceW * 0.12;
+                const eyeH = faceH * 0.08 * (1 - blinkAmount);
+
+                [-1, 1].forEach(side => {
+                    const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
+                    ctx.save();
+                    ctx.shadowColor = 'rgba(255, 255, 255, 0.1)';
+                    ctx.shadowBlur = 5;
+                    ctx.beginPath();
+                    ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                    ctx.fill();
+                    if (eyeH > 2) {
+                        ctx.beginPath();
+                        ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.4, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
+                        ctx.fill();
+                    }
+                    ctx.restore();
+                });
+            }
+
+            updateAnimation(updates) {
+                const state = this.animationState;
+                for (const [key, value] of Object.entries(updates)) {
+                    if (key in state) {
+                        state[key] = state[key] * 0.7 + value * 0.3;
+                    }
+                }
+                const time = performance.now() / 1000;
+                state.headTilt = Math.sin(time * 0.5) * 0.01;
+                state.headSway = Math.sin(time * 0.3) * 0.008;
+                state.breathing = 0.002 * Math.sin(time * 0.8);
+            }
+
+            dispose() {
+                if (this.gl) {
+                    const gl = this.gl;
+                    if (this.program) gl.deleteProgram(this.program);
+                    if (this.vertexBuffer) gl.deleteBuffer(this.vertexBuffer);
+                    if (this.texture) gl.deleteTexture(this.texture);
+                    this.gl = null;
+                }
+                if (this.offscreenCanvas) {
+                    this.offscreenCanvas.width = 0;
+                    this.offscreenCanvas.height = 0;
+                }
+            }
+        }
+
+        let renderer = null;
+
+        // ============================================================
+        // VIDEO EXPORT ENGINE
+        // ============================================================
+        class VideoExportEngine {
+            constructor(canvas, audioBuffer, audioContext) {
+                this.canvas = canvas;
+                this.audioBuffer = audioBuffer;
+                this.audioContext = audioContext;
+                this.config = { fps: 30, quality: 'medium', resolution: 1080, format: 'webm', codec: 'vp9' };
+                this.state = { isExporting: false, progress: 0, cancelled: false, framesRendered: 0, totalFrames: 0 };
+                this.supportedCodecs = this.detectCodecs();
+            }
+
+            detectCodecs() {
+                const codecs = {
+                    vp9: 'video/webm;codecs=vp9,opus',
+                    vp8: 'video/webm;codecs=vp8,opus',
+                    h264: 'video/mp4;codecs=avc1.42E01E,mp4a.40.2'
+                };
+                const supported = {};
+                for (const [name, mime] of Object.entries(codecs)) {
+                    try { supported[name] = MediaRecorder.isTypeSupported(mime); } catch (e) { supported[name] = false; }
+                }
+                if (supported.vp9) supported.preferred = 'vp9';
+                else if (supported.vp8) supported.preferred = 'vp8';
+                else if (supported.h264) supported.preferred = 'h264';
+                return supported;
+            }
+
+            getMimeType(codec) {
+                const map = {
+                    'vp9': 'video/webm;codecs=vp9,opus',
+                    'vp8': 'video/webm;codecs=vp8,opus',
+                    'h264': 'video/mp4;codecs=avc1.42E01E,mp4a.40.2'
+                };
+                return map[codec] || 'video/webm';
+            }
+
+            async export(config = {}, onProgress, onComplete, onError) {
+                try {
+                    if (this.state.isExporting) throw new Error('Export already in progress');
+                    this.config = { ...this.config, ...config };
+                    this.state.isExporting = true;
+                    this.state.cancelled = false;
+                    this.state.progress = 0;
+
+                    const codec = this.supportedCodecs.preferred || 'vp9';
+                    const mimeType = this.getMimeType(codec);
+                    if (!MediaRecorder.isTypeSupported(mimeType)) {
+                        throw new Error(`Codec ${codec} not supported.`);
+                    }
+
+                    const fps = this.config.fps || 30;
+                    const resolution = this.config.resolution || 1080;
+                    const quality = this.config.quality || 'medium';
+                    const bitrateMap = { 'low': 2000000, 'medium': 5000000, 'high': 10000000, 'lossless': 50000000 };
+                    const videoBitrate = bitrateMap[quality] || 5000000;
+
+                    const captureCanvas = document.createElement('canvas');
+                    captureCanvas.width = resolution;
+                    captureCanvas.height = resolution;
+                    const ctx = captureCanvas.getContext('2d', { alpha: false, desynchronized: true,
+                        willReadFrequently: false });
+
+                    const stream = captureCanvas.captureStream(fps);
+                    const recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: videoBitrate });
+
+                    const chunks = [];
+                    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+                    const exportPromise = new Promise((resolve, reject) => {
+                        recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType }));
+                        recorder.onerror = (event) => reject(new Error('Recorder error: ' + (event.error || 'Unknown')));
+                    });
+
+                    const totalFrames = Math.ceil((this.audioBuffer ? this.audioBuffer.duration : 5) * fps);
+                    this.state.totalFrames = totalFrames;
+                    const frameInterval = 1000 / fps;
+
+                    recorder.start(frameInterval);
+                    let frameIndex = 0;
+                    let startTime = performance.now();
+                    let droppedFrames = 0;
+
+                    while (frameIndex < totalFrames && !this.state.cancelled) {
+                        const progress = frameIndex / totalFrames;
+                        this.state.progress = progress;
+                        this.state.framesRendered = frameIndex;
+                        if (onProgress && frameIndex % Math.floor(fps / 2) === 0) onProgress(progress);
+
+                        await this.renderFrame(ctx, captureCanvas, frameIndex, totalFrames, fps);
+                        frameIndex++;
+
+                        const elapsed = performance.now() - startTime;
+                        const targetTime = frameIndex * frameInterval;
+                        const drift = elapsed - targetTime;
+                        if (drift > frameInterval * 2) droppedFrames++;
+                        else if (elapsed < targetTime) {
+                            await new Promise(r => setTimeout(r, targetTime - elapsed));
+                        }
+                        this.state.progress = Math.min(1, frameIndex / totalFrames);
+                    }
+
+                    if (this.state.cancelled) {
+                        recorder.stop();
+                        chunks.length = 0;
+                        throw new Error('Export cancelled');
+                    }
+
+                    recorder.stop();
+                    const blob = await exportPromise;
+                    this.state.isExporting = false;
+                    this.state.progress = 1;
+                    stream.getTracks().forEach(t => t.stop());
+
+                    if (onComplete) {
+                        onComplete(blob, {
+                            frames: frameIndex,
+                            droppedFrames: droppedFrames,
+                            totalFrames: totalFrames,
+                            duration: totalFrames / fps,
+                            codec: codec,
+                            resolution: resolution,
+                            fps: fps
+                        });
+                    }
+                    return blob;
+                } catch (error) {
+                    this.state.isExporting = false;
+                    this.state.progress = 0;
+                    if (onError) onError(error);
+                    else throw error;
+                }
+            }
+
+            async renderFrame(ctx, canvas, frameIndex, totalFrames, fps) {
+                const w = canvas.width,
+                    h = canvas.height;
+                const time = frameIndex / fps;
+                ctx.clearRect(0, 0, w, h);
+
+                const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
+                gradient.addColorStop(0, '#1a1a3e');
+                gradient.addColorStop(1, '#0a0a1a');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(0, 0, w, h);
+
+                if (APP.image) {
+                    const img = APP.image;
+                    const aspect = img.width / img.height;
+                    let drawW, drawH, ox, oy;
+                    if (aspect > 1) { drawW = w * 0.9;
+                        drawH = drawW / aspect;
+                        ox = (w - drawW) / 2;
+                        oy = (h - drawH) / 2; } else { drawH = h * 0.9;
+                        drawW = drawH * aspect;
+                        ox = (w - drawW) / 2;
+                        oy = (h - drawH) / 2; }
+
+                    ctx.save();
+                    const headSway = Math.sin(time * 0.3) * 0.005;
+                    const headTilt = Math.sin(time * 0.5) * 0.003;
+                    ctx.translate(w / 2, h / 2);
+                    ctx.rotate(headTilt);
+                    ctx.translate(-w / 2, -h / 2);
+                    ctx.beginPath();
+                    ctx.ellipse(w / 2, h / 2, w / 2 * 0.95, h / 2 * 0.95, 0, 0, Math.PI * 2);
+                    ctx.clip();
+                    ctx.drawImage(img, ox + headSway * drawW, oy, drawW, drawH);
+
+                    const amplitude = this.getAudioAmplitudeAtTime(time);
+                    const openness = Math.min(1, amplitude * 3 * (APP.settings?.mouthSensitivity || 5) / 5);
+                    const faceX = ox + drawW * 0.35;
+                    const faceY = oy + drawH * 0.2;
+                    const faceW = drawW * 0.3;
+                    const faceH = drawH * 0.35;
+                    const mouthX = faceX + faceW * 0.5;
+                    const mouthY = faceY + faceH * 0.7;
+                    const mouthW = faceW * 0.3;
+                    const mouthH = faceH * 0.12 * (1 + openness * 2);
+
+                    ctx.beginPath();
+                    ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
+                    ctx.fill();
+                    if (openness > 0.3) {
+                        const innerH = mouthH * 0.6;
+                        ctx.beginPath();
+                        ctx.ellipse(mouthX, mouthY + mouthH * 0.1, mouthW * 0.6, innerH, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(140, 40, 40, ${0.3 + openness * 0.4})`;
+                        ctx.fill();
+                    }
+
+                    const blinkAmount = this.getBlinkAtTime(time);
+                    const eyeY = faceY + faceH * 0.35;
+                    const eyeW = faceW * 0.12;
+                    const eyeH = faceH * 0.08 * (1 - blinkAmount);
+                    [-1, 1].forEach(side => {
+                        const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
+                        ctx.beginPath();
+                        ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                        ctx.fill();
+                        if (eyeH > 2) {
+                            ctx.beginPath();
+                            ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.4, 0, Math.PI * 2);
+                            ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
+                            ctx.fill();
+                        }
+                    });
+                    ctx.restore();
+                }
+            }
+
+            getAudioAmplitudeAtTime(time) {
+                if (!this.audioBuffer) return 0.3;
+                const data = this.audioBuffer.getChannelData(0);
+                const sampleRate = this.audioBuffer.sampleRate;
+                const startIndex = Math.floor(time * sampleRate);
+                const windowSize = Math.min(512, data.length - startIndex);
+                if (startIndex < 0 || startIndex >= data.length) return 0.3;
+                let sum = 0;
+                for (let i = 0; i < windowSize; i++) sum += Math.abs(data[startIndex + i] || 0);
+                return sum / windowSize;
+            }
+
+            getBlinkAtTime(time) {
+                const blinkInterval = 4,
+                    blinkDuration = 0.15;
+                const cycle = time % blinkInterval;
+                if (cycle < blinkDuration) return Math.sin((cycle / blinkDuration) * Math.PI) * 0.9;
+                return 0;
+            }
+
+            cancel() { this.state.cancelled = true;
+                this.state.isExporting = false; return true; }
+        }
+
+        let exportEngine = null;
+
+        // ============================================================
+        // CORE FUNCTIONS
+        // ============================================================
+        function getMouthOpenness() {
+            if (APP.audioBuffer && APP.audioContext) {
+                if (!audioVisemeEngine) {
+                    audioVisemeEngine = new AudioVisemeEngine();
+                    try {
+                        audioVisemeEngine.initialize(APP.audioContext, APP.audioBuffer);
+                    } catch (error) {
+                        console.warn('Viseme engine init failed:', error);
+                        return 0.2;
+                    }
+                }
+                const result = audioVisemeEngine.analyze(
+                    APP.settings.audioGain / 100,
+                    APP.settings.mouthSensitivity / 5,
+                    0.4
+                );
+                if (result.viseme) {
+                    APP.currentViseme = result.viseme;
+                    DOM.phonemeValues.textContent = result.viseme;
+                }
+                const baseOpenness = result.openness;
+                const variation = 0.05 * Math.sin(performance.now() / 300);
+                return Math.min(1, Math.max(0.05, baseOpenness + variation));
+            }
+            return 0.2 + 0.1 * Math.sin(performance.now() / 500);
+        }
+
+        function getBlinkAmount() {
+            const freq = APP.settings.blinkFreq / 100;
+            const time = performance.now() / 1000;
+            const blinkInterval = 4 / (1 + freq * 2);
+            const blinkDuration = 0.15;
+            const cycle = time % blinkInterval;
+            if (cycle < blinkDuration) {
+                return Math.sin((cycle / blinkDuration) * Math.PI) * 0.9;
+            }
+            return 0;
+        }
+
+        function renderFrame() {
+            if (!renderer) {
+                const canvas = DOM.previewCanvas;
+                renderer = new AdvancedRenderer(canvas);
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const size = Math.min(rect.width - 20, rect.height - 80, 800);
+                renderer.initialize(size, size, 'auto');
+                if (APP.image) renderer.uploadTexture(APP.image);
+            }
+
+            const openness = getMouthOpenness();
+            const blinkAmount = getBlinkAmount();
+            renderer.updateAnimation({ targetOpenness: openness, blinkAmount: blinkAmount });
+            renderer.render();
+
+            APP.frameCount++;
+            const now = performance.now();
+            if (now - APP.fpsCounterUpdate > 1000) {
+                APP.stats.fps = APP.frameCount;
+                DOM.fpsCounter.textContent = APP.stats.fps;
+                APP.frameCount = 0;
+                APP.fpsCounterUpdate = now;
+            }
+            if (performance.memory) {
+                DOM.memoryUsage.textContent = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(0) + ' MB';
+            }
+        }
+
+        function animate() {
+            if (!APP.animationId) {
+                APP.animationId = requestAnimationFrame(animate);
+                return;
+            }
+            renderFrame();
+            APP.animationId = requestAnimationFrame(animate);
+        }
+
+        // ============================================================
+        // FILE HANDLING
+        // ============================================================
+        async function handleImageFile(file) {
             if (!file || !file.type.startsWith('image/')) {
                 showToast('Please upload a valid image file', 'error');
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const img = new Image();
-                img.onload = () => {
-                    APP.image = img;
-                    DOM.imagePreview.src = e.target.result;
-                    DOM.imagePreviewContainer.hidden = false;
-                    DOM.imageDropzone.style.display = 'none';
-                    DOM.imageStatus.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
-                    DOM.imageStatus.style.color = 'var(--success)';
-                    showToast(`✅ Image loaded: ${file.name}`, 'success');
+            try {
+                const img = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const image = new Image();
+                        image.onload = () => resolve(image);
+                        image.onerror = reject;
+                        image.src = e.target.result;
+                    };
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
 
-                    // Auto-detect face and set up canvas
-                    setupPreviewCanvas();
-                    updatePreviewOverlay();
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
+                APP.image = img;
+                DOM.imagePreview.src = img.src;
+                DOM.imagePreviewContainer.hidden = false;
+                DOM.imageDropzone.style.display = 'none';
+                DOM.imageStatus.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+                DOM.imageStatus.style.color = 'var(--success)';
+
+                if (renderer) renderer.uploadTexture(img);
+                updatePreviewOverlay();
+                showToast(`✅ Image loaded: ${file.name}`, 'success');
+            } catch (error) {
+                showToast(`❌ Error loading image: ${error.message}`, 'error');
+            }
         }
 
-        DOM.imageFileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleImageFile(e.target.files[0]);
-            }
-            e.target.value = '';
-        });
-
-        DOM.imageDropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            DOM.imageDropzone.style.borderColor = 'var(--gradient-start)';
-        });
-
-        DOM.imageDropzone.addEventListener('dragleave', () => {
-            DOM.imageDropzone.style.borderColor = '';
-        });
-
-        DOM.imageDropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            DOM.imageDropzone.style.borderColor = '';
-            const file = e.dataTransfer.files[0];
-            if (file) handleImageFile(file);
-        });
-
-        DOM.imageDropzone.addEventListener('click', () => {
-            DOM.imageFileInput.click();
-        });
-
-        DOM.removeImageBtn.addEventListener('click', () => {
-            APP.image = null;
-            DOM.imagePreviewContainer.hidden = true;
-            DOM.imageDropzone.style.display = '';
-            DOM.imageStatus.textContent = 'No image uploaded';
-            DOM.imageStatus.style.color = '';
-            updatePreviewOverlay();
-        });
-
-        // ============================================================
-        // AUDIO UPLOAD
-        // ============================================================
         async function handleAudioFile(file) {
             if (!file || !file.type.startsWith('audio/')) {
                 showToast('Please upload a valid audio file', 'error');
@@ -1843,11 +2643,11 @@
 
             try {
                 const arrayBuffer = await file.arrayBuffer();
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-
+                if (!APP.audioContext) {
+                    APP.audioContext = new(window.AudioContext || window.webkitAudioContext)();
+                }
+                const audioBuffer = await APP.audioContext.decodeAudioData(arrayBuffer);
                 APP.audioBuffer = audioBuffer;
-                APP.audioContext = audioContext;
                 APP.duration = audioBuffer.duration;
 
                 DOM.audioName.textContent = file.name;
@@ -1857,57 +2657,95 @@
                 DOM.audioStatus.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
                 DOM.audioStatus.style.color = 'var(--success)';
 
-                // Draw waveform
                 drawWaveform(audioBuffer);
-
-                showToast(`✅ Audio loaded: ${file.name}`, 'success');
                 updatePreviewOverlay();
+                showToast(`✅ Audio loaded: ${file.name}`, 'success');
 
+                if (audioVisemeEngine) {
+                    audioVisemeEngine.dispose();
+                    audioVisemeEngine = null;
+                }
             } catch (error) {
                 showToast(`❌ Error loading audio: ${error.message}`, 'error');
+                APP.audioBuffer = null;
             }
         }
 
-        DOM.audioFileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleAudioFile(e.target.files[0]);
-            }
-            e.target.value = '';
-        });
+        function removeImage() {
+            APP.image = null;
+            DOM.imagePreviewContainer.hidden = true;
+            DOM.imageDropzone.style.display = '';
+            DOM.imageStatus.textContent = 'No image uploaded';
+            DOM.imageStatus.style.color = '';
+            if (renderer) { renderer.imageTexture = null;
+                renderer = null; }
+            updatePreviewOverlay();
+        }
 
-        DOM.audioDropzone.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            DOM.audioDropzone.style.borderColor = 'var(--gradient-start)';
-        });
-
-        DOM.audioDropzone.addEventListener('dragleave', () => {
-            DOM.audioDropzone.style.borderColor = '';
-        });
-
-        DOM.audioDropzone.addEventListener('drop', (e) => {
-            e.preventDefault();
-            DOM.audioDropzone.style.borderColor = '';
-            const file = e.dataTransfer.files[0];
-            if (file) handleAudioFile(file);
-        });
-
-        DOM.audioDropzone.addEventListener('click', () => {
-            DOM.audioFileInput.click();
-        });
-
-        DOM.removeAudioBtn.addEventListener('click', () => {
+        function removeAudio() {
             APP.audioBuffer = null;
-            APP.audioContext = null;
             APP.duration = 0;
             DOM.audioInfoContainer.hidden = true;
             DOM.audioDropzone.style.display = '';
             DOM.audioStatus.textContent = 'No audio uploaded';
             DOM.audioStatus.style.color = '';
+            if (audioVisemeEngine) { audioVisemeEngine.dispose();
+                audioVisemeEngine = null; }
             updatePreviewOverlay();
-        });
+        }
+
+        function updatePreviewOverlay() {
+            if (APP.image && APP.audioBuffer) {
+                DOM.previewOverlay.classList.add('hidden');
+            } else {
+                DOM.previewOverlay.classList.remove('hidden');
+            }
+        }
 
         // ============================================================
-        // AUDIO RECORDING
+        // WAVEFORM
+        // ============================================================
+        function drawWaveform(buffer) {
+            const canvas = DOM.waveformCanvas;
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const width = rect.width || 600;
+            const height = rect.height || 60;
+
+            canvas.width = width * devicePixelRatio;
+            canvas.height = height * devicePixelRatio;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(devicePixelRatio, devicePixelRatio);
+
+            const data = buffer.getChannelData(0);
+            const step = Math.floor(data.length / width);
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.8)';
+            ctx.lineWidth = 2;
+
+            for (let i = 0; i < width; i++) {
+                const idx = Math.floor(i * step);
+                const val = data[idx] || 0;
+                const y = (height / 2) + (val * 0.8 * height / 2);
+                if (i === 0) ctx.moveTo(i, y);
+                else ctx.lineTo(i, y);
+            }
+            ctx.stroke();
+
+            ctx.lineTo(width, height / 2);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.15)';
+            ctx.fill();
+        }
+
+        // ============================================================
+        // RECORDING
         // ============================================================
         let mediaRecorder = null;
         let recordedChunks = [];
@@ -1954,9 +2792,8 @@
                 DOM.startRecordBtn.classList.remove('recording');
                 DOM.stopRecordBtn.disabled = true;
                 DOM.recordStatus.textContent = '⏹ Stopped';
-
                 if (recordingStream) {
-                    recordingStream.getTracks().forEach(track => track.stop());
+                    recordingStream.getTracks().forEach(t => t.stop());
                     recordingStream = null;
                 }
             }
@@ -1969,7 +2806,7 @@
         });
 
         // ============================================================
-        // AUDIO PLAYBACK
+        // PLAYBACK
         // ============================================================
         let audioSource = null;
         let audioStartTime = 0;
@@ -1977,11 +2814,7 @@
 
         function playAudio() {
             if (!APP.audioBuffer || !APP.audioContext) return;
-
-            if (APP.isPlaying) {
-                pauseAudio();
-                return;
-            }
+            if (APP.isPlaying) { pauseAudio(); return; }
 
             const source = APP.audioContext.createBufferSource();
             source.buffer = APP.audioBuffer;
@@ -2001,10 +2834,7 @@
                 DOM.playPauseBtn.textContent = '▶';
             };
 
-            // Start animation loop
-            if (!APP.animationId) {
-                animate();
-            }
+            if (!APP.animationId) animate();
         }
 
         function pauseAudio() {
@@ -2022,381 +2852,25 @@
         DOM.playPauseBtn.addEventListener('click', playAudio);
 
         // ============================================================
-        // TIMELINE
-        // ============================================================
-        DOM.timelineSlider.addEventListener('input', (e) => {
-            const pct = parseFloat(e.target.value) / 100;
-            APP.currentTime = pct * APP.duration;
-            updateTimeDisplay();
-            if (APP.isPlaying) {
-                pauseAudio();
-            }
-            seekAudio(APP.currentTime);
-        });
-
-        function seekAudio(time) {
-            if (APP.audioContext && APP.audioBuffer) {
-                audioPauseTime = Math.min(time, APP.duration);
-                if (APP.isPlaying) {
-                    pauseAudio();
-                    playAudio();
-                }
-            }
-        }
-
-        function updateTimeDisplay() {
-            DOM.timeDisplay.textContent = `${formatTime(APP.currentTime)} / ${formatTime(APP.duration)}`;
-            DOM.timelineSlider.value = APP.duration > 0 ? (APP.currentTime / APP.duration) * 100 : 0;
-        }
-
-        function formatTime(seconds) {
-            if (!seconds || isNaN(seconds)) return '0:00';
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            return `${m}:${String(s).padStart(2, '0')}`;
-        }
-
-        // ============================================================
-        // WAVEFORM
-        // ============================================================
-        function drawWaveform(buffer) {
-            const canvas = DOM.waveformCanvas;
-            const ctx = canvas.getContext('2d');
-            const width = canvas.parentElement.clientWidth || 600;
-            const height = canvas.parentElement.clientHeight || 60;
-            canvas.width = width * devicePixelRatio;
-            canvas.height = height * devicePixelRatio;
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-            ctx.scale(devicePixelRatio, devicePixelRatio);
-
-            const data = buffer.getChannelData(0);
-            const step = Math.floor(data.length / width);
-            const amp = 0.8;
-
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = 'rgba(102, 126, 234, 0.1)';
-            ctx.fillRect(0, 0, width, height);
-
-            ctx.beginPath();
-            ctx.strokeStyle = 'rgba(102, 126, 234, 0.8)';
-            ctx.lineWidth = 2;
-
-            for (let i = 0; i < width; i++) {
-                const index = Math.floor(i * step);
-                const value = data[index] || 0;
-                const y = (height / 2) + (value * amp * height / 2);
-                if (i === 0) ctx.moveTo(i, y);
-                else ctx.lineTo(i, y);
-            }
-            ctx.stroke();
-
-            // Fill area
-            ctx.lineTo(width, height / 2);
-            ctx.closePath();
-            ctx.fillStyle = 'rgba(102, 126, 234, 0.15)';
-            ctx.fill();
-        }
-
-        // ============================================================
-        // PREVIEW CANVAS SETUP
-        // ============================================================
-        function setupPreviewCanvas() {
-            const canvas = DOM.previewCanvas;
-            const container = canvas.parentElement;
-            const rect = container.getBoundingClientRect();
-            const size = Math.min(rect.width - 20, rect.height - 80, 800);
-
-            canvas.width = size * devicePixelRatio;
-            canvas.height = size * devicePixelRatio;
-            canvas.style.width = size + 'px';
-            canvas.style.height = size + 'px';
-        }
-
-        function updatePreviewOverlay() {
-            if (APP.image && APP.audioBuffer) {
-                DOM.previewOverlay.classList.add('hidden');
-            } else {
-                DOM.previewOverlay.classList.remove('hidden');
-            }
-        }
-
-        // ============================================================
-        // ANIMATION ENGINE
-        // ============================================================
-        let visemeTimeline = [];
-        let currentFrame = 0;
-        let totalFrames = 0;
-
-        function animate() {
-            if (!APP.animationId) {
-                APP.animationId = requestAnimationFrame(animate);
-                return;
-            }
-
-            const now = performance.now();
-            const delta = now - APP.lastFrameTime;
-            APP.lastFrameTime = now;
-
-            // Update FPS counter
-            APP.frameCount++;
-            if (now - APP.fpsCounterUpdate > 1000) {
-                APP.stats.fps = APP.frameCount;
-                DOM.fpsCounter.textContent = APP.stats.fps;
-                APP.frameCount = 0;
-                APP.fpsCounterUpdate = now;
-            }
-
-            // Update memory
-            if (performance.memory) {
-                DOM.memoryUsage.textContent = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(0) + ' MB';
-            }
-
-            // Render frame
-            renderFrame();
-
-            APP.animationId = requestAnimationFrame(animate);
-        }
-
-        function renderFrame() {
-            const canvas = DOM.previewCanvas;
-            const ctx = canvas.getContext('2d');
-            const w = canvas.width;
-            const h = canvas.height;
-
-            ctx.clearRect(0, 0, w, h);
-
-            // Draw background
-            const gradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w/2);
-            gradient.addColorStop(0, '#1a1a3e');
-            gradient.addColorStop(1, '#0a0a1a');
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, w, h);
-
-            if (!APP.image) {
-                ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                ctx.font = `${w/15}px sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('🎭', w/2, h/2 - 20);
-                ctx.fillStyle = 'rgba(255,255,255,0.3)';
-                ctx.font = `${w/25}px sans-serif`;
-                ctx.fillText('Upload a portrait to begin', w/2, h/2 + 40);
-                return;
-            }
-
-            // Draw image
-            const img = APP.image;
-            const imgAspect = img.width / img.height;
-            const canvasAspect = w / h;
-            let drawW, drawH, offsetX, offsetY;
-
-            if (imgAspect > canvasAspect) {
-                drawW = w;
-                drawH = w / imgAspect;
-                offsetX = 0;
-                offsetY = (h - drawH) / 2;
-            } else {
-                drawH = h;
-                drawW = h * imgAspect;
-                offsetX = (w - drawW) / 2;
-                offsetY = 0;
-            }
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.ellipse(w/2, h/2, w/2 * 0.95, h/2 * 0.95, 0, 0, Math.PI * 2);
-            ctx.clip();
-
-            // Draw image with face detection simulation
-            ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
-
-            // Face overlay (simulated face detection)
-            const faceX = w * 0.35;
-            const faceY = h * 0.2;
-            const faceW = w * 0.3;
-            const faceH = h * 0.35;
-
-            // Draw face outline
-            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
-            ctx.strokeRect(faceX, faceY, faceW, faceH);
-            ctx.setLineDash([]);
-
-            // Draw facial landmarks (simulated)
-            const landmarks = [
-                [faceX + faceW * 0.2, faceY + faceH * 0.3],
-                [faceX + faceW * 0.8, faceY + faceH * 0.3],
-                [faceX + faceW * 0.5, faceY + faceH * 0.6],
-                [faceX + faceW * 0.3, faceY + faceH * 0.8],
-                [faceX + faceW * 0.7, faceY + faceH * 0.8],
-            ];
-
-            landmarks.forEach(([lx, ly]) => {
-                ctx.beginPath();
-                ctx.arc(lx, ly, 4, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(102, 126, 234, 0.8)';
-                ctx.fill();
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.lineWidth = 1;
-                ctx.stroke();
-            });
-
-            // Draw mouth (animated based on audio)
-            const mouthX = faceX + faceW * 0.5;
-            const mouthY = faceY + faceH * 0.7;
-            const mouthW = faceW * 0.3;
-            const mouthH = faceH * 0.12 * (1 + getMouthOpenness());
-
-            ctx.beginPath();
-            ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
-            ctx.fill();
-            ctx.strokeStyle = 'rgba(180, 60, 60, 0.5)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            // Draw eyes with blink
-            const blinkAmount = getBlinkAmount();
-            const eyeY = faceY + faceH * 0.35;
-            const eyeW = faceW * 0.12;
-            const eyeH = faceH * 0.08 * (1 - blinkAmount);
-
-            [-1, 1].forEach(side => {
-                const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
-                ctx.beginPath();
-                ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                ctx.fill();
-                if (eyeH > 2) {
-                    ctx.beginPath();
-                    ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.3, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
-                    ctx.fill();
-                }
-            });
-
-            ctx.restore();
-
-            // Debug overlay
-            if (APP.settings.showDebug) {
-                ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                ctx.fillRect(10, 10, 200, 100);
-                ctx.fillStyle = 'rgba(255,255,255,0.8)';
-                ctx.font = '12px monospace';
-                ctx.textAlign = 'left';
-                ctx.textBaseline = 'top';
-                ctx.fillText(`FPS: ${APP.stats.fps}`, 20, 20);
-                ctx.fillText(`Viseme: ${APP.currentViseme}`, 20, 40);
-                ctx.fillText(`Time: ${formatTime(APP.currentTime)}`, 20, 60);
-                ctx.fillText(`Mouth: ${(getMouthOpenness() * 100).toFixed(0)}%`, 20, 80);
-            }
-        }
-
-        // ============================================================
-        // LIP SYNC ENGINE
-        // ============================================================
-        let blinkTimer = 0;
-        let blinkState = 0;
-        let mouthOpenness = 0;
-        let targetMouthOpenness = 0;
-
-        function getMouthOpenness() {
-            // Simulate mouth openness based on audio amplitude
-            if (!APP.audioBuffer || !APP.isPlaying) {
-                // Idle mouth movement
-                return 0.2 + 0.1 * Math.sin(performance.now() / 500);
-            }
-
-            // Get current audio amplitude
-            const time = APP.audioContext ? APP.audioContext.currentTime - audioStartTime : 0;
-            const sampleIndex = Math.floor(time * APP.audioBuffer.sampleRate);
-            const data = APP.audioBuffer.getChannelData(0);
-
-            if (sampleIndex < data.length) {
-                const windowSize = Math.min(1024, data.length - sampleIndex);
-                let sum = 0;
-                for (let i = 0; i < windowSize; i++) {
-                    sum += Math.abs(data[sampleIndex + i] || 0);
-                }
-                const amplitude = sum / windowSize;
-
-                // Apply sensitivity and gain
-                const sensitivity = APP.settings.mouthSensitivity / 5;
-                const gain = APP.settings.audioGain / 100;
-                const raw = amplitude * gain * sensitivity * 3;
-
-                // Smooth transition
-                targetMouthOpenness = Math.min(Math.max(raw, 0.05), 1.0);
-                mouthOpenness += (targetMouthOpenness - mouthOpenness) * 0.3;
-
-                // Map to viseme
-                updateViseme(mouthOpenness);
-
-                return mouthOpenness;
-            }
-
-            return 0.2;
-        }
-
-        function getBlinkAmount() {
-            const freq = APP.settings.blinkFreq / 100;
-            blinkTimer += 0.016 * (1 + freq * 2);
-
-            if (blinkTimer > 1) {
-                blinkTimer = 0;
-                blinkState = 1;
-            }
-
-            if (blinkState > 0) {
-                blinkState += 0.02;
-                if (blinkState > 1) {
-                    blinkState = 0;
-                }
-                return Math.sin(blinkState * Math.PI) * 0.9;
-            }
-
-            return 0;
-        }
-
-        function updateViseme(openness) {
-            // Map openness to viseme categories
-            const visemes = [
-                { name: 'A', threshold: 0.8 },
-                { name: 'E', threshold: 0.6 },
-                { name: 'I', threshold: 0.4 },
-                { name: 'O', threshold: 0.25 },
-                { name: 'U', threshold: 0.1 },
-                { name: 'M', threshold: 0.05 },
-            ];
-
-            let current = 'A';
-            for (const v of visemes) {
-                if (openness >= v.threshold) {
-                    current = v.name;
-                    break;
-                }
-            }
-
-            // Add some randomness for natural feel
-            if (APP.currentViseme !== current) {
-                APP.currentViseme = current;
-                DOM.phonemeValues.textContent = current;
-            }
-        }
-
-        // ============================================================
         // EXPORT
         // ============================================================
-        DOM.exportBtn.addEventListener('click', async () => {
+        async function exportVideo() {
             if (APP.exportState.isExporting) return;
-            if (!APP.image) {
-                showToast('Please upload an image first', 'warning');
-                return;
+            if (!APP.image) { showToast('Please upload an image first', 'warning'); return; }
+            if (!APP.audioBuffer) { showToast('Please upload audio first', 'warning'); return; }
+
+            if (!exportEngine) {
+                exportEngine = new VideoExportEngine(DOM.previewCanvas, APP.audioBuffer, APP.audioContext);
             }
 
-            APP.exportState.isExporting = true;
+            exportEngine.config = {
+                fps: parseInt(DOM.exportFps.value || 30),
+                quality: DOM.exportQuality.value || 'medium',
+                resolution: parseInt(DOM.exportResolution.value || 1080),
+                format: DOM.exportFormat.value || 'webm',
+                codec: 'vp9'
+            };
+
             DOM.exportBtn.disabled = true;
             DOM.exportBtn.textContent = '⏳ Exporting...';
             DOM.exportProgress.classList.add('active');
@@ -2404,271 +2878,67 @@
             DOM.exportStatus.textContent = 'Initializing export...';
 
             try {
-                const quality = DOM.exportQuality.value;
-                const fps = parseInt(DOM.exportFps.value);
-                const resolution = parseInt(DOM.exportResolution.value);
-                const duration = APP.duration || 5;
+                const blob = await exportEngine.export(
+                    exportEngine.config,
+                    (progress) => {
+                        const pct = Math.round(progress * 100);
+                        DOM.exportProgressFill.style.width = `${pct}%`;
+                        DOM.exportProgressText.textContent = `Exporting... ${pct}%`;
+                        DOM.exportStatus.textContent =
+                            `Frame ${exportEngine.state.framesRendered}/${exportEngine.state.totalFrames}`;
+                    },
+                    (blob, metadata) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `talking_face_${Date.now()}.${exportEngine.config.format}`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(() => URL.revokeObjectURL(url), 10000);
 
-                // Setup capture canvas
-                const captureCanvas = document.createElement('canvas');
-                const size = resolution;
-                captureCanvas.width = size;
-                captureCanvas.height = size;
-                const ctx = captureCanvas.getContext('2d');
+                        DOM.exportProgressFill.style.width = '100%';
+                        DOM.exportProgressText.textContent = '✅ Export complete!';
+                        DOM.exportStatus.textContent =
+                            `✅ Complete! ${metadata.frames} frames, ${metadata.duration.toFixed(1)}s`;
+                        showToast('✅ Video exported successfully!', 'success');
 
-                // Setup recorder
-                const stream = captureCanvas.captureStream(fps);
-                const recorder = new MediaRecorder(stream, {
-                    mimeType: 'video/webm;codecs=vp9',
-                    videoBitsPerSecond: quality === 'lossless' ? 50000000 :
-                                      quality === 'high' ? 20000000 :
-                                      quality === 'medium' ? 10000000 : 5000000,
-                });
-
-                const chunks = [];
-                recorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) chunks.push(e.data);
-                };
-
-                const exportPromise = new Promise((resolve) => {
-                    recorder.onstop = () => {
-                        const blob = new Blob(chunks, { type: 'video/webm' });
-                        resolve(blob);
-                    };
-                });
-
-                // Start recording
-                recorder.start(1000 / fps);
-
-                // Render frames
-                const totalFrames = Math.ceil(duration * fps);
-                const frameInterval = 1000 / fps;
-
-                let startTime = performance.now();
-                let frameIndex = 0;
-
-                // Pre-render animation
-                const originalPlayState = APP.isPlaying;
-                const originalTime = APP.currentTime;
-
-                while (frameIndex < totalFrames) {
-                    const progress = frameIndex / totalFrames;
-                    DOM.exportProgressFill.style.width = `${(progress * 100)}%`;
-                    DOM.exportProgressText.textContent = `Exporting... ${Math.round(progress * 100)}%`;
-                    DOM.exportStatus.textContent = `Frame ${frameIndex + 1}/${totalFrames}`;
-
-                    // Render frame
-                    ctx.clearRect(0, 0, size, size);
-
-                    // Draw background
-                    const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-                    gradient.addColorStop(0, '#1a1a3e');
-                    gradient.addColorStop(1, '#0a0a1a');
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(0, 0, size, size);
-
-                    if (APP.image) {
-                        const img = APP.image;
-                        const imgAspect = img.width / img.height;
-                        const canvasAspect = size / size;
-                        let drawW, drawH, offsetX, offsetY;
-
-                        if (imgAspect > canvasAspect) {
-                            drawW = size;
-                            drawH = size / imgAspect;
-                            offsetX = 0;
-                            offsetY = (size - drawH) / 2;
-                        } else {
-                            drawH = size;
-                            drawW = size * imgAspect;
-                            offsetX = (size - drawW) / 2;
-                            offsetY = 0;
-                        }
-
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.ellipse(size/2, size/2, size/2 * 0.95, size/2 * 0.95, 0, 0, Math.PI * 2);
-                        ctx.clip();
-                        ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
-
-                        // Animate mouth
-                        const time = (frameIndex / fps);
-                        const audioAmplitude = APP.audioBuffer ? getAudioAmplitudeAtTime(time) : 0.3;
-                        const openness = Math.min(audioAmplitude * 3 * (APP.settings.mouthSensitivity / 5), 1);
-
-                        // Mouth
-                        const faceX = size * 0.35;
-                        const faceY = size * 0.2;
-                        const faceW = size * 0.3;
-                        const faceH = size * 0.35;
-
-                        const mouthX = faceX + faceW * 0.5;
-                        const mouthY = faceY + faceH * 0.7;
-                        const mouthW = faceW * 0.3;
-                        const mouthH = faceH * 0.12 * (1 + openness);
-
-                        ctx.beginPath();
-                        ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
-                        ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
-                        ctx.fill();
-
-                        // Eyes with blink
-                        const blink = Math.sin(frameIndex / 60 * 3) * 0.5 + 0.5;
-                        const blinkAmount = blink > 0.8 ? 0.9 : 0;
-                        const eyeY = faceY + faceH * 0.35;
-                        const eyeW = faceW * 0.12;
-                        const eyeH = faceH * 0.08 * (1 - blinkAmount);
-
-                        [-1, 1].forEach(side => {
-                            const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
-                            ctx.beginPath();
-                            ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                            ctx.fill();
-                            if (eyeH > 2) {
-                                ctx.beginPath();
-                                ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.3, 0, Math.PI * 2);
-                                ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
-                                ctx.fill();
-                            }
-                        });
-
-                        ctx.restore();
+                        DOM.exportBtn.disabled = false;
+                        DOM.exportBtn.textContent = '🎬 Export Video';
+                        DOM.cancelExportBtn.style.display = 'none';
+                        setTimeout(() => DOM.exportProgress.classList.remove('active'), 3000);
+                    },
+                    (error) => {
+                        showToast(`❌ Export error: ${error.message}`, 'error');
+                        DOM.exportStatus.textContent = `❌ Error: ${error.message}`;
+                        DOM.exportBtn.disabled = false;
+                        DOM.exportBtn.textContent = '🎬 Export Video';
+                        DOM.cancelExportBtn.style.display = 'none';
                     }
-
-                    frameIndex++;
-
-                    // Wait for frame interval
-                    const elapsed = performance.now() - startTime;
-                    const targetTime = frameIndex * frameInterval;
-                    if (elapsed < targetTime) {
-                        await new Promise(resolve => setTimeout(resolve, targetTime - elapsed));
-                    }
-                }
-
-                // Stop recording
-                recorder.stop();
-                const blob = await exportPromise;
-
-                // Download
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `talking_face_${Date.now()}.webm`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                DOM.exportProgressFill.style.width = '100%';
-                DOM.exportProgressText.textContent = '✅ Export complete!';
-                DOM.exportStatus.textContent = 'Export complete!';
-
-                showToast('✅ Video exported successfully!', 'success');
-
+                );
             } catch (error) {
                 showToast(`❌ Export error: ${error.message}`, 'error');
                 DOM.exportStatus.textContent = `❌ Error: ${error.message}`;
-            } finally {
-                APP.exportState.isExporting = false;
                 DOM.exportBtn.disabled = false;
                 DOM.exportBtn.textContent = '🎬 Export Video';
                 DOM.cancelExportBtn.style.display = 'none';
-                setTimeout(() => {
-                    DOM.exportProgress.classList.remove('active');
-                }, 3000);
+                DOM.exportProgress.classList.remove('active');
             }
-        });
+        }
+
+        DOM.exportBtn.addEventListener('click', exportVideo);
 
         DOM.cancelExportBtn.addEventListener('click', () => {
-            APP.exportState.isExporting = false;
-            DOM.exportBtn.disabled = false;
-            DOM.exportBtn.textContent = '🎬 Export Video';
-            DOM.exportProgress.classList.remove('active');
-            DOM.cancelExportBtn.style.display = 'none';
-            DOM.exportStatus.textContent = 'Export cancelled';
-            showToast('Export cancelled', 'warning');
+            if (exportEngine) {
+                exportEngine.cancel();
+                showToast('Export cancelled', 'warning');
+                DOM.exportStatus.textContent = 'Export cancelled';
+                DOM.exportBtn.disabled = false;
+                DOM.exportBtn.textContent = '🎬 Export Video';
+                DOM.cancelExportBtn.style.display = 'none';
+                DOM.exportProgress.classList.remove('active');
+            }
         });
-
-        // ============================================================
-        // AUDIO AMPLITUDE
-        // ============================================================
-        function getAudioAmplitudeAtTime(time) {
-            if (!APP.audioBuffer) return 0.3;
-            const sampleRate = APP.audioBuffer.sampleRate;
-            const data = APP.audioBuffer.getChannelData(0);
-            const startIndex = Math.floor(time * sampleRate);
-            const windowSize = Math.min(512, data.length - startIndex);
-
-            if (startIndex < 0 || startIndex >= data.length) return 0.3;
-
-            let sum = 0;
-            for (let i = 0; i < windowSize; i++) {
-                sum += Math.abs(data[startIndex + i] || 0);
-            }
-            return sum / windowSize;
-        }
-
-        // ============================================================
-        // SPECTRUM ANALYZER
-        // ============================================================
-        function drawSpectrum() {
-            const canvas = DOM.spectrumCanvas;
-            const ctx = canvas.getContext('2d');
-            const rect = canvas.parentElement.getBoundingClientRect();
-            const width = rect.width - 32;
-            const height = rect.height - 32;
-
-            canvas.width = width * devicePixelRatio;
-            canvas.height = height * devicePixelRatio;
-            canvas.style.width = width + 'px';
-            canvas.style.height = height + 'px';
-            ctx.scale(devicePixelRatio, devicePixelRatio);
-
-            ctx.clearRect(0, 0, width, height);
-
-            if (!APP.audioBuffer) {
-                ctx.fillStyle = 'rgba(255,255,255,0.1)';
-                ctx.font = '14px sans-serif';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('Upload audio to see spectrum', width/2, height/2);
-                return;
-            }
-
-            const data = APP.audioBuffer.getChannelData(0);
-            const sampleRate = APP.audioBuffer.sampleRate;
-            const fftSize = 1024;
-            const step = Math.floor(data.length / fftSize);
-
-            ctx.beginPath();
-            for (let i = 0; i < fftSize / 2; i++) {
-                const index = Math.floor(i * step);
-                const value = data[index] || 0;
-                const x = (i / (fftSize / 2)) * width;
-                const y = height / 2 + value * height / 2 * -1;
-                if (i === 0) ctx.moveTo(x, height / 2);
-                else ctx.lineTo(x, y);
-            }
-            ctx.strokeStyle = 'rgba(102, 126, 234, 0.8)';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Frequency bars
-            const barCount = 64;
-            const barWidth = width / barCount;
-            for (let i = 0; i < barCount; i++) {
-                const index = Math.floor((i / barCount) * fftSize / 2);
-                const value = data[index] || 0;
-                const barHeight = Math.abs(value) * height * 0.8;
-                const x = i * barWidth;
-                const y = height / 2 - barHeight / 2;
-
-                const hue = 220 + (i / barCount) * 60;
-                ctx.fillStyle = `hsla(${hue}, 80%, 60%, 0.5)`;
-                ctx.fillRect(x, y, barWidth - 1, barHeight);
-            }
-        }
 
         // ============================================================
         // SETTINGS BINDING
@@ -2692,43 +2962,26 @@
                 });
             });
 
-            // Checkboxes
-            DOM.autoPlay.addEventListener('change', () => {
-                APP.settings.autoPlay = DOM.autoPlay.checked;
-            });
-
-            DOM.showDebug.addEventListener('change', () => {
-                APP.settings.showDebug = DOM.showDebug.checked;
-            });
-
+            DOM.autoPlay.addEventListener('change', () => { APP.settings.autoPlay = DOM.autoPlay.checked; });
+            DOM.showDebug.addEventListener('change', () => { APP.settings.showDebug = DOM.showDebug.checked; });
             DOM.reducedMotion.addEventListener('change', () => {
                 APP.settings.reducedMotion = DOM.reducedMotion.checked;
-                if (DOM.reducedMotion.checked) {
-                    document.body.style.setProperty('--transition', 'none');
-                } else {
-                    document.body.style.setProperty('--transition', 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)');
-                }
+                document.body.style.setProperty('--transition', DOM.reducedMotion.checked ? 'none' :
+                    'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)');
             });
-
             DOM.highContrast.addEventListener('change', () => {
                 APP.settings.highContrast = DOM.highContrast.checked;
-                if (DOM.highContrast.checked) {
-                    document.body.classList.add('high-contrast');
-                } else {
-                    document.body.classList.remove('high-contrast');
-                }
+                document.body.classList.toggle('high-contrast', DOM.highContrast.checked);
             });
-
-            // Selects
-            DOM.renderQuality.addEventListener('change', () => {
-                APP.settings.renderQuality = DOM.renderQuality.value;
-            });
-
+            DOM.renderQuality.addEventListener('change', () => { APP.settings.renderQuality = DOM.renderQuality.value; });
             DOM.canvasRes.addEventListener('change', () => {
                 APP.settings.canvasRes = parseInt(DOM.canvasRes.value);
-                setupPreviewCanvas();
+                renderer = null;
+                const canvas = DOM.previewCanvas;
+                const rect = canvas.parentElement.getBoundingClientRect();
+                const size = Math.min(rect.width - 20, rect.height - 80, 800);
+                if (renderer) renderer.initialize(size, size, 'auto');
             });
-
             DOM.languageSelect.addEventListener('change', () => {
                 APP.settings.language = DOM.languageSelect.value;
                 showToast(`Language set to ${DOM.languageSelect.options[DOM.languageSelect.selectedIndex].text}`, 'info');
@@ -2736,100 +2989,110 @@
         }
 
         // ============================================================
+        // DROP ZONES
+        // ============================================================
+        function setupDropZones() {
+            const zones = [
+                { el: DOM.imageDropzone, handler: handleImageFile, input: DOM.imageFileInput },
+                { el: DOM.audioDropzone, handler: handleAudioFile, input: DOM.audioFileInput },
+            ];
+
+            zones.forEach(({ el, handler, input }) => {
+                el.addEventListener('dragover', (e) => { e.preventDefault();
+                    el.style.borderColor = 'var(--gradient-start)'; });
+                el.addEventListener('dragleave', () => { el.style.borderColor = ''; });
+                el.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    el.style.borderColor = '';
+                    const file = e.dataTransfer.files[0];
+                    if (file) handler(file);
+                });
+                input.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) handler(e.target.files[0]);
+                    input.value = '';
+                });
+                el.addEventListener('click', () => input.click());
+            });
+
+            // Main drop zone
+            DOM.dropZone.addEventListener('dragover', (e) => { e.preventDefault();
+                DOM.dropZone.style.borderColor = 'var(--gradient-start)'; });
+            DOM.dropZone.addEventListener('dragleave', () => { DOM.dropZone.style.borderColor = ''; });
+            DOM.dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                DOM.dropZone.style.borderColor = '';
+                const file = e.dataTransfer.files[0];
+                if (file && file.type.startsWith('image/')) handleImageFile(file);
+                else showToast('Please drop an image file', 'warning');
+            });
+            DOM.dropZone.addEventListener('click', () => DOM.imageUpload.click());
+            DOM.imageUpload.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) handleImageFile(e.target.files[0]);
+                e.target.value = '';
+            });
+
+            DOM.removeImageBtn.addEventListener('click', removeImage);
+            DOM.removeAudioBtn.addEventListener('click', removeAudio);
+        }
+
+        // ============================================================
         // KEYBOARD SHORTCUTS
         // ============================================================
         document.addEventListener('keydown', (e) => {
-            // Space: Play/Pause
             if (e.key === ' ' && !e.target.matches('input, textarea, select')) {
                 e.preventDefault();
                 playAudio();
             }
-            // R: Record
             if (e.key === 'r' && !e.target.matches('input, textarea, select')) {
-                if (!DOM.isRecording) {
-                    DOM.startRecordBtn.click();
-                } else {
-                    DOM.stopRecordBtn.click();
-                }
+                if (!DOM.isRecording) DOM.startRecordBtn.click();
+                else DOM.stopRecordBtn.click();
             }
-            // Escape: Close modals
-            if (e.key === 'Escape') {
-                // Close any open modals
-            }
-            // 1-5: Navigate
             if (e.key >= '1' && e.key <= '5') {
-                const index = parseInt(e.key) - 1;
-                if (DOM.navItems[index]) {
-                    DOM.navItems[index].click();
-                }
+                const idx = parseInt(e.key) - 1;
+                if (DOM.navItems[idx]) DOM.navItems[idx].click();
             }
-        });
-
-        // ============================================================
-        // RESIZE HANDLER
-        // ============================================================
-        let resizeTimeout;
-        window.addEventListener('resize', () => {
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                setupPreviewCanvas();
-                if (APP.audioBuffer) {
-                    drawWaveform(APP.audioBuffer);
-                }
-                drawSpectrum();
-            }, 250);
         });
 
         // ============================================================
         // INITIALIZATION
         // ============================================================
         function init() {
-            // Load theme
             loadTheme();
+            bindSettings();
+            setupDropZones();
 
             // Setup canvas
-            setupPreviewCanvas();
+            const canvas = DOM.previewCanvas;
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const size = Math.min(rect.width - 20, rect.height - 80, 800);
+            renderer = new AdvancedRenderer(canvas);
+            renderer.initialize(size, size, 'auto');
 
-            // Bind settings
-            bindSettings();
-
-            // Start animation loop
+            // Start animation
+            APP.fpsCounterUpdate = performance.now();
             animate();
 
-            // Draw spectrum
-            drawSpectrum();
-
-            // Update status
-            DOM.statusDot.className = 'status-dot online';
-            DOM.statusText.textContent = 'Ready';
-
-            // Check for WebGL support
+            // GPU detection
             try {
-                const canvas = document.createElement('canvas');
-                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-                if (gl) {
-                    DOM.gpuStatus.textContent = 'WebGL Active';
-                } else {
-                    DOM.gpuStatus.textContent = 'CPU Only';
-                }
+                const testCanvas = document.createElement('canvas');
+                const gl = testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
+                DOM.gpuStatus.textContent = gl ? 'WebGL Active' : 'CPU Only';
             } catch {
                 DOM.gpuStatus.textContent = 'CPU Only';
             }
 
-            // Check for performance API
-            if (!performance.memory) {
-                DOM.memoryUsage.textContent = 'N/A';
-            }
+            if (!performance.memory) DOM.memoryUsage.textContent = 'N/A';
+
+            DOM.statusDot.className = 'status-dot online';
+            DOM.statusText.textContent = 'Ready';
 
             console.log('🎭 AI Talking Face Pro initialized');
-            console.log(`📐 Canvas: ${APP.settings.canvasRes}x${APP.settings.canvasRes}`);
-            console.log('💡 Press Space to play/pause, R to record');
-            console.log('💡 Press 1-5 to navigate views');
+            console.log('📐 Canvas:', APP.settings.canvasRes + 'x' + APP.settings.canvasRes);
+            console.log('💡 Press Space to play/pause, R to record, 1-5 to navigate');
 
             showToast('🎭 Welcome to AI Talking Face Pro!', 'info', 3000);
         }
 
-        // Run on DOM ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', init);
         } else {
@@ -2837,12 +3100,26 @@
         }
 
         // ============================================================
-        // EXPOSE FOR DEBUGGING
+        // CLEANUP
         // ============================================================
+        window.addEventListener('beforeunload', () => {
+            if (audioVisemeEngine) { audioVisemeEngine.dispose();
+                audioVisemeEngine = null; }
+            if (renderer) { renderer.dispose();
+                renderer = null; }
+            if (exportEngine) { exportEngine.cancel();
+                exportEngine = null; }
+            appMemoryManager.cleanup();
+            if (APP.audioContext) {
+                try { APP.audioContext.close(); } catch (e) {}
+                APP.audioContext = null;
+            }
+        });
+
+        // Expose for debugging
         window.APP = APP;
         window.showToast = showToast;
-        window.playAudio = playAudio;
-        window.pauseAudio = pauseAudio;
+        window.exportVideo = exportVideo;
     </script>
 </body>
 </html>
