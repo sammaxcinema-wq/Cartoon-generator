@@ -3,18 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎭 AI Talking Face Pro - Lip Sync Studio</title>
+    <title>🎭 AI Talking Face Pro - Advanced Lip Sync</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0a0a1a">
-    <meta name="description" content="Browser-based AI lip sync and facial animation studio">
+    <meta name="description" content="Advanced browser-based AI lip sync with physics-based motion">
     <link rel="apple-touch-icon" href="/icons/icon-512.png">
     <style>
         /* ===== RESET & BASE ===== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
             --bg-primary: #0a0a1a;
@@ -40,16 +36,6 @@
             --header-height: 64px;
         }
 
-        [data-theme="dark"] {
-            --bg-primary: #0a0a1a;
-            --bg-secondary: #141428;
-            --bg-card: rgba(20, 20, 40, 0.85);
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0c0;
-            --text-muted: #606080;
-            --border-color: rgba(255, 255, 255, 0.06);
-        }
-
         [data-theme="light"] {
             --bg-primary: #f0f2f5;
             --bg-secondary: #ffffff;
@@ -62,11 +48,7 @@
             --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         }
 
-        html {
-            scroll-behavior: smooth;
-            font-size: 16px;
-        }
-
+        html { scroll-behavior: smooth; font-size: 16px; }
         body {
             font-family: var(--font-family);
             background: var(--bg-primary);
@@ -76,25 +58,11 @@
             transition: var(--transition);
         }
 
-        /* ===== SCROLLBAR ===== */
-        ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            border-radius: 3px;
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-primary); }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); border-radius: 3px; }
 
-        /* ===== APP LAYOUT ===== */
-        #app {
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
+        #app { display: flex; height: 100vh; overflow: hidden; }
 
         /* ===== SIDEBAR ===== */
         .sidebar {
@@ -109,11 +77,7 @@
             z-index: 100;
             overflow: hidden;
         }
-
-        .sidebar.collapsed {
-            width: 64px;
-        }
-
+        .sidebar.collapsed { width: 64px; }
         .sidebar-header {
             padding: 16px 20px;
             display: flex;
@@ -122,7 +86,6 @@
             border-bottom: 1px solid var(--border-color);
             min-height: var(--header-height);
         }
-
         .logo {
             display: flex;
             align-items: center;
@@ -131,18 +94,13 @@
             font-weight: 700;
             white-space: nowrap;
         }
-
-        .logo-icon {
-            font-size: 1.5rem;
-        }
-
+        .logo-icon { font-size: 1.5rem; }
         .logo-text {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
         .sidebar-toggle {
             background: none;
             border: none;
@@ -153,32 +111,18 @@
             border-radius: 8px;
             transition: var(--transition);
         }
-
-        .sidebar-toggle:hover {
-            background: var(--bg-card);
-        }
-
+        .sidebar-toggle:hover { background: var(--bg-card); }
         .sidebar.collapsed .logo-text,
-        .sidebar.collapsed .nav-label {
-            display: none;
-        }
+        .sidebar.collapsed .nav-label { display: none; }
+        .sidebar.collapsed .nav-item { justify-content: center; }
+        .sidebar.collapsed .nav-icon { margin-right: 0; }
 
-        .sidebar.collapsed .nav-item {
-            justify-content: center;
-        }
-
-        .sidebar.collapsed .nav-icon {
-            margin-right: 0;
-        }
-
-        /* ===== NAV MENU ===== */
         .nav-menu {
             list-style: none;
             padding: 12px 8px;
             flex: 1;
             overflow-y: auto;
         }
-
         .nav-item {
             display: flex;
             align-items: center;
@@ -191,48 +135,27 @@
             font-weight: 500;
             margin-bottom: 4px;
         }
-
-        .nav-item:hover {
-            background: var(--bg-card);
-            color: var(--text-primary);
-        }
-
+        .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
         .nav-item.active {
             background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
             color: var(--text-primary);
         }
+        .nav-item.active .nav-icon { color: var(--gradient-start); }
+        .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0; }
+        .nav-label { font-size: 0.9rem; white-space: nowrap; }
 
-        .nav-item.active .nav-icon {
-            color: var(--gradient-start);
-        }
-
-        .nav-icon {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-            flex-shrink: 0;
-        }
-
-        .nav-label {
-            font-size: 0.9rem;
-            white-space: nowrap;
-        }
-
-        /* ===== SIDEBAR FOOTER ===== */
         .sidebar-footer {
             padding: 12px 16px;
             border-top: 1px solid var(--border-color);
             font-size: 0.75rem;
             color: var(--text-muted);
         }
-
         .status-indicator {
             display: flex;
             align-items: center;
             gap: 8px;
             margin-bottom: 4px;
         }
-
         .status-dot {
             width: 8px;
             height: 8px;
@@ -240,32 +163,21 @@
             display: inline-block;
             transition: var(--transition);
         }
-
         .status-dot.online {
             background: var(--success);
             animation: pulse-dot 2s ease-in-out infinite;
         }
-
-        .status-dot.offline {
-            background: var(--error);
-        }
-
+        .status-dot.offline { background: var(--error); }
         .status-dot.loading {
             background: var(--warning);
             animation: pulse-dot 0.8s ease-in-out infinite;
         }
-
         @keyframes pulse-dot {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.5; transform: scale(0.8); }
         }
+        .version-info { font-size: 0.65rem; opacity: 0.5; }
 
-        .version-info {
-            font-size: 0.65rem;
-            opacity: 0.5;
-        }
-
-        /* ===== MAIN CONTENT ===== */
         .main-content {
             flex: 1;
             height: 100vh;
@@ -275,44 +187,22 @@
             transition: var(--transition);
         }
 
-        /* ===== VIEWS ===== */
-        .view {
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .view.active {
-            display: block;
-        }
-
+        .view { display: none; animation: fadeIn 0.3s ease; }
+        .view.active { display: block; }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        .view-header { margin-bottom: 24px; }
+        .view-header h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+        .view-header p { color: var(--text-secondary); font-size: 0.95rem; }
 
-        .view-header {
-            margin-bottom: 24px;
-        }
-
-        .view-header h2 {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .view-header p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        /* ===== STUDIO VIEW ===== */
         .studio-layout {
             display: flex;
             flex-direction: column;
             gap: 16px;
             height: calc(100vh - 120px);
         }
-
         .preview-container {
             flex: 1;
             position: relative;
@@ -322,20 +212,17 @@
             border: 1px solid var(--border-color);
             min-height: 400px;
         }
-
         .preview-wrapper {
             width: 100%;
             height: 100%;
             position: relative;
         }
-
         .preview-canvas {
             width: 100%;
             height: 100%;
             display: block;
             background: #000;
         }
-
         .preview-overlay {
             position: absolute;
             inset: 0;
@@ -345,12 +232,10 @@
             background: rgba(0, 0, 0, 0.5);
             transition: var(--transition);
         }
-
         .preview-overlay.hidden {
             opacity: 0;
             pointer-events: none;
         }
-
         .drop-zone {
             text-align: center;
             padding: 40px;
@@ -361,29 +246,14 @@
             max-width: 400px;
             width: 100%;
         }
-
         .drop-zone:hover {
             border-color: var(--gradient-start);
             background: rgba(102, 126, 234, 0.05);
         }
+        .drop-zone .drop-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
+        .drop-zone h3 { font-size: 1.1rem; margin-bottom: 4px; }
+        .drop-zone p { color: var(--text-muted); font-size: 0.9rem; }
 
-        .drop-zone .drop-icon {
-            font-size: 3rem;
-            display: block;
-            margin-bottom: 12px;
-        }
-
-        .drop-zone h3 {
-            font-size: 1.1rem;
-            margin-bottom: 4px;
-        }
-
-        .drop-zone p {
-            color: var(--text-muted);
-            font-size: 0.9rem;
-        }
-
-        /* ===== PREVIEW CONTROLS ===== */
         .preview-controls {
             position: absolute;
             bottom: 0;
@@ -395,7 +265,6 @@
             align-items: center;
             gap: 12px;
         }
-
         .control-btn {
             background: none;
             border: none;
@@ -406,11 +275,7 @@
             border-radius: 8px;
             transition: var(--transition);
         }
-
-        .control-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
+        .control-btn:hover { background: rgba(255, 255, 255, 0.1); }
         .timeline-slider {
             flex: 1;
             height: 4px;
@@ -420,7 +285,6 @@
             outline: none;
             transition: var(--transition);
         }
-
         .timeline-slider::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 14px;
@@ -430,7 +294,6 @@
             cursor: pointer;
             box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
         }
-
         .time-display {
             font-size: 0.8rem;
             color: rgba(255, 255, 255, 0.7);
@@ -438,7 +301,6 @@
             min-width: 80px;
         }
 
-        /* ===== STATS OVERLAY ===== */
         .stats-overlay {
             position: absolute;
             top: 12px;
@@ -453,33 +315,28 @@
             font-size: 0.7rem;
             font-variant-numeric: tabular-nums;
         }
-
         .stat-item {
             display: flex;
             flex-direction: column;
             align-items: center;
         }
-
         .stat-label {
             color: var(--text-muted);
             font-size: 0.6rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
-
         .stat-value {
             color: var(--text-primary);
             font-weight: 600;
         }
 
-        /* ===== TIMELINE ===== */
         .timeline-container {
             background: var(--bg-secondary);
             border-radius: var(--radius);
             padding: 12px 20px;
             border: 1px solid var(--border-color);
         }
-
         .timeline-waveform {
             height: 60px;
             margin-bottom: 8px;
@@ -487,20 +344,17 @@
             overflow: hidden;
             background: var(--bg-primary);
         }
-
         .timeline-waveform canvas {
             width: 100%;
             height: 100%;
             display: block;
         }
-
         .transport-controls {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
         }
-
         .transport-btn {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
@@ -511,30 +365,22 @@
             font-size: 1rem;
             transition: var(--transition);
         }
-
-        .transport-btn:hover {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-        }
-
+        .transport-btn:hover { background: var(--bg-primary); color: var(--text-primary); }
         .transport-btn.primary {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
             border: none;
             padding: 8px 24px;
         }
-
         .transport-btn.primary:hover {
             transform: scale(1.05);
             box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
         }
-
         .transport-btn.recording {
             background: var(--error);
             color: white;
             animation: pulse-record 1s ease-in-out infinite;
         }
-
         @keyframes pulse-record {
             0%, 100% { opacity: 1; }
             50% { opacity: 0.5; }
@@ -546,12 +392,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-
-        @media (max-width: 768px) {
-            .upload-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 768px) { .upload-grid { grid-template-columns: 1fr; } }
 
         .upload-card {
             background: var(--bg-secondary);
@@ -559,22 +400,14 @@
             padding: 20px;
             border: 1px solid var(--border-color);
         }
-
         .upload-card-header {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 16px;
         }
-
-        .upload-card-icon {
-            font-size: 1.5rem;
-        }
-
-        .upload-card-header h3 {
-            font-size: 1rem;
-            font-weight: 600;
-        }
+        .upload-card-icon { font-size: 1.5rem; }
+        .upload-card-header h3 { font-size: 1rem; font-weight: 600; }
 
         .upload-dropzone {
             border: 2px dashed var(--border-color);
@@ -585,28 +418,13 @@
             transition: var(--transition);
             position: relative;
         }
-
         .upload-dropzone:hover {
             border-color: var(--gradient-start);
             background: rgba(102, 126, 234, 0.03);
         }
-
-        .upload-dropzone .drop-icon {
-            font-size: 2.5rem;
-            display: block;
-            margin-bottom: 8px;
-        }
-
-        .upload-dropzone p {
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-        }
-
-        .upload-dropzone small {
-            color: var(--text-muted);
-            font-size: 0.75rem;
-        }
-
+        .upload-dropzone .drop-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+        .upload-dropzone p { font-size: 0.9rem; color: var(--text-secondary); }
+        .upload-dropzone small { color: var(--text-muted); font-size: 0.75rem; }
         .upload-dropzone input[type="file"] {
             position: absolute;
             inset: 0;
@@ -621,14 +439,12 @@
             overflow: hidden;
             border: 1px solid var(--border-color);
         }
-
         .upload-preview img {
             width: 100%;
             max-height: 200px;
             object-fit: cover;
             display: block;
         }
-
         .upload-preview .remove-btn,
         .audio-info .remove-btn {
             position: absolute;
@@ -647,7 +463,6 @@
             align-items: center;
             justify-content: center;
         }
-
         .upload-preview .remove-btn:hover,
         .audio-info .remove-btn:hover {
             transform: scale(1.1);
@@ -665,36 +480,17 @@
             justify-content: space-between;
             align-items: center;
         }
+        .audio-meta { display: flex; flex-direction: column; }
+        .audio-name { font-weight: 500; font-size: 0.9rem; }
+        .audio-duration { color: var(--text-muted); font-size: 0.8rem; }
+        .upload-status { margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
 
-        .audio-meta {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .audio-name {
-            font-weight: 500;
-            font-size: 0.9rem;
-        }
-
-        .audio-duration {
-            color: var(--text-muted);
-            font-size: 0.8rem;
-        }
-
-        .upload-status {
-            margin-top: 8px;
-            font-size: 0.8rem;
-            color: var(--text-muted);
-        }
-
-        /* ===== RECORD CONTROLS ===== */
         .record-controls {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
             margin-bottom: 12px;
         }
-
         .record-btn {
             padding: 8px 16px;
             border: 1px solid var(--border-color);
@@ -705,28 +501,14 @@
             transition: var(--transition);
             font-size: 0.9rem;
         }
-
-        .record-btn:hover:not(:disabled) {
-            background: var(--bg-card);
-            color: var(--text-primary);
-        }
-
-        .record-btn:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
+        .record-btn:hover:not(:disabled) { background: var(--bg-card); color: var(--text-primary); }
+        .record-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         .record-btn.recording {
             background: var(--error);
             color: white;
             animation: pulse-record 1s ease-in-out infinite;
         }
-
-        .record-status {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
+        .record-status { font-size: 0.85rem; color: var(--text-muted); }
         .waveform-preview {
             margin-top: 8px;
             height: 40px;
@@ -736,11 +518,7 @@
         }
 
         /* ===== AUDIO VIEW ===== */
-        .audio-analysis {
-            display: grid;
-            gap: 16px;
-        }
-
+        .audio-analysis { display: grid; gap: 16px; }
         .spectrum-container {
             background: var(--bg-secondary);
             border-radius: var(--radius);
@@ -748,36 +526,30 @@
             border: 1px solid var(--border-color);
             height: 200px;
         }
-
         .spectrum-container canvas {
             width: 100%;
             height: 100%;
             display: block;
         }
-
         .audio-controls {
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
         }
-
         .phoneme-display {
             background: var(--bg-secondary);
             border-radius: var(--radius);
             padding: 16px 20px;
             border: 1px solid var(--border-color);
         }
-
-        .phoneme-label {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
+        .phoneme-label { color: var(--text-muted); font-size: 0.85rem; }
         .phoneme-values {
             font-weight: 600;
             font-size: 1.1rem;
             margin-left: 8px;
+            transition: var(--transition);
         }
+        .phoneme-values.active { color: var(--gradient-start); }
 
         /* ===== SETTINGS VIEW ===== */
         .settings-grid {
@@ -785,12 +557,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-
-        @media (max-width: 768px) {
-            .settings-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
 
         .settings-group {
             background: var(--bg-secondary);
@@ -798,12 +565,7 @@
             padding: 20px;
             border: 1px solid var(--border-color);
         }
-
-        .settings-group h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
+        .settings-group h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
 
         .setting-row {
             display: flex;
@@ -811,13 +573,11 @@
             gap: 12px;
             margin-bottom: 12px;
         }
-
         .setting-row label {
             min-width: 120px;
             font-size: 0.85rem;
             color: var(--text-secondary);
         }
-
         .setting-row input[type="range"] {
             flex: 1;
             height: 4px;
@@ -826,7 +586,6 @@
             border-radius: 2px;
             outline: none;
         }
-
         .setting-row input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             width: 14px;
@@ -835,14 +594,12 @@
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             cursor: pointer;
         }
-
         .setting-row input[type="checkbox"] {
             width: 18px;
             height: 18px;
             accent-color: var(--gradient-start);
             cursor: pointer;
         }
-
         .setting-row select {
             padding: 4px 8px;
             border-radius: 6px;
@@ -851,7 +608,6 @@
             color: var(--text-primary);
             font-size: 0.85rem;
         }
-
         .setting-value {
             min-width: 40px;
             text-align: right;
@@ -866,12 +622,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-
-        @media (max-width: 768px) {
-            .export-grid {
-                grid-template-columns: 1fr;
-            }
-        }
+        @media (max-width: 768px) { .export-grid { grid-template-columns: 1fr; } }
 
         .export-card {
             background: var(--bg-secondary);
@@ -879,13 +630,7 @@
             padding: 20px;
             border: 1px solid var(--border-color);
         }
-
-        .export-card h3 {
-            font-size: 1rem;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
+        .export-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
         .export-option {
             display: flex;
             justify-content: space-between;
@@ -893,16 +638,8 @@
             padding: 8px 0;
             border-bottom: 1px solid var(--border-color);
         }
-
-        .export-option:last-child {
-            border-bottom: none;
-        }
-
-        .export-option label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
+        .export-option:last-child { border-bottom: none; }
+        .export-option label { font-size: 0.85rem; color: var(--text-secondary); }
         .export-option select,
         .export-option input[type="number"] {
             padding: 4px 8px;
@@ -927,26 +664,17 @@
             transition: var(--transition);
             margin-top: 12px;
         }
-
         .export-btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
         }
-
-        .export-btn:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
+        .export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .export-progress {
             margin-top: 12px;
             display: none;
         }
-
-        .export-progress.active {
-            display: block;
-        }
-
+        .export-progress.active { display: block; }
         .progress-bar {
             width: 100%;
             height: 6px;
@@ -954,14 +682,12 @@
             border-radius: 3px;
             overflow: hidden;
         }
-
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
             transition: width 0.3s ease;
             width: 0%;
         }
-
         .progress-text {
             font-size: 0.8rem;
             color: var(--text-muted);
@@ -969,7 +695,7 @@
             text-align: center;
         }
 
-        /* ===== TOAST NOTIFICATIONS ===== */
+        /* ===== TOAST ===== */
         .toast-container {
             position: fixed;
             bottom: 24px;
@@ -982,7 +708,6 @@
             width: 100%;
             pointer-events: none;
         }
-
         .toast {
             padding: 12px 18px;
             border-radius: 10px;
@@ -998,12 +723,10 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
-
         .toast.success { background: rgba(16, 185, 129, 0.92); }
         .toast.error { background: rgba(239, 68, 68, 0.92); }
         .toast.warning { background: rgba(245, 158, 11, 0.92); }
         .toast.info { background: rgba(102, 126, 234, 0.92); }
-
         .toast .toast-close {
             background: none;
             border: none;
@@ -1013,94 +736,43 @@
             margin-left: auto;
             padding: 0 4px;
         }
-
         @keyframes toastIn {
             from { transform: translateX(100%) scale(0.9); opacity: 0; }
             to { transform: translateX(0) scale(1); opacity: 1; }
         }
-
         @keyframes toastOut {
             from { transform: translateX(0) scale(1); opacity: 1; }
             to { transform: translateX(100%) scale(0.9); opacity: 0; }
         }
-
-        .toast.removing {
-            animation: toastOut 0.3s ease forwards;
-        }
+        .toast.removing { animation: toastOut 0.3s ease forwards; }
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 1024px) {
-            .settings-grid {
-                grid-template-columns: 1fr;
-            }
-            .export-grid {
-                grid-template-columns: 1fr;
-            }
+            .settings-grid { grid-template-columns: 1fr; }
+            .export-grid { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 768px) {
-            .sidebar {
-                width: 64px;
-            }
+            .sidebar { width: 64px; }
             .sidebar .logo-text,
-            .sidebar .nav-label {
-                display: none;
-            }
-            .sidebar .nav-item {
-                justify-content: center;
-            }
-            .sidebar .nav-icon {
-                margin-right: 0;
-            }
-            .sidebar-footer .status-text {
-                display: none;
-            }
-            .main-content {
-                padding: 12px;
-            }
-            .preview-container {
-                min-height: 250px;
-            }
-            .stats-overlay {
-                font-size: 0.6rem;
-                padding: 4px 10px;
-            }
-            .stats-overlay .stat-item {
-                flex-direction: row;
-                gap: 4px;
-            }
-            .upload-grid {
-                grid-template-columns: 1fr;
-            }
-            .studio-layout {
-                height: auto;
-            }
+            .sidebar .nav-label { display: none; }
+            .sidebar .nav-item { justify-content: center; }
+            .sidebar .nav-icon { margin-right: 0; }
+            .sidebar-footer .status-text { display: none; }
+            .main-content { padding: 12px; }
+            .preview-container { min-height: 250px; }
+            .stats-overlay { font-size: 0.6rem; padding: 4px 10px; }
+            .stats-overlay .stat-item { flex-direction: row; gap: 4px; }
+            .upload-grid { grid-template-columns: 1fr; }
+            .studio-layout { height: auto; }
         }
-
         @media (max-width: 480px) {
-            .preview-controls {
-                padding: 8px 12px;
-                flex-wrap: wrap;
-            }
-            .time-display {
-                font-size: 0.7rem;
-                min-width: 60px;
-            }
-            .transport-btn {
-                padding: 6px 12px;
-                font-size: 0.85rem;
-            }
-            .toast-container {
-                left: 16px;
-                right: 16px;
-                max-width: calc(100% - 32px);
-            }
+            .preview-controls { padding: 8px 12px; flex-wrap: wrap; }
+            .time-display { font-size: 0.7rem; min-width: 60px; }
+            .transport-btn { padding: 6px 12px; font-size: 0.85rem; }
+            .toast-container { left: 16px; right: 16px; max-width: calc(100% - 32px); }
         }
 
-        /* ===== UTILITIES ===== */
-        .hidden {
-            display: none !important;
-        }
+        .hidden { display: none !important; }
         .text-center { text-align: center; }
         .mt-8 { margin-top: 8px; }
         .mt-16 { margin-top: 16px; }
@@ -1114,7 +786,6 @@
         .flex-wrap { flex-wrap: wrap; }
         .w-full { width: 100%; }
 
-        /* ===== LOADING ===== */
         .loading-spinner {
             display: inline-block;
             width: 20px;
@@ -1124,77 +795,7 @@
             border-top-color: var(--gradient-start);
             animation: spin 0.8s ease-in-out infinite;
         }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ===== MODAL ===== */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(8px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            padding: 20px;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        .modal {
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            padding: 24px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            animation: modalIn 0.3s ease;
-        }
-
-        @keyframes modalIn {
-            from { transform: scale(0.95) translateY(10px); opacity: 0; }
-            to { transform: scale(1) translateY(0); opacity: 1; }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .modal-header h2 {
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.3rem;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .modal-close:hover {
-            transform: rotate(90deg);
-            color: var(--text-primary);
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-            margin-top: 16px;
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -1358,7 +959,7 @@
             <section id="view-audio" class="view">
                 <div class="view-header">
                     <h2>🎵 Audio Analysis</h2>
-                    <p>Visualize and process your audio</p>
+                    <p>Real-time phoneme detection and spectrum analysis</p>
                 </div>
                 <div class="audio-analysis">
                     <div class="spectrum-container">
@@ -1372,6 +973,9 @@
                     <div class="phoneme-display">
                         <span class="phoneme-label">Visemes:</span>
                         <span class="phoneme-values" id="phonemeValues">—</span>
+                        <span style="margin-left:16px;font-size:0.8rem;color:var(--text-muted);">
+                            Mouth: <span id="mouthOpenDisplay">0%</span>
+                        </span>
                     </div>
                 </div>
             </section>
@@ -1380,7 +984,7 @@
             <section id="view-settings" class="view">
                 <div class="view-header">
                     <h2>⚙️ Settings</h2>
-                    <p>Configure animation and rendering parameters</p>
+                    <p>Configure animation, physics, and rendering parameters</p>
                 </div>
                 <div class="settings-grid">
                     <div class="settings-group">
@@ -1404,6 +1008,30 @@
                             <label for="mouthSensitivity">Mouth Sensitivity</label>
                             <input type="range" id="mouthSensitivity" min="1" max="10" step="1" value="5">
                             <span class="setting-value" id="mouthSensitivityVal">5</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Physics</h3>
+                        <div class="setting-row">
+                            <label for="jawStiffness">Jaw Stiffness</label>
+                            <input type="range" id="jawStiffness" min="50" max="500" step="10" value="250">
+                            <span class="setting-value" id="jawStiffnessVal">250</span>
+                        </div>
+                        <div class="setting-row">
+                            <label for="jawDamping">Jaw Damping</label>
+                            <input type="range" id="jawDamping" min="5" max="60" step="1" value="30">
+                            <span class="setting-value" id="jawDampingVal">30</span>
+                        </div>
+                        <div class="setting-row">
+                            <label for="headStiffness">Head Stiffness</label>
+                            <input type="range" id="headStiffness" min="50" max="400" step="10" value="180">
+                            <span class="setting-value" id="headStiffnessVal">180</span>
+                        </div>
+                        <div class="setting-row">
+                            <label for="eyeStiffness">Eye Stiffness</label>
+                            <input type="range" id="eyeStiffness" min="100" max="600" step="10" value="300">
+                            <span class="setting-value" id="eyeStiffnessVal">300</span>
                         </div>
                     </div>
 
@@ -1456,37 +1084,6 @@
                             <span class="setting-value" id="bgBlurVal">0px</span>
                         </div>
                     </div>
-
-                    <div class="settings-group">
-                        <h3>Appearance</h3>
-                        <div class="setting-row">
-                            <label for="themeSelect">Theme</label>
-                            <select id="themeSelect">
-                                <option value="dark">Dark</option>
-                                <option value="light">Light</option>
-                                <option value="system">System</option>
-                            </select>
-                        </div>
-                        <div class="setting-row">
-                            <label for="languageSelect">Language</label>
-                            <select id="languageSelect">
-                                <option value="en">English</option>
-                                <option value="es">Español</option>
-                                <option value="fr">Français</option>
-                                <option value="de">Deutsch</option>
-                                <option value="zh">中文</option>
-                                <option value="ja">日本語</option>
-                            </select>
-                        </div>
-                        <div class="setting-row">
-                            <label for="reducedMotion">Reduced Motion</label>
-                            <input type="checkbox" id="reducedMotion">
-                        </div>
-                        <div class="setting-row">
-                            <label for="highContrast">High Contrast</label>
-                            <input type="checkbox" id="highContrast">
-                        </div>
-                    </div>
                 </div>
             </section>
 
@@ -1494,7 +1091,7 @@
             <section id="view-export" class="view">
                 <div class="view-header">
                     <h2>💾 Export</h2>
-                    <p>Export your animated video</p>
+                    <p>Export your animated video with advanced encoding</p>
                 </div>
                 <div class="export-grid">
                     <div class="export-card">
@@ -1556,12 +1153,12 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT - Complete Application -->
+    <!-- JAVASCRIPT - Complete Integrated Application -->
     <!-- ============================================================ -->
     <script>
         /**
-         * AI Talking Face Pro - Complete Application
-         * Includes: Audio-Viseme Engine, WebGL Renderer, Advanced Export, Error Boundaries
+         * AI Talking Face Pro - Complete Integrated Application
+         * Includes original functionality + Advanced Motion Pipeline
          */
 
         // ============================================================
@@ -1616,6 +1213,11 @@
                 language: 'en',
                 reducedMotion: false,
                 highContrast: false,
+                // Physics settings
+                jawStiffness: 250,
+                jawDamping: 30,
+                headStiffness: 180,
+                eyeStiffness: 300,
             },
             stats: {
                 fps: 60,
@@ -1625,7 +1227,8 @@
             exportState: {
                 isExporting: false,
                 progress: 0,
-            }
+            },
+            motionState: null,
         };
 
         // ============================================================
@@ -1653,6 +1256,7 @@
             waveformCanvas: $('#waveformCanvas'),
             spectrumCanvas: $('#spectrumCanvas'),
             phonemeValues: $('#phonemeValues'),
+            mouthOpenDisplay: $('#mouthOpenDisplay'),
             fpsCounter: $('#fpsCounter'),
             memoryUsage: $('#memoryUsage'),
             gpuStatus: $('#gpuStatus'),
@@ -1698,6 +1302,15 @@
             languageSelect: $('#languageSelect'),
             reducedMotion: $('#reducedMotion'),
             highContrast: $('#highContrast'),
+            // Physics settings
+            jawStiffness: $('#jawStiffness'),
+            jawStiffnessVal: $('#jawStiffnessVal'),
+            jawDamping: $('#jawDamping'),
+            jawDampingVal: $('#jawDampingVal'),
+            headStiffness: $('#headStiffness'),
+            headStiffnessVal: $('#headStiffnessVal'),
+            eyeStiffness: $('#eyeStiffness'),
+            eyeStiffnessVal: $('#eyeStiffnessVal'),
             exportQuality: $('#exportQuality'),
             exportFps: $('#exportFps'),
             exportResolution: $('#exportResolution'),
@@ -1729,9 +1342,7 @@
             setTheme(saved);
         }
 
-        DOM.themeSelect.addEventListener('change', () => {
-            setTheme(DOM.themeSelect.value);
-        });
+        DOM.themeSelect.addEventListener('change', () => { setTheme(DOM.themeSelect.value); });
 
         // ============================================================
         // NAVIGATION
@@ -1762,237 +1373,526 @@
         }
 
         // ============================================================
-        // ERROR BOUNDARY
+        // ADVANCED MOTION PIPELINE
         // ============================================================
-        class ErrorBoundary {
-            constructor(options = {}) {
-                this.options = { maxRetries: 3, retryDelay: 1000, ...options };
-                this.errorCount = 0;
-                this.errorHistory = [];
+
+        /**
+         * Mass-Spring-Damper Physics Engine
+         */
+        class MassSpringDamper {
+            constructor() {
+                this.state = { position: 0, velocity: 0, acceleration: 0, target: 0, mass: 1.0, stiffness: 200.0,
+                    damping: 25.0 };
             }
 
-            async wrap(fn, context = {}) {
-                let attempts = 0;
-                while (attempts <= this.options.maxRetries) {
-                    try {
-                        const result = await fn();
-                        this.errorCount = 0;
-                        return result;
-                    } catch (error) {
-                        attempts++;
-                        this.errorCount++;
-                        this.errorHistory.push({ timestamp: Date.now(), error: error.message });
-                        console.warn(`Error (attempt ${attempts}):`, error);
-                        if (showToast) {
-                            showToast(`⚠️ Error: ${error.message}`, 'error', 3000);
-                        }
-                        if (attempts > this.options.maxRetries) {
-                            throw new Error(`Failed after ${attempts} attempts: ${error.message}`);
-                        }
-                        await new Promise(r => setTimeout(r, this.options.retryDelay * attempts));
-                    }
+            solve(deltaTime, target, mass = null, stiffness = null, damping = null) {
+                const m = mass || this.state.mass;
+                const k = stiffness || this.state.stiffness;
+                const c = damping || this.state.damping;
+
+                const x = this.state.position - target;
+                const springForce = -k * x;
+                const dampingForce = -c * this.state.velocity;
+                const acceleration = (springForce + dampingForce) / m;
+
+                this.state.velocity += acceleration * deltaTime;
+                this.state.position += this.state.velocity * deltaTime;
+
+                if (Math.abs(this.state.velocity) > 10.0) {
+                    this.state.velocity = Math.sign(this.state.velocity) * 10.0;
                 }
-            }
-        }
 
-        const appErrorBoundary = new ErrorBoundary();
-
-        // ============================================================
-        // MEMORY MANAGER
-        // ============================================================
-        class MemoryManager {
-            constructor() {
-                this.objectURLs = [];
-                this.mediaStreams = [];
-                this.audioNodes = [];
-            }
-
-            trackURL(url) {
-                if (url && url.startsWith('blob:')) this.objectURLs.push(url);
-                return url;
-            }
-
-            trackStream(stream) {
-                if (stream && stream.getTracks) this.mediaStreams.push(stream);
-                return stream;
-            }
-
-            trackAudioNode(node) {
-                if (node && node.disconnect) this.audioNodes.push(node);
-                return node;
-            }
-
-            cleanup() {
-                for (const url of this.objectURLs) try { URL.revokeObjectURL(url); } catch (e) {}
-                this.objectURLs = [];
-                for (const stream of this.mediaStreams) try { stream.getTracks().forEach(t => t.stop()); } catch (e) {}
-                this.mediaStreams = [];
-                for (const node of this.audioNodes) try { node.disconnect(); } catch (e) {}
-                this.audioNodes = [];
-            }
-        }
-
-        const appMemoryManager = new MemoryManager();
-
-        // ============================================================
-        // AUDIO-VISEME ENGINE
-        // ============================================================
-        class AudioVisemeEngine {
-            constructor() {
-                this.analyser = null;
-                this.dataArray = null;
-                this.frequencyData = null;
-                this.visemeHistory = [];
-                this.smoothViseme = 'Rest';
-                this.initialized = false;
-
-                this.visemeBands = {
-                    'A': { low: 500, high: 1200, weight: 1.2 },
-                    'E': { low: 300, high: 600, weight: 1.0 },
-                    'I': { low: 2000, high: 4000, weight: 1.1 },
-                    'O': { low: 400, high: 900, weight: 0.9 },
-                    'U': { low: 200, high: 500, weight: 0.8 },
-                    'M': { low: 80, high: 250, weight: 1.3 },
-                    'F': { low: 4000, high: 8000, weight: 0.7 },
-                    'S': { low: 3000, high: 7000, weight: 0.6 },
-                    'Rest': { low: 0, high: 100, weight: 0.5 }
-                };
-
-                this.visemeOpenness = {
-                    'A': 0.95, 'E': 0.75, 'I': 0.60, 'O': 0.70,
-                    'U': 0.40, 'M': 0.15, 'F': 0.30, 'S': 0.25, 'Rest': 0.10
+                return {
+                    position: this.state.position,
+                    velocity: this.state.velocity,
+                    acceleration: acceleration,
+                    target: target,
                 };
             }
 
-            initialize(audioContext, audioBuffer, fftSize = 2048) {
-                if (!audioContext || !audioBuffer) throw new Error('Audio context and buffer required');
+            solveCriticallyDamped(deltaTime, target, dampingRatio = 1.0) {
+                const omega = Math.sqrt(this.state.stiffness / this.state.mass);
+                const c_crit = 2 * dampingRatio * omega * this.state.mass;
 
-                const source = audioContext.createBufferSource();
-                source.buffer = audioBuffer;
+                const m = this.state.mass;
+                const k = this.state.stiffness;
+                const c_actual = c_crit * dampingRatio;
 
-                this.analyser = audioContext.createAnalyser();
-                this.analyser.fftSize = fftSize;
-                this.analyser.smoothingTimeConstant = 0.8;
+                const x = this.state.position - target;
+                const v = this.state.velocity;
+                const gamma = c_actual / (2 * m);
+                const omega_d = Math.sqrt(Math.max(0, k / m - gamma * gamma));
 
-                source.connect(this.analyser);
-                this.analyser.connect(audioContext.destination);
-
-                this.frequencyData = new Float32Array(this.analyser.frequencyBinCount);
-                this.dataArray = new Uint8Array(this.analyser.frequencyBinCount);
-                this.sourceNode = source;
-                this.audioContext = audioContext;
-                this.initialized = true;
-                this.sampleRate = audioContext.sampleRate;
-
-                source.start(0);
-                return this;
-            }
-
-            analyze(gain = 1.0, sensitivity = 1.0, smoothing = 0.3) {
-                if (!this.initialized || !this.analyser) {
-                    return { viseme: 'Rest', openness: 0.1, confidence: 0, amplitude: 0 };
+                if (omega_d > 0) {
+                    const amplitude = Math.sqrt(x * x + ((v + gamma * x) / omega_d) ** 2);
+                    const phase = Math.atan2(v + gamma * x, x * omega_d);
+                    const newPos = amplitude * Math.exp(-gamma * deltaTime) *
+                        Math.cos(omega_d * deltaTime + phase);
+                    const newVel = -amplitude * Math.exp(-gamma * deltaTime) *
+                        (gamma * Math.cos(omega_d * deltaTime + phase) +
+                            omega_d * Math.sin(omega_d * deltaTime + phase));
+                    this.state.position = target + newPos;
+                    this.state.velocity = newVel;
+                } else {
+                    this.solve(deltaTime, target, m, k, c_actual);
                 }
 
-                try {
-                    this.analyser.getFloatFrequencyData(this.frequencyData);
-                    const binCount = this.frequencyData.length;
-                    let sum = 0;
-                    for (let i = 0; i < binCount; i++) sum += this.frequencyData[i];
-                    const avgAmplitude = sum / binCount;
-                    const normalizedAmplitude = Math.max(0, Math.min(1,
-                        (avgAmplitude + 100) / 100 * gain * sensitivity * 0.5
-                    ));
-
-                    const bandEnergies = {};
-                    const nyquist = this.sampleRate / 2;
-
-                    for (const [viseme, band] of Object.entries(this.visemeBands)) {
-                        const lowBin = Math.floor((band.low / nyquist) * binCount);
-                        const highBin = Math.min(Math.floor((band.high / nyquist) * binCount), binCount - 1);
-                        let bandSum = 0, count = 0;
-                        for (let i = lowBin; i <= highBin && i < binCount; i++) {
-                            const val = this.frequencyData[i];
-                            if (val > -100) {
-                                bandSum += Math.pow(10, val / 20);
-                                count++;
-                            }
-                        }
-                        bandEnergies[viseme] = count > 0 ? bandSum / count : 0;
-                    }
-
-                    let bestViseme = 'Rest';
-                    let bestScore = -Infinity;
-                    let totalScore = 0;
-
-                    for (const [viseme, energy] of Object.entries(bandEnergies)) {
-                        const band = this.visemeBands[viseme];
-                        const amplitudeFactor = 1 + (normalizedAmplitude * 0.5);
-                        const score = energy * (band.weight || 1) * amplitudeFactor;
-                        const opennessMatch = 1 - Math.abs(normalizedAmplitude - this.visemeOpenness[viseme]);
-                        const finalScore = score * (0.7 + 0.3 * opennessMatch);
-                        totalScore += finalScore;
-                        if (finalScore > bestScore) { bestScore = finalScore;
-                            bestViseme = viseme; }
-                    }
-
-                    this.visemeHistory.push(bestViseme);
-                    if (this.visemeHistory.length > 5) this.visemeHistory.shift();
-
-                    const freqMap = {};
-                    for (const v of this.visemeHistory) freqMap[v] = (freqMap[v] || 0) + 1;
-                    let smoothedViseme = bestViseme;
-                    let maxFreq = 0;
-                    for (const [viseme, count] of Object.entries(freqMap)) {
-                        if (count > maxFreq) { maxFreq = count;
-                            smoothedViseme = viseme; }
-                    }
-
-                    const blendFactor = smoothing || 0.3;
-                    if (this.smoothViseme !== smoothedViseme) {
-                        this.transitionViseme = this.smoothViseme;
-                        this.transitionProgress = 0;
-                        this.smoothViseme = smoothedViseme;
-                    }
-
-                    const confidence = Math.min(1, bestScore / (totalScore / Object.keys(bandEnergies).length + 0.001));
-                    const openness = this.visemeOpenness[this.smoothViseme] || 0.1;
-                    const finalAmplitude = Math.min(1, normalizedAmplitude * gain * (sensitivity / 5));
-
-                    return {
-                        viseme: this.smoothViseme,
-                        openness: openness + (finalAmplitude * 0.1),
-                        confidence: confidence,
-                        amplitude: finalAmplitude,
-                        rawViseme: bestViseme,
-                        bandEnergies: bandEnergies
-                    };
-                } catch (error) {
-                    return { viseme: 'Rest', openness: 0.1, confidence: 0, amplitude: 0 };
-                }
+                return { position: this.state.position, velocity: this.state.velocity };
             }
 
-            dispose() {
-                if (this.sourceNode) { try { this.sourceNode.stop();
-                        this.sourceNode.disconnect(); } catch (e) {} }
-                if (this.analyser) { try { this.analyser.disconnect(); } catch (e) {} }
-                this.initialized = false;
-                this.analyser = null;
-                this.sourceNode = null;
-                this.frequencyData = null;
+            reset(pos = 0, vel = 0) {
+                this.state.position = pos;
+                this.state.velocity = vel;
+                this.state.acceleration = 0;
             }
         }
 
-        let audioVisemeEngine = null;
+        /**
+         * Psychoacoustic Transient Detector
+         */
+        class TransientDetector {
+            constructor() {
+                this.history = [];
+                this.threshold = 0.25;
+                this.attackTime = 0.01;
+                this.releaseTime = 0.05;
+                this.envelope = 0;
+                this.transients = [];
+                this.phonemeMap = {
+                    'A': { mouthOpen: 0.95, lipRound: 0.2, jawDrop: 0.8 },
+                    'E': { mouthOpen: 0.75, lipRound: 0.3, jawDrop: 0.5 },
+                    'I': { mouthOpen: 0.60, lipRound: 0.1, jawDrop: 0.3 },
+                    'O': { mouthOpen: 0.70, lipRound: 0.9, jawDrop: 0.6 },
+                    'U': { mouthOpen: 0.40, lipRound: 0.8, jawDrop: 0.2 },
+                    'M': { mouthOpen: 0.15, lipRound: 0.5, jawDrop: 0.1 },
+                    'F': { mouthOpen: 0.30, lipRound: 0.0, jawDrop: 0.1 },
+                    'S': { mouthOpen: 0.25, lipRound: 0.0, jawDrop: 0.0 },
+                    'Rest': { mouthOpen: 0.10, lipRound: 0.0, jawDrop: 0.0 },
+                };
+            }
+
+            process(signal, sampleRate) {
+                const windowSize = 256;
+                const result = { amplitude: 0, transients: [], predictedPhonemes: [], envelope: 0 };
+
+                let rms = 0;
+                const data = signal.getChannelData(0);
+                const length = data.length;
+
+                for (let i = 0; i < Math.min(windowSize, length); i++) {
+                    rms += data[i] * data[i];
+                }
+                rms = Math.sqrt(rms / Math.min(windowSize, length));
+
+                if (rms > this.envelope) {
+                    this.envelope += (rms - this.envelope) / (this.attackTime * sampleRate);
+                } else {
+                    this.envelope += (rms - this.envelope) / (this.releaseTime * sampleRate);
+                }
+
+                result.envelope = this.envelope;
+
+                const diff = this.envelope - (this.history[this.history.length - 1] || 0);
+                if (diff > this.threshold) {
+                    result.transients.push({
+                        time: this.history.length / sampleRate,
+                        amplitude: this.envelope,
+                        type: diff > 0.8 ? 'PLOSIVE' : diff > 0.5 ? 'SIBILANT' : 'FRICATIVE',
+                    });
+                }
+
+                // Predict phoneme
+                let bestPhoneme = 'Rest';
+                let bestScore = 0;
+                for (const [phoneme, params] of Object.entries(this.phonemeMap)) {
+                    const score = this.envelope * (params.mouthOpen + 0.5) * (1 + params.jawDrop);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestPhoneme = phoneme;
+                    }
+                }
+
+                result.predictedPhonemes = [{
+                    phoneme: bestPhoneme,
+                    confidence: Math.min(1, bestScore * 2),
+                    params: this.phonemeMap[bestPhoneme] || this.phonemeMap['Rest'],
+                }];
+
+                this.history.push(this.envelope);
+                if (this.history.length > sampleRate * 0.1) this.history.shift();
+
+                return result;
+            }
+        }
+
+        /**
+         * Saccadic Eye Movement Engine
+         */
+        class SaccadeEngine {
+            constructor() {
+                this.currentGaze = { x: 0, y: 0 };
+                this.targetGaze = { x: 0, y: 0 };
+                this.saccadeTimer = 0;
+                this.blinkTimer = 0;
+                this.isBlinking = false;
+                this.blinkPhase = 0;
+                this.maxGazeAngle = 0.15;
+                this.saccadeVelocity = 8.0;
+                this.blinkInterval = { min: 2.5, max: 6.0 };
+                this.blinkDuration = 0.12;
+                this.microSaccades = [];
+            }
+
+            generateSaccade() {
+                const amplitude = (0.3 + Math.random() * 0.7) * this.maxGazeAngle;
+                const angle = Math.random() * Math.PI * 2;
+                return { x: Math.cos(angle) * amplitude, y: Math.sin(angle) * amplitude,
+                    velocity: this.saccadeVelocity * (0.7 + Math.random() * 0.6),
+                    duration: 0.3 + Math.random() * 1.2 };
+            }
+
+            update(deltaTime, audioFocus = 0) {
+                this.saccadeTimer -= deltaTime;
+                this.blinkTimer -= deltaTime;
+
+                if (this.saccadeTimer <= 0) {
+                    const target = this.generateSaccade();
+                    this.targetGaze.x = target.x;
+                    this.targetGaze.y = target.y;
+                    this.saccadeTimer = target.duration;
+                    this.currentSaccadeVelocity = target.velocity;
+                }
+
+                const speed = deltaTime * (this.currentSaccadeVelocity || 8.0);
+                this.currentGaze.x += (this.targetGaze.x - this.currentGaze.x) * Math.min(1, speed * deltaTime);
+                this.currentGaze.y += (this.targetGaze.y - this.currentGaze.y) * Math.min(1, speed * deltaTime);
+
+                if (audioFocus > 0.3) {
+                    const focus = audioFocus * 0.05;
+                    this.targetGaze.x += focus * (0.5 - Math.random());
+                    this.targetGaze.y += focus * (0.5 - Math.random());
+                }
+
+                if (this.blinkTimer <= 0 && !this.isBlinking) {
+                    this.isBlinking = true;
+                    this.blinkPhase = 0;
+                    this.blinkTimer = this.blinkInterval.min + Math.random() * (this.blinkInterval.max - this.blinkInterval
+                        .min);
+                }
+
+                if (this.isBlinking) {
+                    this.blinkPhase += deltaTime / this.blinkDuration;
+                    if (this.blinkPhase >= 1) {
+                        this.isBlinking = false;
+                        this.blinkPhase = 0;
+                    }
+                }
+
+                let blinkIntensity = 0;
+                if (this.isBlinking) {
+                    if (this.blinkPhase < 0.3) {
+                        blinkIntensity = this.blinkPhase / 0.3;
+                    } else {
+                        blinkIntensity = 1 - (this.blinkPhase - 0.3) / 0.7;
+                    }
+                    blinkIntensity = Math.max(0, Math.min(1, blinkIntensity));
+                }
+
+                return {
+                    gazeX: this.currentGaze.x,
+                    gazeY: this.currentGaze.y,
+                    blinkIntensity: blinkIntensity,
+                    isBlinking: this.isBlinking,
+                };
+            }
+        }
+
+        /**
+         * Life Simulation (Breathing, Micro-Expressions)
+         */
+        class LifeSimulation {
+            constructor() {
+                this.breathPhase = 0;
+                this.breathRate = 0.25;
+                this.idleMotion = { x: 0, y: 0 };
+                this.microExpressions = [];
+                this.expressionTimer = 0;
+            }
+
+            update(deltaTime, isSpeaking = false) {
+                const rate = isSpeaking ? this.breathRate * 1.3 : this.breathRate;
+                this.breathPhase += deltaTime * rate * Math.PI * 2;
+
+                const breath = Math.sin(this.breathPhase);
+                const breathAmplitude = isSpeaking ? 0.008 : 0.004;
+                const breathOffset = breath * breathAmplitude;
+
+                const time = performance.now() / 1000;
+                const idleX = Math.sin(time * 0.2) * 0.002 + Math.sin(time * 0.37) * 0.001;
+                const idleY = Math.cos(time * 0.23) * 0.002 + Math.sin(time * 0.41) * 0.001;
+
+                this.idleMotion.x = idleX;
+                this.idleMotion.y = idleY + breathOffset;
+
+                this.expressionTimer -= deltaTime;
+                if (this.expressionTimer <= 0) {
+                    this.generateMicroExpression();
+                    this.expressionTimer = 2 + Math.random() * 4;
+                }
+
+                let expression = { brow: 0, smile: 0, squint: 0 };
+                for (let i = this.microExpressions.length - 1; i >= 0; i--) {
+                    const expr = this.microExpressions[i];
+                    expr.time -= deltaTime;
+                    if (expr.time <= 0) { this.microExpressions.splice(i, 1); continue; }
+                    const progress = 1 - (expr.time / expr.duration);
+                    const intensity = Math.sin(progress * Math.PI) * expr.amplitude;
+                    expression.brow += intensity * expr.brow;
+                    expression.smile += intensity * expr.smile;
+                    expression.squint += intensity * expr.squint;
+                }
+
+                return {
+                    breathOffset: breathOffset,
+                    idleMotionX: idleX,
+                    idleMotionY: idleY,
+                    breathPhase: this.breathPhase,
+                    microExpressions: expression,
+                    isSpeaking: isSpeaking,
+                };
+            }
+
+            generateMicroExpression() {
+                const types = [
+                    { brow: 0.8, smile: 0.0, squint: 0.0, amplitude: 0.3 },
+                    { brow: -0.6, smile: 0.0, squint: 0.0, amplitude: 0.2 },
+                    { brow: 0.0, smile: 0.7, squint: 0.3, amplitude: 0.25 },
+                    { brow: 0.0, smile: 0.0, squint: 0.8, amplitude: 0.2 },
+                    { brow: -0.3, smile: 0.4, squint: 0.0, amplitude: 0.15 },
+                ];
+                const type = types[Math.floor(Math.random() * types.length)];
+                this.microExpressions.push({ ...type, duration: 0.5 + Math.random() * 0.8, time: 0.5 + Math.random() * 0.8 });
+            }
+        }
+
+        /**
+         * Complete Motion Pipeline
+         */
+        class MotionPipeline {
+            constructor() {
+                this.jawSpring = new MassSpringDamper();
+                this.jawSpring.state.stiffness = 250.0;
+                this.jawSpring.state.damping = 30.0;
+
+                this.headSpring = new MassSpringDamper();
+                this.headSpring.state.stiffness = 180.0;
+                this.headSpring.state.damping = 22.0;
+
+                this.eyeSpring = new MassSpringDamper();
+                this.eyeSpring.state.stiffness = 300.0;
+                this.eyeSpring.state.damping = 35.0;
+
+                this.transientDetector = new TransientDetector();
+                this.saccadeEngine = new SaccadeEngine();
+                this.lifeSim = new LifeSimulation();
+
+                this.currentState = {
+                    mouthOpen: 0.1,
+                    jawDrop: 0.0,
+                    lipRound: 0.0,
+                    gazeX: 0,
+                    gazeY: 0,
+                    blink: 0,
+                    headX: 0,
+                    headY: 0,
+                    headZ: 0,
+                    breathOffset: 0,
+                    microExpressions: { brow: 0, smile: 0, squint: 0 },
+                    phoneme: 'Rest',
+                    transient: null,
+                };
+                this.targetState = { ...this.currentState };
+            }
+
+            processAudio(audioData, deltaTime) {
+                if (!audioData) return { mouthOpen: 0.1, jawDrop: 0, lipRound: 0, phoneme: 'Rest', envelope: 0,
+                    transients: [] };
+
+                const transients = this.transientDetector.process(audioData, 44100);
+                let targetMouthOpen = 0.1;
+                let targetJawDrop = 0.0;
+                let targetLipRound = 0.0;
+                let currentPhoneme = 'Rest';
+
+                if (transients.predictedPhonemes.length > 0) {
+                    const best = transients.predictedPhonemes[0];
+                    currentPhoneme = best.phoneme;
+                    targetMouthOpen = best.params.mouthOpen * 0.9 + 0.1;
+                    targetJawDrop = best.params.jawDrop * 0.7;
+                    targetLipRound = best.params.lipRound * 0.8;
+                }
+
+                for (const t of transients.transients) {
+                    if (t.type === 'PLOSIVE') {
+                        targetMouthOpen = Math.min(1, targetMouthOpen + 0.3);
+                        targetJawDrop = Math.min(1, targetJawDrop + 0.2);
+                    } else if (t.type === 'SIBILANT') {
+                        targetLipRound = Math.min(1, targetLipRound + 0.4);
+                    }
+                }
+
+                this.targetState.mouthOpen = targetMouthOpen;
+                this.targetState.jawDrop = targetJawDrop;
+                this.targetState.lipRound = targetLipRound;
+                this.targetState.phoneme = currentPhoneme;
+                this.targetState.transient = transients.transients[0] || null;
+
+                const audioEnergy = transients.envelope;
+                this.targetState.headX = (audioEnergy - 0.5) * 0.02;
+                this.targetState.headY = (audioEnergy - 0.5) * 0.015;
+
+                return {
+                    mouthOpen: targetMouthOpen,
+                    jawDrop: targetJawDrop,
+                    lipRound: targetLipRound,
+                    phoneme: currentPhoneme,
+                    envelope: transients.envelope,
+                    transients: transients.transients,
+                };
+            }
+
+            updatePhysics(deltaTime) {
+                const jawResult = this.jawSpring.solveCriticallyDamped(deltaTime, this.targetState.jawDrop, 1.0);
+                const mouthResult = this.jawSpring.solveCriticallyDamped(deltaTime, this.targetState.mouthOpen, 0.9);
+                const headXResult = this.headSpring.solveCriticallyDamped(deltaTime, this.targetState.headX, 0.8);
+                const headYResult = this.headSpring.solveCriticallyDamped(deltaTime, this.targetState.headY, 0.8);
+                const eyeResult = this.eyeSpring.solveCriticallyDamped(deltaTime, 0, 1.2);
+
+                this.currentState.jawDrop = jawResult.position;
+                this.currentState.mouthOpen = mouthResult.position;
+                this.currentState.headX = headXResult.position;
+                this.currentState.headY = headYResult.position;
+
+                return {
+                    jawDrop: this.currentState.jawDrop,
+                    mouthOpen: this.currentState.mouthOpen,
+                    headX: this.currentState.headX,
+                    headY: this.currentState.headY,
+                };
+            }
+
+            updateEyes(deltaTime, audioFocus = 0) {
+                const saccade = this.saccadeEngine.update(deltaTime, audioFocus);
+                this.currentState.gazeX = saccade.gazeX;
+                this.currentState.gazeY = saccade.gazeY;
+                this.currentState.blink = saccade.blinkIntensity;
+                return saccade;
+            }
+
+            updateLife(deltaTime, isSpeaking = false) {
+                const life = this.lifeSim.update(deltaTime, isSpeaking);
+                this.currentState.breathOffset = life.breathOffset;
+                this.currentState.microExpressions = life.microExpressions;
+                this.currentState.idleMotionX = life.idleMotionX;
+                this.currentState.idleMotionY = life.idleMotionY;
+                return life;
+            }
+
+            updateFrame(audioData, deltaTime, isSpeaking = false) {
+                const audioResult = this.processAudio(audioData, deltaTime);
+                const physics = this.updatePhysics(deltaTime);
+                const eyes = this.updateEyes(deltaTime, audioResult.envelope);
+                const life = this.updateLife(deltaTime, isSpeaking);
+
+                // Apply physics stiffness from settings
+                this.jawSpring.state.stiffness = APP.settings.jawStiffness || 250;
+                this.jawSpring.state.damping = APP.settings.jawDamping || 30;
+                this.headSpring.state.stiffness = APP.settings.headStiffness || 180;
+
+                const frameData = {
+                    ...this.currentState,
+                    ...physics,
+                    ...eyes,
+                    ...life,
+                    audioEnvelope: audioResult.envelope,
+                    phoneme: audioResult.phoneme,
+                    transients: audioResult.transients,
+                    timestamp: performance.now(),
+                };
+
+                this.currentState = frameData;
+                APP.motionState = frameData;
+
+                return {
+                    frame: frameData,
+                    audioResult: audioResult,
+                    physics: physics,
+                    eyes: eyes,
+                    life: life,
+                    deltaTime: deltaTime,
+                };
+            }
+
+            getRenderState() {
+                return {
+                    mouthOpen: this.currentState.mouthOpen,
+                    jawDrop: this.currentState.jawDrop,
+                    lipRound: this.currentState.lipRound,
+                    gazeX: this.currentState.gazeX,
+                    gazeY: this.currentState.gazeY,
+                    blink: this.currentState.blink,
+                    headX: this.currentState.headX,
+                    headY: this.currentState.headY,
+                    headZ: this.currentState.headZ || 0,
+                    breathOffset: this.currentState.breathOffset,
+                    idleMotionX: this.currentState.idleMotionX || 0,
+                    idleMotionY: this.currentState.idleMotionY || 0,
+                    microExpressions: this.currentState.microExpressions,
+                    phoneme: this.currentState.phoneme,
+                    timestamp: performance.now(),
+                };
+            }
+
+            reset() {
+                this.jawSpring.reset(0, 0);
+                this.headSpring.reset(0, 0);
+                this.eyeSpring.reset(0, 0);
+                this.saccadeEngine.blinkTimer = 0;
+                this.saccadeEngine.saccadeTimer = 0;
+                this.lifeSim.breathPhase = 0;
+                this.currentState = {
+                    mouthOpen: 0.1,
+                    jawDrop: 0.0,
+                    lipRound: 0.0,
+                    gazeX: 0,
+                    gazeY: 0,
+                    blink: 0,
+                    headX: 0,
+                    headY: 0,
+                    headZ: 0,
+                    breathOffset: 0,
+                    microExpressions: { brow: 0, smile: 0, squint: 0 },
+                    phoneme: 'Rest',
+                    transient: null,
+                    idleMotionX: 0,
+                    idleMotionY: 0,
+                };
+                this.targetState = { ...this.currentState };
+            }
+        }
+
+        // Initialize motion pipeline
+        const motionPipeline = new MotionPipeline();
 
         // ============================================================
-        // ADVANCED RENDERER
+        // RENDERER
         // ============================================================
+        let renderer = null;
+
         class AdvancedRenderer {
             constructor(canvas) {
                 this.canvas = canvas;
                 this.ctx = null;
-                this.gl = null;
-                this.useWebGL = false;
                 this.transform = { scale: 1, rotation: 0, translationX: 0, translationY: 0 };
                 this.animationState = {
                     mouthOpenness: 0.2,
@@ -2000,164 +1900,39 @@
                     blinkAmount: 0,
                     headTilt: 0,
                     headSway: 0,
-                    breathing: 0
+                    breathing: 0,
                 };
+                this.microSmile = 0;
+                this.microBrow = 0;
             }
 
-            initialize(width, height, mode = 'auto') {
+            initialize(width, height) {
                 this.canvas.width = width * devicePixelRatio;
                 this.canvas.height = height * devicePixelRatio;
                 this.canvas.style.width = width + 'px';
                 this.canvas.style.height = height + 'px';
-
-                if (mode === 'auto' || mode === 'webgl') {
-                    try {
-                        this.gl = this.canvas.getContext('webgl2', { alpha: true, antialias: true,
-                                premultipliedAlpha: false, powerPreference: 'high-performance' }) ||
-                            this.canvas.getContext('webgl', { alpha: true, antialias: true,
-                                premultipliedAlpha: false, powerPreference: 'high-performance' });
-                        if (this.gl) {
-                            this.useWebGL = true;
-                            this.setupWebGL();
-                            return;
-                        }
-                    } catch (e) {}
-                }
-
-                this.useWebGL = false;
-                this.ctx = this.canvas.getContext('2d', { alpha: false, desynchronized: true,
-                    willReadFrequently: false });
-            }
-
-            setupWebGL() {
-                const gl = this.gl;
-                if (!gl) return;
-
-                const vs = gl.createShader(gl.VERTEX_SHADER);
-                gl.shaderSource(vs, `
-                    attribute vec2 a_position;
-                    attribute vec2 a_texcoord;
-                    uniform mat3 u_transform;
-                    varying vec2 v_texcoord;
-                    void main() {
-                        vec3 pos = u_transform * vec3(a_position, 1.0);
-                        gl_Position = vec4(pos.xy, 0.0, 1.0);
-                        v_texcoord = a_texcoord;
-                    }
-                `);
-                gl.compileShader(vs);
-
-                const fs = gl.createShader(gl.FRAGMENT_SHADER);
-                gl.shaderSource(fs, `
-                    precision highp float;
-                    uniform sampler2D u_texture;
-                    uniform vec4 u_color;
-                    varying vec2 v_texcoord;
-                    void main() {
-                        vec4 color = texture2D(u_texture, v_texcoord);
-                        gl_FragColor = color * u_color;
-                    }
-                `);
-                gl.compileShader(fs);
-
-                this.program = gl.createProgram();
-                gl.attachShader(this.program, vs);
-                gl.attachShader(this.program, fs);
-                gl.linkProgram(this.program);
-
-                this.positionLocation = gl.getAttribLocation(this.program, 'a_position');
-                this.texcoordLocation = gl.getAttribLocation(this.program, 'a_texcoord');
-                this.transformLocation = gl.getUniformLocation(this.program, 'u_transform');
-                this.textureLocation = gl.getUniformLocation(this.program, 'u_texture');
-                this.colorLocation = gl.getUniformLocation(this.program, 'u_color');
-
-                this.vertexBuffer = gl.createBuffer();
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-                const vertices = new Float32Array([
-                    -1, -1, 0, 1,
-                    1, -1, 1, 1,
-                    -1, 1, 0, 0,
-                    1, 1, 1, 0,
-                ]);
-                gl.bufferData(gl.ARRAY_BUFFER, vertices, gl.STATIC_DRAW);
-
-                this.texture = gl.createTexture();
-                gl.bindTexture(gl.TEXTURE_2D, this.texture);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-                gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-
-                this.offscreenCanvas = document.createElement('canvas');
-                this.offscreenCtx = this.offscreenCanvas.getContext('2d', { willReadFrequently: true });
+                this.ctx = this.canvas.getContext('2d', {
+                    alpha: false,
+                    desynchronized: true,
+                    willReadFrequently: false
+                });
+                this.width = width;
+                this.height = height;
             }
 
             uploadTexture(image) {
-                const gl = this.gl;
-                if (!gl) return;
-                const canvas = this.offscreenCanvas;
-                const ctx = this.offscreenCtx;
-                canvas.width = image.width;
-                canvas.height = image.height;
-                ctx.drawImage(image, 0, 0);
-                gl.bindTexture(gl.TEXTURE_2D, this.texture);
-                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
                 this.imageTexture = image;
             }
 
             render() {
-                if (this.useWebGL && this.gl) {
-                    this.renderWebGL();
-                } else {
-                    this.renderCanvas2D();
-                }
-            }
-
-            renderWebGL() {
-                const gl = this.gl;
-                if (!gl) return;
-                const w = this.canvas.width,
-                    h = this.canvas.height;
-                gl.viewport(0, 0, w, h);
-                gl.clearColor(0.04, 0.04, 0.1, 1);
-                gl.clear(gl.COLOR_BUFFER_BIT);
-                gl.useProgram(this.program);
-
-                const scale = this.transform.scale || 1;
-                const rotation = this.transform.rotation || 0;
-                const tx = this.transform.translationX || 0;
-                const ty = this.transform.translationY || 0;
-                const cos = Math.cos(rotation),
-                    sin = Math.sin(rotation);
-                const matrix = new Float32Array([
-                    cos * scale, -sin * scale, tx,
-                    sin * scale, cos * scale, ty,
-                    0, 0, 1
-                ]);
-                gl.uniformMatrix3fv(this.transformLocation, false, matrix);
-
-                if (this.imageTexture) {
-                    gl.uniform4f(this.colorLocation, 1, 1, 1, 1);
-                    gl.bindTexture(gl.TEXTURE_2D, this.texture);
-                } else {
-                    gl.uniform4f(this.colorLocation, 0.3, 0.3, 0.6, 1);
-                }
-
-                gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-                gl.enableVertexAttribArray(this.positionLocation);
-                gl.vertexAttribPointer(this.positionLocation, 2, gl.FLOAT, false, 16, 0);
-                gl.enableVertexAttribArray(this.texcoordLocation);
-                gl.vertexAttribPointer(this.texcoordLocation, 2, gl.FLOAT, false, 16, 8);
-                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
-            }
-
-            renderCanvas2D() {
                 const ctx = this.ctx;
                 if (!ctx) return;
-                const w = this.canvas.width,
-                    h = this.canvas.height;
+                const w = this.canvas.width;
+                const h = this.canvas.height;
+
                 ctx.clearRect(0, 0, w, h);
 
+                // Background gradient
                 const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
                 gradient.addColorStop(0, '#1a1a3e');
                 gradient.addColorStop(1, '#0a0a1a');
@@ -2187,64 +1962,137 @@
                     }
                     ctx.imageSmoothingEnabled = true;
                     ctx.imageSmoothingQuality = 'high';
+
+                    // Apply head motion from pipeline
+                    const headX = APP.motionState?.headX || 0;
+                    const headY = APP.motionState?.headY || 0;
+                    const breath = APP.motionState?.breathOffset || 0;
+                    const idleX = APP.motionState?.idleMotionX || 0;
+                    const idleY = APP.motionState?.idleMotionY || 0;
+
+                    ctx.save();
+                    ctx.translate(ox + drawW / 2 + headX * drawW * 0.3, oy + drawH / 2 + headY * drawH * 0.3 + breath *
+                        drawH);
+                    ctx.rotate(headX * 0.02 + idleX * 0.5);
+                    ctx.translate(-drawW / 2 - ox, -drawH / 2 - oy);
+
+                    // Clip to circular mask
+                    ctx.beginPath();
+                    ctx.ellipse(w / 2, h / 2, w / 2 * 0.95, h / 2 * 0.95, 0, 0, Math.PI * 2);
+                    ctx.clip();
+
                     ctx.drawImage(img, ox, oy, drawW, drawH);
+
+                    // Face overlay with motion pipeline data
                     this.renderFaceOverlay(ctx, w, h, drawW, drawH, ox, oy);
+
+                    ctx.restore();
                 }
                 ctx.restore();
+
+                // Debug overlay
+                if (APP.settings.showDebug) {
+                    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                    ctx.fillRect(10, 10, 220, 120);
+                    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                    ctx.font = '12px monospace';
+                    ctx.textAlign = 'left';
+                    ctx.textBaseline = 'top';
+                    const state = APP.motionState || {};
+                    ctx.fillText(`FPS: ${APP.stats.fps}`, 20, 20);
+                    ctx.fillText(`Phoneme: ${state.phoneme || '—'}`, 20, 40);
+                    ctx.fillText(`Mouth: ${(state.mouthOpen || 0).toFixed(2)}`, 20, 60);
+                    ctx.fillText(`Blink: ${(state.blink || 0).toFixed(2)}`, 20, 80);
+                    ctx.fillText(`Jaw: ${(state.jawDrop || 0).toFixed(2)}`, 20, 100);
+                }
             }
 
             renderFaceOverlay(ctx, w, h, drawW, drawH, ox, oy) {
-                const state = this.animationState;
-                const faceX = ox + drawW * 0.35;
-                const faceY = oy + drawH * 0.2;
+                const state = APP.motionState || {};
+                const mouthOpen = state.mouthOpen || 0.2;
+                const jawDrop = state.jawDrop || 0;
+                const blink = state.blink || 0;
+                const gazeX = state.gazeX || 0;
+                const gazeY = state.gazeY || 0;
+                const smile = this.microSmile || 0;
+
+                const faceX = ox + drawW * 0.35 + gazeX * drawW * 0.1;
+                const faceY = oy + drawH * 0.2 + gazeY * drawH * 0.1;
                 const faceW = drawW * 0.3;
                 const faceH = drawH * 0.35;
-                const openness = state.targetOpenness || 0.2;
-                const blinkAmount = state.blinkAmount || 0;
 
-                // Mouth
+                // Mouth with jaw drop
                 const mouthX = faceX + faceW * 0.5;
-                const mouthY = faceY + faceH * 0.7;
-                const mouthW = faceW * 0.3;
-                const mouthH = faceH * 0.12 * (1 + openness * 2);
+                const mouthY = faceY + faceH * 0.7 + jawDrop * faceH * 0.1;
+                const mouthW = faceW * 0.3 * (1 + smile * 0.2);
+                const mouthH = faceH * 0.12 * (1 + mouthOpen * 2);
 
                 ctx.save();
                 ctx.shadowColor = 'rgba(200, 80, 80, 0.2)';
                 ctx.shadowBlur = 10;
+
+                // Mouth outer
                 ctx.beginPath();
                 ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
                 ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
                 ctx.fill();
 
-                if (openness > 0.3) {
+                // Mouth inner
+                if (mouthOpen > 0.3) {
                     const innerH = mouthH * 0.6;
                     ctx.beginPath();
                     ctx.ellipse(mouthX, mouthY + mouthH * 0.1, mouthW * 0.6, innerH, 0, 0, Math.PI * 2);
-                    ctx.fillStyle = `rgba(140, 40, 40, ${0.3 + openness * 0.4})`;
+                    ctx.fillStyle = `rgba(140, 40, 40, ${0.3 + mouthOpen * 0.4})`;
                     ctx.fill();
                 }
+
+                // Lip corners for smile
+                if (smile > 0.05) {
+                    ctx.strokeStyle = 'rgba(200, 80, 80, 0.3)';
+                    ctx.lineWidth = 2;
+                    const cornerOffset = smile * 0.05;
+                    ctx.beginPath();
+                    ctx.moveTo(mouthX - mouthW * 0.8, mouthY - cornerOffset * faceH);
+                    ctx.quadraticCurveTo(mouthX, mouthY - mouthH * 0.5, mouthX + mouthW * 0.8, mouthY - cornerOffset *
+                    faceH);
+                    ctx.stroke();
+                }
+
                 ctx.restore();
 
-                // Eyes
-                const eyeY = faceY + faceH * 0.35;
+                // Eyes with gaze and blink
+                const eyeY = faceY + faceH * 0.35 + gazeY * faceH * 0.05;
                 const eyeW = faceW * 0.12;
-                const eyeH = faceH * 0.08 * (1 - blinkAmount);
+                const eyeH = faceH * 0.08 * (1 - blink * 0.9);
 
                 [-1, 1].forEach(side => {
-                    const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
+                    const eyeX = faceX + faceW * 0.5 + side * (faceW * 0.25 + gazeX * faceW * 0.05);
+
                     ctx.save();
                     ctx.shadowColor = 'rgba(255, 255, 255, 0.1)';
                     ctx.shadowBlur = 5;
+
                     ctx.beginPath();
                     ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
                     ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
                     ctx.fill();
+
                     if (eyeH > 2) {
+                        // Iris with gaze
+                        const irisX = eyeX + side * eyeW * 0.3 + gazeX * eyeW * 0.5;
+                        const irisY = eyeY + gazeY * eyeH * 0.5;
                         ctx.beginPath();
-                        ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.4, 0, Math.PI * 2);
+                        ctx.arc(irisX, irisY, eyeW * 0.4, 0, Math.PI * 2);
                         ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
                         ctx.fill();
+
+                        // Pupil
+                        ctx.beginPath();
+                        ctx.arc(irisX + side * eyeW * 0.05, irisY + eyeH * 0.1, eyeW * 0.15, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(10, 10, 30, 0.9)';
+                        ctx.fill();
                     }
+
                     ctx.restore();
                 });
             }
@@ -2263,319 +2111,63 @@
             }
 
             dispose() {
-                if (this.gl) {
-                    const gl = this.gl;
-                    if (this.program) gl.deleteProgram(this.program);
-                    if (this.vertexBuffer) gl.deleteBuffer(this.vertexBuffer);
-                    if (this.texture) gl.deleteTexture(this.texture);
-                    this.gl = null;
-                }
-                if (this.offscreenCanvas) {
-                    this.offscreenCanvas.width = 0;
-                    this.offscreenCanvas.height = 0;
-                }
+                this.ctx = null;
+                this.imageTexture = null;
             }
         }
-
-        let renderer = null;
-
-        // ============================================================
-        // VIDEO EXPORT ENGINE
-        // ============================================================
-        class VideoExportEngine {
-            constructor(canvas, audioBuffer, audioContext) {
-                this.canvas = canvas;
-                this.audioBuffer = audioBuffer;
-                this.audioContext = audioContext;
-                this.config = { fps: 30, quality: 'medium', resolution: 1080, format: 'webm', codec: 'vp9' };
-                this.state = { isExporting: false, progress: 0, cancelled: false, framesRendered: 0, totalFrames: 0 };
-                this.supportedCodecs = this.detectCodecs();
-            }
-
-            detectCodecs() {
-                const codecs = {
-                    vp9: 'video/webm;codecs=vp9,opus',
-                    vp8: 'video/webm;codecs=vp8,opus',
-                    h264: 'video/mp4;codecs=avc1.42E01E,mp4a.40.2'
-                };
-                const supported = {};
-                for (const [name, mime] of Object.entries(codecs)) {
-                    try { supported[name] = MediaRecorder.isTypeSupported(mime); } catch (e) { supported[name] = false; }
-                }
-                if (supported.vp9) supported.preferred = 'vp9';
-                else if (supported.vp8) supported.preferred = 'vp8';
-                else if (supported.h264) supported.preferred = 'h264';
-                return supported;
-            }
-
-            getMimeType(codec) {
-                const map = {
-                    'vp9': 'video/webm;codecs=vp9,opus',
-                    'vp8': 'video/webm;codecs=vp8,opus',
-                    'h264': 'video/mp4;codecs=avc1.42E01E,mp4a.40.2'
-                };
-                return map[codec] || 'video/webm';
-            }
-
-            async export(config = {}, onProgress, onComplete, onError) {
-                try {
-                    if (this.state.isExporting) throw new Error('Export already in progress');
-                    this.config = { ...this.config, ...config };
-                    this.state.isExporting = true;
-                    this.state.cancelled = false;
-                    this.state.progress = 0;
-
-                    const codec = this.supportedCodecs.preferred || 'vp9';
-                    const mimeType = this.getMimeType(codec);
-                    if (!MediaRecorder.isTypeSupported(mimeType)) {
-                        throw new Error(`Codec ${codec} not supported.`);
-                    }
-
-                    const fps = this.config.fps || 30;
-                    const resolution = this.config.resolution || 1080;
-                    const quality = this.config.quality || 'medium';
-                    const bitrateMap = { 'low': 2000000, 'medium': 5000000, 'high': 10000000, 'lossless': 50000000 };
-                    const videoBitrate = bitrateMap[quality] || 5000000;
-
-                    const captureCanvas = document.createElement('canvas');
-                    captureCanvas.width = resolution;
-                    captureCanvas.height = resolution;
-                    const ctx = captureCanvas.getContext('2d', { alpha: false, desynchronized: true,
-                        willReadFrequently: false });
-
-                    const stream = captureCanvas.captureStream(fps);
-                    const recorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: videoBitrate });
-
-                    const chunks = [];
-                    recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-
-                    const exportPromise = new Promise((resolve, reject) => {
-                        recorder.onstop = () => resolve(new Blob(chunks, { type: mimeType }));
-                        recorder.onerror = (event) => reject(new Error('Recorder error: ' + (event.error || 'Unknown')));
-                    });
-
-                    const totalFrames = Math.ceil((this.audioBuffer ? this.audioBuffer.duration : 5) * fps);
-                    this.state.totalFrames = totalFrames;
-                    const frameInterval = 1000 / fps;
-
-                    recorder.start(frameInterval);
-                    let frameIndex = 0;
-                    let startTime = performance.now();
-                    let droppedFrames = 0;
-
-                    while (frameIndex < totalFrames && !this.state.cancelled) {
-                        const progress = frameIndex / totalFrames;
-                        this.state.progress = progress;
-                        this.state.framesRendered = frameIndex;
-                        if (onProgress && frameIndex % Math.floor(fps / 2) === 0) onProgress(progress);
-
-                        await this.renderFrame(ctx, captureCanvas, frameIndex, totalFrames, fps);
-                        frameIndex++;
-
-                        const elapsed = performance.now() - startTime;
-                        const targetTime = frameIndex * frameInterval;
-                        const drift = elapsed - targetTime;
-                        if (drift > frameInterval * 2) droppedFrames++;
-                        else if (elapsed < targetTime) {
-                            await new Promise(r => setTimeout(r, targetTime - elapsed));
-                        }
-                        this.state.progress = Math.min(1, frameIndex / totalFrames);
-                    }
-
-                    if (this.state.cancelled) {
-                        recorder.stop();
-                        chunks.length = 0;
-                        throw new Error('Export cancelled');
-                    }
-
-                    recorder.stop();
-                    const blob = await exportPromise;
-                    this.state.isExporting = false;
-                    this.state.progress = 1;
-                    stream.getTracks().forEach(t => t.stop());
-
-                    if (onComplete) {
-                        onComplete(blob, {
-                            frames: frameIndex,
-                            droppedFrames: droppedFrames,
-                            totalFrames: totalFrames,
-                            duration: totalFrames / fps,
-                            codec: codec,
-                            resolution: resolution,
-                            fps: fps
-                        });
-                    }
-                    return blob;
-                } catch (error) {
-                    this.state.isExporting = false;
-                    this.state.progress = 0;
-                    if (onError) onError(error);
-                    else throw error;
-                }
-            }
-
-            async renderFrame(ctx, canvas, frameIndex, totalFrames, fps) {
-                const w = canvas.width,
-                    h = canvas.height;
-                const time = frameIndex / fps;
-                ctx.clearRect(0, 0, w, h);
-
-                const gradient = ctx.createRadialGradient(w / 2, h / 2, 0, w / 2, h / 2, w / 2);
-                gradient.addColorStop(0, '#1a1a3e');
-                gradient.addColorStop(1, '#0a0a1a');
-                ctx.fillStyle = gradient;
-                ctx.fillRect(0, 0, w, h);
-
-                if (APP.image) {
-                    const img = APP.image;
-                    const aspect = img.width / img.height;
-                    let drawW, drawH, ox, oy;
-                    if (aspect > 1) { drawW = w * 0.9;
-                        drawH = drawW / aspect;
-                        ox = (w - drawW) / 2;
-                        oy = (h - drawH) / 2; } else { drawH = h * 0.9;
-                        drawW = drawH * aspect;
-                        ox = (w - drawW) / 2;
-                        oy = (h - drawH) / 2; }
-
-                    ctx.save();
-                    const headSway = Math.sin(time * 0.3) * 0.005;
-                    const headTilt = Math.sin(time * 0.5) * 0.003;
-                    ctx.translate(w / 2, h / 2);
-                    ctx.rotate(headTilt);
-                    ctx.translate(-w / 2, -h / 2);
-                    ctx.beginPath();
-                    ctx.ellipse(w / 2, h / 2, w / 2 * 0.95, h / 2 * 0.95, 0, 0, Math.PI * 2);
-                    ctx.clip();
-                    ctx.drawImage(img, ox + headSway * drawW, oy, drawW, drawH);
-
-                    const amplitude = this.getAudioAmplitudeAtTime(time);
-                    const openness = Math.min(1, amplitude * 3 * (APP.settings?.mouthSensitivity || 5) / 5);
-                    const faceX = ox + drawW * 0.35;
-                    const faceY = oy + drawH * 0.2;
-                    const faceW = drawW * 0.3;
-                    const faceH = drawH * 0.35;
-                    const mouthX = faceX + faceW * 0.5;
-                    const mouthY = faceY + faceH * 0.7;
-                    const mouthW = faceW * 0.3;
-                    const mouthH = faceH * 0.12 * (1 + openness * 2);
-
-                    ctx.beginPath();
-                    ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
-                    ctx.fill();
-                    if (openness > 0.3) {
-                        const innerH = mouthH * 0.6;
-                        ctx.beginPath();
-                        ctx.ellipse(mouthX, mouthY + mouthH * 0.1, mouthW * 0.6, innerH, 0, 0, Math.PI * 2);
-                        ctx.fillStyle = `rgba(140, 40, 40, ${0.3 + openness * 0.4})`;
-                        ctx.fill();
-                    }
-
-                    const blinkAmount = this.getBlinkAtTime(time);
-                    const eyeY = faceY + faceH * 0.35;
-                    const eyeW = faceW * 0.12;
-                    const eyeH = faceH * 0.08 * (1 - blinkAmount);
-                    [-1, 1].forEach(side => {
-                        const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
-                        ctx.beginPath();
-                        ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
-                        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                        ctx.fill();
-                        if (eyeH > 2) {
-                            ctx.beginPath();
-                            ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.4, 0, Math.PI * 2);
-                            ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
-                            ctx.fill();
-                        }
-                    });
-                    ctx.restore();
-                }
-            }
-
-            getAudioAmplitudeAtTime(time) {
-                if (!this.audioBuffer) return 0.3;
-                const data = this.audioBuffer.getChannelData(0);
-                const sampleRate = this.audioBuffer.sampleRate;
-                const startIndex = Math.floor(time * sampleRate);
-                const windowSize = Math.min(512, data.length - startIndex);
-                if (startIndex < 0 || startIndex >= data.length) return 0.3;
-                let sum = 0;
-                for (let i = 0; i < windowSize; i++) sum += Math.abs(data[startIndex + i] || 0);
-                return sum / windowSize;
-            }
-
-            getBlinkAtTime(time) {
-                const blinkInterval = 4,
-                    blinkDuration = 0.15;
-                const cycle = time % blinkInterval;
-                if (cycle < blinkDuration) return Math.sin((cycle / blinkDuration) * Math.PI) * 0.9;
-                return 0;
-            }
-
-            cancel() { this.state.cancelled = true;
-                this.state.isExporting = false; return true; }
-        }
-
-        let exportEngine = null;
 
         // ============================================================
         // CORE FUNCTIONS
         // ============================================================
-        function getMouthOpenness() {
-            if (APP.audioBuffer && APP.audioContext) {
-                if (!audioVisemeEngine) {
-                    audioVisemeEngine = new AudioVisemeEngine();
-                    try {
-                        audioVisemeEngine.initialize(APP.audioContext, APP.audioBuffer);
-                    } catch (error) {
-                        console.warn('Viseme engine init failed:', error);
-                        return 0.2;
-                    }
-                }
-                const result = audioVisemeEngine.analyze(
-                    APP.settings.audioGain / 100,
-                    APP.settings.mouthSensitivity / 5,
-                    0.4
-                );
-                if (result.viseme) {
-                    APP.currentViseme = result.viseme;
-                    DOM.phonemeValues.textContent = result.viseme;
-                }
-                const baseOpenness = result.openness;
-                const variation = 0.05 * Math.sin(performance.now() / 300);
-                return Math.min(1, Math.max(0.05, baseOpenness + variation));
-            }
-            return 0.2 + 0.1 * Math.sin(performance.now() / 500);
-        }
-
-        function getBlinkAmount() {
-            const freq = APP.settings.blinkFreq / 100;
-            const time = performance.now() / 1000;
-            const blinkInterval = 4 / (1 + freq * 2);
-            const blinkDuration = 0.15;
-            const cycle = time % blinkInterval;
-            if (cycle < blinkDuration) {
-                return Math.sin((cycle / blinkDuration) * Math.PI) * 0.9;
-            }
-            return 0;
-        }
-
         function renderFrame() {
             if (!renderer) {
                 const canvas = DOM.previewCanvas;
                 renderer = new AdvancedRenderer(canvas);
                 const rect = canvas.parentElement.getBoundingClientRect();
                 const size = Math.min(rect.width - 20, rect.height - 80, 800);
-                renderer.initialize(size, size, 'auto');
+                renderer.initialize(size, size);
                 if (APP.image) renderer.uploadTexture(APP.image);
             }
 
-            const openness = getMouthOpenness();
-            const blinkAmount = getBlinkAmount();
-            renderer.updateAnimation({ targetOpenness: openness, blinkAmount: blinkAmount });
+            // Update motion pipeline if audio is playing
+            if (APP.isPlaying && APP.audioBuffer) {
+                const deltaTime = 1 / 60;
+                const isSpeaking = true;
+                const result = motionPipeline.updateFrame(APP.audioBuffer, deltaTime, isSpeaking);
+
+                // Update renderer
+                const state = motionPipeline.getRenderState();
+                renderer.updateAnimation({
+                    targetOpenness: state.mouthOpen,
+                    blinkAmount: state.blink,
+                    headTilt: state.headX * 0.5,
+                    headSway: state.headY * 0.5,
+                });
+                renderer.microSmile = state.microExpressions?.smile || 0;
+                renderer.microBrow = state.microExpressions?.brow || 0;
+
+                // Update UI
+                DOM.phonemeValues.textContent = state.phoneme || '—';
+                DOM.phonemeValues.className = 'phoneme-values active';
+                DOM.mouthOpenDisplay.textContent = `${Math.round(state.mouthOpen * 100)}%`;
+            } else {
+                // Idle animation
+                const deltaTime = 1 / 60;
+                const idleResult = motionPipeline.updateFrame(null, deltaTime, false);
+                const state = motionPipeline.getRenderState();
+                renderer.updateAnimation({
+                    targetOpenness: 0.1 + 0.05 * Math.sin(performance.now() / 500),
+                    blinkAmount: state.blink,
+                    headTilt: 0,
+                    headSway: 0,
+                });
+                DOM.phonemeValues.textContent = '—';
+                DOM.phonemeValues.className = 'phoneme-values';
+            }
+
             renderer.render();
 
+            // Update stats
             APP.frameCount++;
             const now = performance.now();
             if (now - APP.fpsCounterUpdate > 1000) {
@@ -2661,10 +2253,8 @@
                 updatePreviewOverlay();
                 showToast(`✅ Audio loaded: ${file.name}`, 'success');
 
-                if (audioVisemeEngine) {
-                    audioVisemeEngine.dispose();
-                    audioVisemeEngine = null;
-                }
+                // Reset motion pipeline for new audio
+                motionPipeline.reset();
             } catch (error) {
                 showToast(`❌ Error loading audio: ${error.message}`, 'error');
                 APP.audioBuffer = null;
@@ -2689,8 +2279,7 @@
             DOM.audioDropzone.style.display = '';
             DOM.audioStatus.textContent = 'No audio uploaded';
             DOM.audioStatus.style.color = '';
-            if (audioVisemeEngine) { audioVisemeEngine.dispose();
-                audioVisemeEngine = null; }
+            motionPipeline.reset();
             updatePreviewOverlay();
         }
 
@@ -2743,6 +2332,53 @@
             ctx.fillStyle = 'rgba(102, 126, 234, 0.15)';
             ctx.fill();
         }
+
+        // ============================================================
+        // PLAYBACK
+        // ============================================================
+        let audioSource = null;
+        let audioStartTime = 0;
+        let audioPauseTime = 0;
+
+        function playAudio() {
+            if (!APP.audioBuffer || !APP.audioContext) return;
+            if (APP.isPlaying) { pauseAudio(); return; }
+
+            const source = APP.audioContext.createBufferSource();
+            source.buffer = APP.audioBuffer;
+            source.connect(APP.audioContext.destination);
+            source.start(0, audioPauseTime);
+            audioSource = source;
+            APP.isPlaying = true;
+            audioStartTime = APP.audioContext.currentTime - audioPauseTime;
+
+            DOM.playBtn.textContent = '⏸';
+            DOM.playPauseBtn.textContent = '⏸';
+
+            source.onended = () => {
+                APP.isPlaying = false;
+                audioPauseTime = 0;
+                DOM.playBtn.textContent = '▶';
+                DOM.playPauseBtn.textContent = '▶';
+                motionPipeline.reset();
+            };
+
+            if (!APP.animationId) animate();
+        }
+
+        function pauseAudio() {
+            if (audioSource) {
+                audioPauseTime = APP.audioContext.currentTime - audioStartTime;
+                audioSource.stop();
+                audioSource = null;
+            }
+            APP.isPlaying = false;
+            DOM.playBtn.textContent = '▶';
+            DOM.playPauseBtn.textContent = '▶';
+        }
+
+        DOM.playBtn.addEventListener('click', playAudio);
+        DOM.playPauseBtn.addEventListener('click', playAudio);
 
         // ============================================================
         // RECORDING
@@ -2806,71 +2442,14 @@
         });
 
         // ============================================================
-        // PLAYBACK
-        // ============================================================
-        let audioSource = null;
-        let audioStartTime = 0;
-        let audioPauseTime = 0;
-
-        function playAudio() {
-            if (!APP.audioBuffer || !APP.audioContext) return;
-            if (APP.isPlaying) { pauseAudio(); return; }
-
-            const source = APP.audioContext.createBufferSource();
-            source.buffer = APP.audioBuffer;
-            source.connect(APP.audioContext.destination);
-            source.start(0, audioPauseTime);
-            audioSource = source;
-            APP.isPlaying = true;
-            audioStartTime = APP.audioContext.currentTime - audioPauseTime;
-
-            DOM.playBtn.textContent = '⏸';
-            DOM.playPauseBtn.textContent = '⏸';
-
-            source.onended = () => {
-                APP.isPlaying = false;
-                audioPauseTime = 0;
-                DOM.playBtn.textContent = '▶';
-                DOM.playPauseBtn.textContent = '▶';
-            };
-
-            if (!APP.animationId) animate();
-        }
-
-        function pauseAudio() {
-            if (audioSource) {
-                audioPauseTime = APP.audioContext.currentTime - audioStartTime;
-                audioSource.stop();
-                audioSource = null;
-            }
-            APP.isPlaying = false;
-            DOM.playBtn.textContent = '▶';
-            DOM.playPauseBtn.textContent = '▶';
-        }
-
-        DOM.playBtn.addEventListener('click', playAudio);
-        DOM.playPauseBtn.addEventListener('click', playAudio);
-
-        // ============================================================
         // EXPORT
         // ============================================================
-        async function exportVideo() {
+        DOM.exportBtn.addEventListener('click', async () => {
             if (APP.exportState.isExporting) return;
             if (!APP.image) { showToast('Please upload an image first', 'warning'); return; }
             if (!APP.audioBuffer) { showToast('Please upload audio first', 'warning'); return; }
 
-            if (!exportEngine) {
-                exportEngine = new VideoExportEngine(DOM.previewCanvas, APP.audioBuffer, APP.audioContext);
-            }
-
-            exportEngine.config = {
-                fps: parseInt(DOM.exportFps.value || 30),
-                quality: DOM.exportQuality.value || 'medium',
-                resolution: parseInt(DOM.exportResolution.value || 1080),
-                format: DOM.exportFormat.value || 'webm',
-                codec: 'vp9'
-            };
-
+            APP.exportState.isExporting = true;
             DOM.exportBtn.disabled = true;
             DOM.exportBtn.textContent = '⏳ Exporting...';
             DOM.exportProgress.classList.add('active');
@@ -2878,67 +2457,186 @@
             DOM.exportStatus.textContent = 'Initializing export...';
 
             try {
-                const blob = await exportEngine.export(
-                    exportEngine.config,
-                    (progress) => {
-                        const pct = Math.round(progress * 100);
-                        DOM.exportProgressFill.style.width = `${pct}%`;
-                        DOM.exportProgressText.textContent = `Exporting... ${pct}%`;
-                        DOM.exportStatus.textContent =
-                            `Frame ${exportEngine.state.framesRendered}/${exportEngine.state.totalFrames}`;
-                    },
-                    (blob, metadata) => {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `talking_face_${Date.now()}.${exportEngine.config.format}`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        setTimeout(() => URL.revokeObjectURL(url), 10000);
+                const fps = parseInt(DOM.exportFps.value || 30);
+                const quality = DOM.exportQuality.value || 'medium';
+                const resolution = parseInt(DOM.exportResolution.value || 1080);
+                const format = DOM.exportFormat.value || 'webm';
 
-                        DOM.exportProgressFill.style.width = '100%';
-                        DOM.exportProgressText.textContent = '✅ Export complete!';
-                        DOM.exportStatus.textContent =
-                            `✅ Complete! ${metadata.frames} frames, ${metadata.duration.toFixed(1)}s`;
-                        showToast('✅ Video exported successfully!', 'success');
+                const captureCanvas = document.createElement('canvas');
+                captureCanvas.width = resolution;
+                captureCanvas.height = resolution;
+                const ctx = captureCanvas.getContext('2d', { alpha: false, desynchronized: true });
 
-                        DOM.exportBtn.disabled = false;
-                        DOM.exportBtn.textContent = '🎬 Export Video';
-                        DOM.cancelExportBtn.style.display = 'none';
-                        setTimeout(() => DOM.exportProgress.classList.remove('active'), 3000);
-                    },
-                    (error) => {
-                        showToast(`❌ Export error: ${error.message}`, 'error');
-                        DOM.exportStatus.textContent = `❌ Error: ${error.message}`;
-                        DOM.exportBtn.disabled = false;
-                        DOM.exportBtn.textContent = '🎬 Export Video';
-                        DOM.cancelExportBtn.style.display = 'none';
+                const stream = captureCanvas.captureStream(fps);
+                const mimeType = format === 'webm' ? 'video/webm;codecs=vp9,opus' : 'video/mp4';
+                const recorder = new MediaRecorder(stream, {
+                    mimeType: MediaRecorder.isTypeSupported(mimeType) ? mimeType : 'video/webm',
+                    videoBitsPerSecond: quality === 'lossless' ? 50000000 :
+                                      quality === 'high' ? 20000000 :
+                                      quality === 'medium' ? 10000000 : 5000000,
+                });
+
+                const chunks = [];
+                recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+
+                const exportPromise = new Promise((resolve) => {
+                    recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' }));
+                });
+
+                const totalFrames = Math.ceil(APP.duration * fps);
+                const frameInterval = 1000 / fps;
+
+                recorder.start(frameInterval);
+                let frameIndex = 0;
+                let startTime = performance.now();
+
+                while (frameIndex < totalFrames) {
+                    const progress = frameIndex / totalFrames;
+                    DOM.exportProgressFill.style.width = `${(progress * 100)}%`;
+                    DOM.exportProgressText.textContent = `Exporting... ${Math.round(progress * 100)}%`;
+                    DOM.exportStatus.textContent = `Frame ${frameIndex + 1}/${totalFrames}`;
+
+                    ctx.clearRect(0, 0, resolution, resolution);
+
+                    const gradient = ctx.createRadialGradient(resolution/2, resolution/2, 0, resolution/2, resolution/2, resolution/2);
+                    gradient.addColorStop(0, '#1a1a3e');
+                    gradient.addColorStop(1, '#0a0a1a');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, resolution, resolution);
+
+                    if (APP.image) {
+                        const img = APP.image;
+                        const aspect = img.width / img.height;
+                        let drawW, drawH, ox, oy;
+                        if (aspect > 1) {
+                            drawW = resolution * 0.9;
+                            drawH = drawW / aspect;
+                            ox = (resolution - drawW) / 2;
+                            oy = (resolution - drawH) / 2;
+                        } else {
+                            drawH = resolution * 0.9;
+                            drawW = drawH * aspect;
+                            ox = (resolution - drawW) / 2;
+                            oy = (resolution - drawH) / 2;
+                        }
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.ellipse(resolution/2, resolution/2, resolution/2 * 0.95, resolution/2 * 0.95, 0, 0, Math.PI * 2);
+                        ctx.clip();
+
+                        const time = frameIndex / fps;
+                        const amplitude = APP.audioBuffer ? getAudioAmplitudeAtTime(time) : 0.3;
+                        const openness = Math.min(1, amplitude * 3 * (APP.settings.mouthSensitivity / 5));
+
+                        ctx.drawImage(img, ox, oy, drawW, drawH);
+
+                        // Face overlay
+                        const faceX = ox + drawW * 0.35;
+                        const faceY = oy + drawH * 0.2;
+                        const faceW = drawW * 0.3;
+                        const faceH = drawH * 0.35;
+
+                        const mouthX = faceX + faceW * 0.5;
+                        const mouthY = faceY + faceH * 0.7;
+                        const mouthW = faceW * 0.3;
+                        const mouthH = faceH * 0.12 * (1 + openness * 2);
+
+                        ctx.beginPath();
+                        ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
+                        ctx.fill();
+
+                        if (openness > 0.3) {
+                            const innerH = mouthH * 0.6;
+                            ctx.beginPath();
+                            ctx.ellipse(mouthX, mouthY + mouthH * 0.1, mouthW * 0.6, innerH, 0, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(140, 40, 40, ${0.3 + openness * 0.4})`;
+                            ctx.fill();
+                        }
+
+                        const blink = Math.sin(time * 3) * 0.5 + 0.5;
+                        const blinkAmount = blink > 0.8 ? 0.9 : 0;
+                        const eyeY = faceY + faceH * 0.35;
+                        const eyeW = faceW * 0.12;
+                        const eyeH = faceH * 0.08 * (1 - blinkAmount);
+
+                        [-1, 1].forEach(side => {
+                            const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
+                            ctx.beginPath();
+                            ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                            ctx.fill();
+                            if (eyeH > 2) {
+                                ctx.beginPath();
+                                ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.4, 0, Math.PI * 2);
+                                ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
+                                ctx.fill();
+                            }
+                        });
+
+                        ctx.restore();
                     }
-                );
+
+                    frameIndex++;
+
+                    const elapsed = performance.now() - startTime;
+                    const targetTime = frameIndex * frameInterval;
+                    if (elapsed < targetTime) {
+                        await new Promise(resolve => setTimeout(resolve, targetTime - elapsed));
+                    }
+                }
+
+                recorder.stop();
+                const blob = await exportPromise;
+
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `talking_face_${Date.now()}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                DOM.exportProgressFill.style.width = '100%';
+                DOM.exportProgressText.textContent = '✅ Export complete!';
+                DOM.exportStatus.textContent = 'Export complete!';
+                showToast('✅ Video exported successfully!', 'success');
+
             } catch (error) {
                 showToast(`❌ Export error: ${error.message}`, 'error');
                 DOM.exportStatus.textContent = `❌ Error: ${error.message}`;
+            } finally {
+                APP.exportState.isExporting = false;
                 DOM.exportBtn.disabled = false;
                 DOM.exportBtn.textContent = '🎬 Export Video';
                 DOM.cancelExportBtn.style.display = 'none';
-                DOM.exportProgress.classList.remove('active');
-            }
-        }
-
-        DOM.exportBtn.addEventListener('click', exportVideo);
-
-        DOM.cancelExportBtn.addEventListener('click', () => {
-            if (exportEngine) {
-                exportEngine.cancel();
-                showToast('Export cancelled', 'warning');
-                DOM.exportStatus.textContent = 'Export cancelled';
-                DOM.exportBtn.disabled = false;
-                DOM.exportBtn.textContent = '🎬 Export Video';
-                DOM.cancelExportBtn.style.display = 'none';
-                DOM.exportProgress.classList.remove('active');
+                setTimeout(() => DOM.exportProgress.classList.remove('active'), 3000);
             }
         });
+
+        DOM.cancelExportBtn.addEventListener('click', () => {
+            APP.exportState.isExporting = false;
+            DOM.exportBtn.disabled = false;
+            DOM.exportBtn.textContent = '🎬 Export Video';
+            DOM.exportProgress.classList.remove('active');
+            DOM.cancelExportBtn.style.display = 'none';
+            DOM.exportStatus.textContent = 'Export cancelled';
+            showToast('Export cancelled', 'warning');
+        });
+
+        function getAudioAmplitudeAtTime(time) {
+            if (!APP.audioBuffer) return 0.3;
+            const data = APP.audioBuffer.getChannelData(0);
+            const sampleRate = APP.audioBuffer.sampleRate;
+            const startIndex = Math.floor(time * sampleRate);
+            const windowSize = Math.min(512, data.length - startIndex);
+            if (startIndex < 0 || startIndex >= data.length) return 0.3;
+            let sum = 0;
+            for (let i = 0; i < windowSize; i++) sum += Math.abs(data[startIndex + i] || 0);
+            return sum / windowSize;
+        }
 
         // ============================================================
         // SETTINGS BINDING
@@ -2952,6 +2650,11 @@
                 { el: DOM.audioGain, val: DOM.audioGainVal, key: 'audioGain', formatter: v => `${v}%` },
                 { el: DOM.noiseReduction, val: DOM.noiseReductionVal, key: 'noiseReduction', formatter: v => `${v}%` },
                 { el: DOM.bgBlur, val: DOM.bgBlurVal, key: 'bgBlur', formatter: v => `${v}px` },
+                // Physics bindings
+                { el: DOM.jawStiffness, val: DOM.jawStiffnessVal, key: 'jawStiffness', formatter: v => v },
+                { el: DOM.jawDamping, val: DOM.jawDampingVal, key: 'jawDamping', formatter: v => v },
+                { el: DOM.headStiffness, val: DOM.headStiffnessVal, key: 'headStiffness', formatter: v => v },
+                { el: DOM.eyeStiffness, val: DOM.eyeStiffnessVal, key: 'eyeStiffness', formatter: v => v },
             ];
 
             bindings.forEach(({ el, val, key, formatter }) => {
@@ -2980,7 +2683,9 @@
                 const canvas = DOM.previewCanvas;
                 const rect = canvas.parentElement.getBoundingClientRect();
                 const size = Math.min(rect.width - 20, rect.height - 80, 800);
-                if (renderer) renderer.initialize(size, size, 'auto');
+                renderer = new AdvancedRenderer(canvas);
+                renderer.initialize(size, size);
+                if (APP.image) renderer.uploadTexture(APP.image);
             });
             DOM.languageSelect.addEventListener('change', () => {
                 APP.settings.language = DOM.languageSelect.value;
@@ -3066,7 +2771,7 @@
             const rect = canvas.parentElement.getBoundingClientRect();
             const size = Math.min(rect.width - 20, rect.height - 80, 800);
             renderer = new AdvancedRenderer(canvas);
-            renderer.initialize(size, size, 'auto');
+            renderer.initialize(size, size);
 
             // Start animation
             APP.fpsCounterUpdate = performance.now();
@@ -3086,8 +2791,15 @@
             DOM.statusDot.className = 'status-dot online';
             DOM.statusText.textContent = 'Ready';
 
-            console.log('🎭 AI Talking Face Pro initialized');
+            // Set initial physics values
+            DOM.jawStiffness.value = 250;
+            DOM.jawDamping.value = 30;
+            DOM.headStiffness.value = 180;
+            DOM.eyeStiffness.value = 300;
+
+            console.log('🎭 AI Talking Face Pro - Advanced Motion Pipeline');
             console.log('📐 Canvas:', APP.settings.canvasRes + 'x' + APP.settings.canvasRes);
+            console.log('🔬 Physics: Mass-Spring-Damper, Saccades, Breathing');
             console.log('💡 Press Space to play/pause, R to record, 1-5 to navigate');
 
             showToast('🎭 Welcome to AI Talking Face Pro!', 'info', 3000);
@@ -3103,13 +2815,9 @@
         // CLEANUP
         // ============================================================
         window.addEventListener('beforeunload', () => {
-            if (audioVisemeEngine) { audioVisemeEngine.dispose();
-                audioVisemeEngine = null; }
             if (renderer) { renderer.dispose();
                 renderer = null; }
-            if (exportEngine) { exportEngine.cancel();
-                exportEngine = null; }
-            appMemoryManager.cleanup();
+            motionPipeline.reset();
             if (APP.audioContext) {
                 try { APP.audioContext.close(); } catch (e) {}
                 APP.audioContext = null;
@@ -3119,7 +2827,7 @@
         // Expose for debugging
         window.APP = APP;
         window.showToast = showToast;
-        window.exportVideo = exportVideo;
+        window.motionPipeline = motionPipeline;
     </script>
 </body>
 </html>
