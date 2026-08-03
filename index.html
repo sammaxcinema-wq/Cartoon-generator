@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎭 SadTalker Pro - Advanced Talking Head Generator</title>
+    <title>🎭 AI Talking Face Pro - Lip Sync Studio</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#667eea">
-    <meta name="description" content="AI-powered talking head video generator with advanced lip sync">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a1a">
+    <meta name="description" content="Browser-based AI lip sync and talking face animation">
+    <link rel="apple-touch-icon" href="/icons/icon-512.png">
     <style>
         /* ===== RESET & BASE ===== */
         * {
@@ -18,44 +17,54 @@
         }
 
         :root {
-            --bg-primary: #f0f2f5;
-            --bg-secondary: #ffffff;
-            --bg-glass: rgba(255, 255, 255, 0.15);
-            --bg-card: rgba(255, 255, 255, 0.85);
-            --text-primary: #1a1a2e;
-            --text-secondary: #4a4a6a;
-            --text-muted: #8a8aaa;
-            --border-color: rgba(255, 255, 255, 0.2);
-            --shadow-color: rgba(0, 0, 0, 0.1);
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #141428;
+            --bg-card: rgba(20, 20, 40, 0.85);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0c0;
+            --text-muted: #606080;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --shadow-color: rgba(0, 0, 0, 0.4);
             --gradient-start: #667eea;
             --gradient-end: #764ba2;
             --success: #10b981;
             --error: #ef4444;
             --warning: #f59e0b;
-            --glass-bg: rgba(255, 255, 255, 0.7);
-            --glass-border: rgba(255, 255, 255, 0.3);
+            --glass-bg: rgba(10, 10, 30, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.05);
             --font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            --radius: 20px;
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --radius: 16px;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 240px;
+            --header-height: 64px;
         }
 
         [data-theme="dark"] {
-            --bg-primary: #0f0e17;
-            --bg-secondary: #1a1a2e;
-            --bg-card: rgba(26, 26, 46, 0.9);
-            --text-primary: #fffffe;
-            --text-secondary: #a7a9be;
-            --text-muted: #6a6a8a;
-            --glass-bg: rgba(26, 26, 46, 0.8);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --shadow-color: rgba(0, 0, 0, 0.4);
-            --glass-border: rgba(255, 255, 255, 0.05);
-            --shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            --bg-primary: #0a0a1a;
+            --bg-secondary: #141428;
+            --bg-card: rgba(20, 20, 40, 0.85);
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0c0;
+            --text-muted: #606080;
+            --border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        [data-theme="light"] {
+            --bg-primary: #f0f2f5;
+            --bg-secondary: #ffffff;
+            --bg-card: rgba(255, 255, 255, 0.85);
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a6a;
+            --text-muted: #8a8aaa;
+            --border-color: rgba(0, 0, 0, 0.06);
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
         }
 
         html {
             scroll-behavior: smooth;
+            font-size: 16px;
         }
 
         body {
@@ -63,378 +72,542 @@
             background: var(--bg-primary);
             color: var(--text-primary);
             min-height: 100vh;
+            overflow: hidden;
             transition: var(--transition);
-            overflow-x: hidden;
-        }
-
-        /* ===== GRADIENT BACKGROUND ===== */
-        .gradient-bg {
-            position: fixed;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            z-index: -1;
-            background: radial-gradient(ellipse at 30% 50%, rgba(102, 126, 234, 0.15) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 80%, rgba(118, 75, 162, 0.12) 0%, transparent 60%),
-                        var(--bg-primary);
-            animation: gradientFloat 20s ease-in-out infinite;
-        }
-
-        [data-theme="dark"] .gradient-bg {
-            background: radial-gradient(ellipse at 30% 50%, rgba(102, 126, 234, 0.08) 0%, transparent 60%),
-                        radial-gradient(ellipse at 70% 80%, rgba(118, 75, 162, 0.06) 0%, transparent 60%),
-                        var(--bg-primary);
-        }
-
-        @keyframes gradientFloat {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            33% { transform: translate(2%, 1%) rotate(1deg); }
-            66% { transform: translate(-1%, 2%) rotate(-1deg); }
         }
 
         /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
         ::-webkit-scrollbar-track {
             background: var(--bg-primary);
         }
         ::-webkit-scrollbar-thumb {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            border-radius: 4px;
+            border-radius: 3px;
         }
 
-        /* ===== GLASSMORPHISM ===== */
-        .glass {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid var(--glass-border);
-            box-shadow: var(--shadow);
-        }
-
-        /* ===== APP CONTAINER ===== */
-        .app-container {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 16px;
-            min-height: 100vh;
-            position: relative;
-        }
-
-        /* ===== HEADER ===== */
-        .app-header {
+        /* ===== APP LAYOUT ===== */
+        #app {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 16px 24px;
-            border-radius: var(--radius);
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-            gap: 12px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
+            height: 100vh;
+            overflow: hidden;
         }
 
-        .app-header .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .app-header .logo .icon {
-            font-size: 2rem;
-            animation: pulse 2s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-
-        .app-header .logo .brand {
+        /* ===== SIDEBAR ===== */
+        .sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
             display: flex;
             flex-direction: column;
+            flex-shrink: 0;
+            transition: var(--transition);
+            z-index: 100;
+            overflow: hidden;
         }
 
-        .app-header .logo h1 {
-            font-size: 1.6rem;
-            font-weight: 800;
+        .sidebar.collapsed {
+            width: 64px;
+        }
+
+        .sidebar-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+            min-height: var(--header-height);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .logo-icon {
+            font-size: 1.5rem;
+        }
+
+        .logo-text {
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            line-height: 1.2;
         }
 
-        .app-header .logo .subtitle {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            -webkit-text-fill-color: var(--text-muted);
-            letter-spacing: 1px;
-            text-transform: uppercase;
-        }
-
-        .header-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .badge {
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.3px;
+        .sidebar-toggle {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
             transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
         }
 
-        .badge .dot {
+        .sidebar-toggle:hover {
+            background: var(--bg-card);
+        }
+
+        .sidebar.collapsed .logo-text,
+        .sidebar.collapsed .nav-label {
+            display: none;
+        }
+
+        .sidebar.collapsed .nav-item {
+            justify-content: center;
+        }
+
+        .sidebar.collapsed .nav-icon {
+            margin-right: 0;
+        }
+
+        /* ===== NAV MENU ===== */
+        .nav-menu {
+            list-style: none;
+            padding: 12px 8px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: var(--transition);
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .nav-item:hover {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));
+            color: var(--text-primary);
+        }
+
+        .nav-item.active .nav-icon {
+            color: var(--gradient-start);
+        }
+
+        .nav-icon {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .nav-label {
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+
+        /* ===== SIDEBAR FOOTER ===== */
+        .sidebar-footer {
+            padding: 12px 16px;
+            border-top: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .status-dot {
             width: 8px;
             height: 8px;
             border-radius: 50%;
             display: inline-block;
-            animation: blink 1.5s ease-in-out infinite;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .badge.online {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-        }
-        .badge.online .dot { background: var(--success); }
-
-        .badge.offline {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--error);
-        }
-        .badge.offline .dot { background: var(--error); }
-
-        .badge.demo {
-            background: rgba(245, 158, 11, 0.15);
-            color: var(--warning);
-        }
-        .badge.demo .dot { background: var(--warning); }
-
-        .badge.loading {
-            background: rgba(102, 126, 234, 0.15);
-            color: var(--gradient-start);
-        }
-        .badge.loading .dot { background: var(--gradient-start); }
-
-        /* ===== BUTTONS ===== */
-        .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-decoration: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-            opacity: 0;
             transition: var(--transition);
         }
 
-        .btn:hover::after {
-            opacity: 1;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            color: white;
-            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.4);
-        }
-
-        .btn-secondary {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow);
-        }
-
-        .btn-success {
+        .status-dot.online {
             background: var(--success);
-            color: white;
+            animation: pulse-dot 2s ease-in-out infinite;
         }
 
-        .btn-success:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
-        }
-
-        .btn-danger {
+        .status-dot.offline {
             background: var(--error);
-            color: white;
         }
 
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(239, 68, 68, 0.4);
+        .status-dot.loading {
+            background: var(--warning);
+            animation: pulse-dot 0.8s ease-in-out infinite;
         }
 
-        .btn:disabled {
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .version-info {
+            font-size: 0.65rem;
             opacity: 0.5;
-            cursor: not-allowed;
-            transform: none !important;
         }
 
-        .btn-sm {
-            padding: 6px 14px;
-            font-size: 0.8rem;
-            border-radius: 8px;
-        }
-
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            padding: 0;
-            border-radius: 50%;
-        }
-
-        /* ===== THEME TOGGLE ===== */
-        .theme-toggle {
+        /* ===== MAIN CONTENT ===== */
+        .main-content {
+            flex: 1;
+            height: 100vh;
+            overflow-y: auto;
             background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 1.2rem;
+            padding: 20px;
             transition: var(--transition);
         }
 
-        .theme-toggle:hover {
-            transform: scale(1.1) rotate(15deg);
+        /* ===== VIEWS ===== */
+        .view {
+            display: none;
+            animation: fadeIn 0.3s ease;
         }
 
-        /* ===== MAIN GRID ===== */
-        .main-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
+        .view.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .view-header {
             margin-bottom: 24px;
         }
 
-        @media (max-width: 1024px) {
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* ===== CARDS ===== */
-        .card {
-            background: var(--bg-card);
-            border-radius: var(--radius);
-            padding: 24px;
-            border: 1px solid var(--border-color);
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-        }
-
-        .card:hover {
-            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.06);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .card-header h2 {
-            font-size: 1.1rem;
+        .view-header h2 {
+            font-size: 1.5rem;
             font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .view-header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* ===== STUDIO VIEW ===== */
+        .studio-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: calc(100vh - 120px);
+        }
+
+        .preview-container {
+            flex: 1;
+            position: relative;
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            min-height: 400px;
+        }
+
+        .preview-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        .preview-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: #000;
+        }
+
+        .preview-overlay {
+            position: absolute;
+            inset: 0;
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-
-        .card-header .badge-count {
-            font-size: 0.7rem;
-            background: var(--bg-primary);
-            padding: 2px 10px;
-            border-radius: 12px;
-            color: var(--text-muted);
-        }
-
-        /* ===== UPLOAD AREAS ===== */
-        .upload-area {
-            border: 2px dashed var(--border-color);
-            border-radius: 16px;
-            padding: 40px 20px;
-            text-align: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.5);
             transition: var(--transition);
+        }
+
+        .preview-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .drop-zone {
+            text-align: center;
+            padding: 40px;
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius);
             cursor: pointer;
-            position: relative;
-            background: var(--bg-primary);
+            transition: var(--transition);
+            max-width: 400px;
+            width: 100%;
         }
 
-        .upload-area:hover,
-        .upload-area.dragover {
+        .drop-zone:hover {
             border-color: var(--gradient-start);
-            background: rgba(102, 126, 234, 0.04);
-            transform: scale(1.01);
+            background: rgba(102, 126, 234, 0.05);
         }
 
-        .upload-area .icon {
-            font-size: 3.5rem;
+        .drop-zone .drop-icon {
+            font-size: 3rem;
             display: block;
             margin-bottom: 12px;
         }
 
-        .upload-area h3 {
-            font-size: 1rem;
+        .drop-zone h3 {
+            font-size: 1.1rem;
             margin-bottom: 4px;
+        }
+
+        .drop-zone p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* ===== PREVIEW CONTROLS ===== */
+        .preview-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px 20px;
+            background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .control-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .timeline-slider {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .timeline-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .time-display {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            font-variant-numeric: tabular-nums;
+            min-width: 80px;
+        }
+
+        /* ===== STATS OVERLAY ===== */
+        .stats-overlay {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            padding: 8px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            font-size: 0.7rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* ===== TIMELINE ===== */
+        .timeline-container {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 12px 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .timeline-waveform {
+            height: 60px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+
+        .timeline-waveform canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .transport-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .transport-btn {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .transport-btn:hover {
+            background: var(--bg-primary);
             color: var(--text-primary);
         }
 
-        .upload-area p {
-            color: var(--text-muted);
-            font-size: 0.85rem;
+        .transport-btn.primary {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border: none;
+            padding: 8px 24px;
         }
 
-        .upload-area input[type="file"] {
+        .transport-btn.primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .transport-btn.recording {
+            background: var(--error);
+            color: white;
+            animation: pulse-record 1s ease-in-out infinite;
+        }
+
+        @keyframes pulse-record {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ===== UPLOAD VIEW ===== */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .upload-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .upload-card-icon {
+            font-size: 1.5rem;
+        }
+
+        .upload-card-header h3 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .upload-dropzone {
+            border: 2px dashed var(--border-color);
+            border-radius: 12px;
+            padding: 30px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+        }
+
+        .upload-dropzone:hover {
+            border-color: var(--gradient-start);
+            background: rgba(102, 126, 234, 0.03);
+        }
+
+        .upload-dropzone .drop-icon {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .upload-dropzone p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .upload-dropzone small {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .upload-dropzone input[type="file"] {
             position: absolute;
             inset: 0;
             opacity: 0;
@@ -443,511 +616,360 @@
 
         .upload-preview {
             position: relative;
+            margin-top: 12px;
             border-radius: 12px;
             overflow: hidden;
-            margin-top: 12px;
-            background: var(--bg-primary);
             border: 1px solid var(--border-color);
         }
 
-        .upload-preview img,
-        .upload-preview video {
+        .upload-preview img {
             width: 100%;
-            max-height: 220px;
+            max-height: 200px;
             object-fit: cover;
             display: block;
         }
 
-        .upload-preview .remove-btn {
+        .upload-preview .remove-btn,
+        .audio-info .remove-btn {
             position: absolute;
             top: 8px;
             right: 8px;
-            background: rgba(239, 68, 68, 0.92);
+            background: rgba(239, 68, 68, 0.9);
             color: white;
             border: none;
             border-radius: 50%;
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.8rem;
             transition: var(--transition);
             display: flex;
             align-items: center;
             justify-content: center;
-            z-index: 10;
         }
 
-        .upload-preview .remove-btn:hover {
-            transform: scale(1.15);
+        .upload-preview .remove-btn:hover,
+        .audio-info .remove-btn:hover {
+            transform: scale(1.1);
             background: var(--error);
         }
 
-        .upload-info {
+        .audio-info {
+            position: relative;
+            margin-top: 12px;
             padding: 12px 16px;
+            background: var(--bg-primary);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border-color);
         }
 
-        .upload-info .name {
+        .audio-meta {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .audio-name {
             font-weight: 500;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            max-width: 70%;
+            font-size: 0.9rem;
         }
 
-        .upload-info .size {
+        .audio-duration {
             color: var(--text-muted);
             font-size: 0.8rem;
         }
 
         .upload-status {
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.75rem;
+            margin-top: 8px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ===== RECORD CONTROLS ===== */
+        .record-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .record-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .record-btn:hover:not(:disabled) {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .record-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .record-btn.recording {
+            background: var(--error);
+            color: white;
+            animation: pulse-record 1s ease-in-out infinite;
+        }
+
+        .record-status {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .waveform-preview {
+            margin-top: 8px;
+            height: 40px;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        /* ===== AUDIO VIEW ===== */
+        .audio-analysis {
+            display: grid;
+            gap: 16px;
+        }
+
+        .spectrum-container {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 16px;
+            border: 1px solid var(--border-color);
+            height: 200px;
+        }
+
+        .spectrum-container canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .audio-controls {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .phoneme-display {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .phoneme-label {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+
+        .phoneme-values {
             font-weight: 600;
+            font-size: 1.1rem;
+            margin-left: 8px;
         }
 
-        .upload-status.valid {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--success);
-        }
-
-        .upload-status.invalid {
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--error);
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* ===== SETTINGS ===== */
+        /* ===== SETTINGS VIEW ===== */
         .settings-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 12px 20px;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .setting-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 0;
+        @media (max-width: 768px) {
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .setting-item label {
+        .settings-group {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-group h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .setting-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            flex: 1;
-            font-size: 0.9rem;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .setting-row label {
+            min-width: 120px;
+            font-size: 0.85rem;
             color: var(--text-secondary);
         }
 
-        .setting-item input[type="checkbox"] {
+        .setting-row input[type="range"] {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            background: var(--border-color);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .setting-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            cursor: pointer;
+        }
+
+        .setting-row input[type="checkbox"] {
             width: 18px;
             height: 18px;
             accent-color: var(--gradient-start);
             cursor: pointer;
-            flex-shrink: 0;
         }
 
-        .setting-item input[type="number"],
-        .setting-item select {
-            padding: 6px 10px;
+        .setting-row select {
+            padding: 4px 8px;
+            border-radius: 6px;
             border: 1px solid var(--border-color);
-            border-radius: 8px;
             background: var(--bg-primary);
             color: var(--text-primary);
-            font-size: 0.9rem;
-            width: 70px;
-            transition: var(--transition);
+            font-size: 0.85rem;
         }
 
-        .setting-item select {
-            width: auto;
-            min-width: 100px;
+        .setting-value {
+            min-width: 40px;
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-variant-numeric: tabular-nums;
         }
 
-        .setting-item input[type="number"]:focus,
-        .setting-item select:focus {
-            outline: 2px solid var(--gradient-start);
-            border-color: transparent;
+        /* ===== EXPORT VIEW ===== */
+        .export-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        /* ===== GENERATE SECTION ===== */
-        .generate-section {
-            margin: 16px 0;
+        @media (max-width: 768px) {
+            .export-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .generate-btn {
+        .export-card {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .export-card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .export-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .export-option:last-child {
+            border-bottom: none;
+        }
+
+        .export-option label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .export-option select,
+        .export-option input[type="number"] {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            width: 80px;
+        }
+
+        .export-btn {
             width: 100%;
-            padding: 18px 24px;
-            font-size: 1.1rem;
-            font-weight: 700;
+            padding: 12px;
             border: none;
-            border-radius: 16px;
+            border-radius: 10px;
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             color: white;
+            font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            position: relative;
-            overflow: hidden;
+            margin-top: 12px;
         }
 
-        .generate-btn::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-            opacity: 0;
-            transition: var(--transition);
+        .export-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
         }
 
-        .generate-btn:hover:not(:disabled)::before {
-            opacity: 1;
-        }
-
-        .generate-btn:hover:not(:disabled) {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 48px rgba(102, 126, 234, 0.4);
-        }
-
-        .generate-btn:disabled {
+        .export-btn:disabled {
             opacity: 0.5;
             cursor: not-allowed;
-            transform: none !important;
         }
 
-        .generate-btn .spinner {
-            display: inline-block;
-            width: 22px;
-            height: 22px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 0.8s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        /* ===== PROGRESS ===== */
-        .progress-container {
-            margin: 12px 0;
-            padding: 16px 20px;
-            border-radius: 12px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
+        .export-progress {
+            margin-top: 12px;
             display: none;
         }
 
-        .progress-container.active {
+        .export-progress.active {
             display: block;
-            animation: slideDown 0.4s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .progress-bar {
             width: 100%;
-            height: 8px;
+            height: 6px;
             background: var(--border-color);
-            border-radius: 4px;
+            border-radius: 3px;
             overflow: hidden;
         }
 
         .progress-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
-            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 4px;
+            transition: width 0.3s ease;
             width: 0%;
         }
 
-        .progress-info {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .progress-status {
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .progress-percent {
-            font-weight: 600;
-        }
-
-        /* ===== RESULT ===== */
-        .result-container {
-            margin: 12px 0;
-            padding: 20px;
-            border-radius: 16px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            display: none;
-        }
-
-        .result-container.active {
-            display: block;
-            animation: slideDown 0.4s ease;
-        }
-
-        .result-container video {
-            width: 100%;
-            max-height: 400px;
-            border-radius: 12px;
-            background: #000;
-            display: block;
-        }
-
-        .result-actions {
-            display: flex;
-            gap: 12px;
-            margin-top: 16px;
-            flex-wrap: wrap;
-        }
-
-        .result-actions .btn {
-            flex: 1;
-            min-width: 120px;
-            justify-content: center;
-        }
-
-        .result-meta {
-            display: flex;
-            gap: 16px;
-            margin-top: 12px;
-            padding: 12px 16px;
-            background: var(--bg-card);
-            border-radius: 8px;
-            flex-wrap: wrap;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .result-meta span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* ===== HISTORY ===== */
-        .history-container {
-            margin-top: 24px;
-        }
-
-        .history-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            flex-wrap: wrap;
-            gap: 12px;
-        }
-
-        .history-header h2 {
-            font-size: 1.2rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .history-controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .history-controls input,
-        .history-controls select {
-            padding: 8px 14px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            font-size: 0.85rem;
-            transition: var(--transition);
-            min-width: 120px;
-        }
-
-        .history-controls input:focus,
-        .history-controls select:focus {
-            outline: 2px solid var(--gradient-start);
-            border-color: transparent;
-        }
-
-        .history-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 16px;
-        }
-
-        .history-item {
-            background: var(--bg-card);
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-            transition: var(--transition);
-            box-shadow: var(--shadow);
-        }
-
-        .history-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-        }
-
-        .history-item .thumbnail {
-            position: relative;
-            padding-top: 56.25%;
-            background: #000;
-            cursor: pointer;
-        }
-
-        .history-item .thumbnail video,
-        .history-item .thumbnail img {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .history-item .thumbnail .play-overlay {
-            position: absolute;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.3);
-            opacity: 0;
-            transition: var(--transition);
-            color: white;
-            font-size: 3rem;
-        }
-
-        .history-item .thumbnail:hover .play-overlay {
-            opacity: 1;
-        }
-
-        .history-item .info {
-            padding: 14px 16px;
-        }
-
-        .history-item .info .name {
-            font-weight: 600;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            font-size: 0.95rem;
-        }
-
-        .history-item .info .meta {
-            display: flex;
-            gap: 12px;
-            font-size: 0.75rem;
+        .progress-text {
+            font-size: 0.8rem;
             color: var(--text-muted);
             margin-top: 4px;
-            flex-wrap: wrap;
-        }
-
-        .history-item .actions {
-            display: flex;
-            gap: 6px;
-            padding: 10px 16px;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .history-item .actions .btn {
-            flex: 1;
-            justify-content: center;
-            padding: 8px 12px;
-            font-size: 0.8rem;
-        }
-
-        .empty-history {
             text-align: center;
-            padding: 60px 20px;
-            color: var(--text-muted);
-            grid-column: 1 / -1;
         }
 
-        .empty-history .icon {
-            font-size: 4rem;
-            display: block;
-            margin-bottom: 16px;
-            opacity: 0.5;
-        }
-
-        .empty-history h3 {
-            color: var(--text-primary);
-            margin-bottom: 4px;
-        }
-
-        /* ===== PAGINATION ===== */
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .pagination button {
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-card);
-            color: var(--text-primary);
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.85rem;
-        }
-
-        .pagination button:hover:not(:disabled) {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            color: white;
-            border-color: transparent;
-        }
-
-        .pagination button.active {
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            color: white;
-            border-color: transparent;
-        }
-
-        .pagination button:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        /* ===== TOAST ===== */
+        /* ===== TOAST NOTIFICATIONS ===== */
         .toast-container {
             position: fixed;
             bottom: 24px;
@@ -955,285 +977,130 @@
             z-index: 9999;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            max-width: 420px;
+            gap: 8px;
+            max-width: 400px;
             width: 100%;
             pointer-events: none;
         }
 
         .toast {
-            padding: 14px 20px;
-            border-radius: 12px;
+            padding: 12px 18px;
+            border-radius: 10px;
             color: white;
             font-weight: 500;
-            animation: toastIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            font-size: 0.9rem;
+            animation: toastIn 0.3s ease;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             pointer-events: auto;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .toast.success {
-            background: rgba(16, 185, 129, 0.92);
-        }
-        .toast.error {
-            background: rgba(239, 68, 68, 0.92);
-        }
-        .toast.warning {
-            background: rgba(245, 158, 11, 0.92);
-        }
-        .toast.info {
-            background: rgba(102, 126, 234, 0.92);
-        }
-
-        .toast .toast-icon {
-            font-size: 1.2rem;
-            flex-shrink: 0;
-        }
+        .toast.success { background: rgba(16, 185, 129, 0.92); }
+        .toast.error { background: rgba(239, 68, 68, 0.92); }
+        .toast.warning { background: rgba(245, 158, 11, 0.92); }
+        .toast.info { background: rgba(102, 126, 234, 0.92); }
 
         .toast .toast-close {
             background: none;
             border: none;
             color: rgba(255, 255, 255, 0.6);
             cursor: pointer;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             margin-left: auto;
             padding: 0 4px;
-            transition: var(--transition);
-        }
-
-        .toast .toast-close:hover {
-            color: white;
         }
 
         @keyframes toastIn {
-            from {
-                transform: translateX(100%) scale(0.9);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0) scale(1);
-                opacity: 1;
-            }
+            from { transform: translateX(100%) scale(0.9); opacity: 0; }
+            to { transform: translateX(0) scale(1); opacity: 1; }
         }
 
         @keyframes toastOut {
-            from {
-                transform: translateX(0) scale(1);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%) scale(0.9);
-                opacity: 0;
-            }
+            from { transform: translateX(0) scale(1); opacity: 1; }
+            to { transform: translateX(100%) scale(0.9); opacity: 0; }
         }
 
         .toast.removing {
-            animation: toastOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-        }
-
-        /* ===== MODAL ===== */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 10000;
-            padding: 20px;
-            animation: fadeIn 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            display: flex;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .modal {
-            background: var(--bg-card);
-            border-radius: 24px;
-            padding: 32px;
-            max-width: 600px;
-            width: 100%;
-            max-height: 90vh;
-            overflow-y: auto;
-            animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid var(--border-color);
-            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.3);
-        }
-
-        @keyframes modalIn {
-            from {
-                transform: scale(0.95) translateY(10px);
-                opacity: 0;
-            }
-            to {
-                transform: scale(1) translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-header h2 {
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-muted);
-            transition: var(--transition);
-            padding: 4px 8px;
-            border-radius: 8px;
-        }
-
-        .modal-close:hover {
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            transform: rotate(90deg);
-        }
-
-        .modal-body {
-            margin-bottom: 20px;
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            flex-wrap: wrap;
+            animation: toastOut 0.3s ease forwards;
         }
 
         /* ===== RESPONSIVE ===== */
-        @media (max-width: 768px) {
-            .app-container {
-                padding: 10px;
-            }
-            .app-header {
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
-                padding: 14px 16px;
-            }
-            .app-header .logo {
-                justify-content: center;
-            }
-            .header-actions {
-                justify-content: center;
-            }
-            .main-grid {
-                grid-template-columns: 1fr;
-                gap: 16px;
-            }
-            .card {
-                padding: 16px;
-            }
-            .history-grid {
-                grid-template-columns: 1fr;
-            }
+        @media (max-width: 1024px) {
             .settings-grid {
                 grid-template-columns: 1fr;
             }
-            .result-actions {
-                flex-direction: column;
+            .export-grid {
+                grid-template-columns: 1fr;
             }
-            .result-actions .btn {
-                width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 64px;
+            }
+            .sidebar .logo-text,
+            .sidebar .nav-label {
+                display: none;
+            }
+            .sidebar .nav-item {
+                justify-content: center;
+            }
+            .sidebar .nav-icon {
+                margin-right: 0;
+            }
+            .sidebar-footer .status-text {
+                display: none;
+            }
+            .main-content {
+                padding: 12px;
+            }
+            .preview-container {
+                min-height: 250px;
+            }
+            .stats-overlay {
+                font-size: 0.6rem;
+                padding: 4px 10px;
+            }
+            .stats-overlay .stat-item {
+                flex-direction: row;
+                gap: 4px;
+            }
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+            .studio-layout {
+                height: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .preview-controls {
+                padding: 8px 12px;
+                flex-wrap: wrap;
+            }
+            .time-display {
+                font-size: 0.7rem;
+                min-width: 60px;
+            }
+            .transport-btn {
+                padding: 6px 12px;
+                font-size: 0.85rem;
             }
             .toast-container {
                 left: 16px;
                 right: 16px;
                 max-width: calc(100% - 32px);
-                bottom: 16px;
-            }
-            .modal {
-                padding: 20px;
-                margin: 12px;
-                max-height: 95vh;
-            }
-            .history-controls input,
-            .history-controls select {
-                min-width: 80px;
-                font-size: 0.8rem;
-            }
-            .upload-area {
-                padding: 24px 16px;
-            }
-            .upload-area .icon {
-                font-size: 2.5rem;
-            }
-            .generate-btn {
-                font-size: 1rem;
-                padding: 14px 20px;
-            }
-            .app-header .logo h1 {
-                font-size: 1.3rem;
-            }
-            .badge {
-                font-size: 0.6rem;
-                padding: 3px 10px;
-            }
-            .btn {
-                font-size: 0.8rem;
-                padding: 8px 14px;
-            }
-            .history-item .actions .btn {
-                font-size: 0.7rem;
-                padding: 6px 8px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .app-container {
-                padding: 6px;
-            }
-            .app-header .logo h1 {
-                font-size: 1.1rem;
-            }
-            .card {
-                padding: 12px;
-                border-radius: 14px;
-            }
-            .card-header h2 {
-                font-size: 0.95rem;
-            }
-            .settings-grid {
-                gap: 8px;
-            }
-            .setting-item {
-                font-size: 0.8rem;
-            }
-            .history-item .info .name {
-                font-size: 0.85rem;
-            }
-            .modal {
-                padding: 16px;
-            }
-            .modal-header h2 {
-                font-size: 1.1rem;
             }
         }
 
         /* ===== UTILITIES ===== */
+        .hidden {
+            display: none !important;
+        }
         .text-center { text-align: center; }
         .mt-8 { margin-top: 8px; }
         .mt-16 { margin-top: 16px; }
@@ -1246,580 +1113,502 @@
         .gap-16 { gap: 16px; }
         .flex-wrap { flex-wrap: wrap; }
         .w-full { width: 100%; }
-        .relative { position: relative; }
-        .overflow-hidden { overflow: hidden; }
-        .text-muted { color: var(--text-muted); }
-        .text-success { color: var(--success); }
-        .text-error { color: var(--error); }
-        .text-warning { color: var(--warning); }
+
+        /* ===== LOADING ===== */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border-color);
+            border-radius: 50%;
+            border-top-color: var(--gradient-start);
+            animation: spin 0.8s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* ===== MODAL ===== */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { transform: scale(0.95) translateY(10px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            transform: rotate(90deg);
+            color: var(--text-primary);
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            margin-top: 16px;
+        }
     </style>
 </head>
 <body>
 
-    <!-- ===== GRADIENT BACKGROUND ===== -->
-    <div class="gradient-bg"></div>
-
-    <!-- ===== TOAST CONTAINER ===== -->
-    <div id="toastContainer" class="toast-container"></div>
-
-    <!-- ===== MODAL ===== -->
-    <div id="modalOverlay" class="modal-overlay" onclick="if(event.target===this)closeModal()">
-        <div class="modal" id="modalContent">
-            <div class="modal-header">
-                <h2 id="modalTitle">Modal</h2>
-                <button class="modal-close" onclick="closeModal()">✕</button>
-            </div>
-            <div class="modal-body" id="modalBody"></div>
-            <div class="modal-footer" id="modalFooter"></div>
-        </div>
-    </div>
-
-    <!-- ===== APP ===== -->
-    <div class="app-container">
-
-        <!-- ===== HEADER ===== -->
-        <header class="app-header">
-            <div class="logo">
-                <span class="icon">🎭</span>
-                <div class="brand">
-                    <h1>SadTalker Pro</h1>
-                    <span class="subtitle">AI Lip Sync Generator</span>
+    <div id="app">
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🎭</span>
+                    <span class="logo-text">AI Face</span>
                 </div>
+                <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">☰</button>
             </div>
-            <div class="header-actions">
-                <span class="badge loading" id="statusBadge">
-                    <span class="dot"></span>
-                    Connecting...
-                </span>
-                <button class="theme-toggle" id="themeToggle" title="Toggle Theme (Ctrl+D)">🌙</button>
-                <button class="btn btn-secondary btn-sm" onclick="openModal('api')">⚙️ API</button>
-                <button class="btn btn-secondary btn-sm" onclick="openModal('settings')">🛠️</button>
-                <button class="btn btn-secondary btn-sm" onclick="openModal('diagnostics')">📊</button>
-                <button id="installBtn" class="btn btn-primary btn-sm" style="display:none;">📲 Install</button>
+            <ul class="nav-menu">
+                <li class="nav-item active" data-view="studio">
+                    <span class="nav-icon">🎬</span>
+                    <span class="nav-label">Studio</span>
+                </li>
+                <li class="nav-item" data-view="upload">
+                    <span class="nav-icon">📤</span>
+                    <span class="nav-label">Upload</span>
+                </li>
+                <li class="nav-item" data-view="audio">
+                    <span class="nav-icon">🎵</span>
+                    <span class="nav-label">Audio</span>
+                </li>
+                <li class="nav-item" data-view="settings">
+                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-label">Settings</span>
+                </li>
+                <li class="nav-item" data-view="export">
+                    <span class="nav-icon">💾</span>
+                    <span class="nav-label">Export</span>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="status-indicator">
+                    <span class="status-dot online" id="statusDot"></span>
+                    <span class="status-text" id="statusText">Ready</span>
+                </div>
+                <div class="version-info">v2.0.0</div>
             </div>
-        </header>
+        </nav>
 
-        <!-- ===== MAIN GRID ===== -->
-        <div class="main-grid">
-
-            <!-- ===== LEFT COLUMN ===== -->
-            <div>
-                <!-- Image Upload -->
-                <div class="card mb-16">
-                    <div class="card-header">
-                        <h2>🖼️ Source Image</h2>
-                        <span class="badge-count" id="imageStatus">No file</span>
-                    </div>
-                    <div class="upload-area" id="imageDropZone">
-                        <span class="icon">📸</span>
-                        <h3>Drop your photo here</h3>
-                        <p>PNG, JPG, WEBP, BMP, GIF · Max 50MB</p>
-                        <input type="file" id="imageInput" accept="image/png,image/jpeg,image/webp,image/bmp,image/gif">
-                    </div>
-                    <div id="imagePreview" class="upload-preview hidden">
-                        <img id="imagePreviewImg" alt="Image preview">
-                        <button class="remove-btn" onclick="removeImage()">✕</button>
-                        <div class="upload-info">
-                            <span class="name" id="imageName">image.jpg</span>
-                            <span class="size" id="imageSize">0 MB</span>
-                            <span class="upload-status valid" id="imageValid">✅ Valid</span>
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Studio View -->
+            <section id="view-studio" class="view active">
+                <div class="studio-layout">
+                    <div class="preview-container">
+                        <div class="preview-wrapper">
+                            <canvas id="previewCanvas" class="preview-canvas"></canvas>
+                            <div class="preview-overlay" id="previewOverlay">
+                                <div class="drop-zone" id="dropZone">
+                                    <span class="drop-icon">📸</span>
+                                    <h3>Drop your portrait here</h3>
+                                    <p>or click to upload</p>
+                                    <input type="file" id="imageUpload" accept="image/*" hidden>
+                                </div>
+                            </div>
+                            <div class="preview-controls">
+                                <button class="control-btn" id="playBtn" aria-label="Play/Pause">▶</button>
+                                <input type="range" class="timeline-slider" id="timelineSlider" min="0" max="100" value="0">
+                                <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+                            </div>
+                        </div>
+                        <div class="stats-overlay">
+                            <div class="stat-item">
+                                <span class="stat-label">FPS</span>
+                                <span class="stat-value" id="fpsCounter">60</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Memory</span>
+                                <span class="stat-value" id="memoryUsage">0 MB</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">GPU</span>
+                                <span class="stat-value" id="gpuStatus">Active</span>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Audio Upload -->
-                <div class="card">
-                    <div class="card-header">
-                        <h2>🎵 Driving Audio</h2>
-                        <span class="badge-count" id="audioStatus">No file</span>
-                    </div>
-                    <div class="upload-area" id="audioDropZone">
-                        <span class="icon">🎤</span>
-                        <h3>Drop your audio here</h3>
-                        <p>MP3, WAV, M4A, FLAC, OGG · Max 50MB</p>
-                        <input type="file" id="audioInput" accept="audio/mpeg,audio/wav,audio/mp4,audio/flac,audio/ogg">
-                    </div>
-                    <div id="audioPreview" class="upload-preview hidden">
-                        <audio id="audioPreviewPlayer" controls style="width:100%;display:block;"></audio>
-                        <button class="remove-btn" onclick="removeAudio()">✕</button>
-                        <div class="upload-info">
-                            <span class="name" id="audioName">audio.mp3</span>
-                            <span class="size" id="audioSize">0 MB</span>
-                            <span class="upload-status valid" id="audioValid">✅ Valid</span>
+                    <div class="timeline-container">
+                        <div class="timeline-waveform">
+                            <canvas id="waveformCanvas"></canvas>
+                        </div>
+                        <div class="transport-controls">
+                            <button class="transport-btn" id="rewindBtn">⏮</button>
+                            <button class="transport-btn primary" id="playPauseBtn">▶</button>
+                            <button class="transport-btn" id="forwardBtn">⏭</button>
+                            <button class="transport-btn" id="recordBtn">●</button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- ===== RIGHT COLUMN ===== -->
-            <div>
-                <!-- Settings -->
-                <div class="card mb-16">
-                    <div class="card-header">
-                        <h2>⚙️ Generation Settings</h2>
+            <!-- Upload View -->
+            <section id="view-upload" class="view">
+                <div class="view-header">
+                    <h2>📤 Upload Assets</h2>
+                    <p>Upload your portrait image and audio file</p>
+                </div>
+                <div class="upload-grid">
+                    <div class="upload-card">
+                        <div class="upload-card-header">
+                            <span class="upload-card-icon">🖼️</span>
+                            <h3>Portrait Image</h3>
+                        </div>
+                        <div class="upload-dropzone" id="imageDropzone">
+                            <span class="drop-icon">📸</span>
+                            <p>Drop image here or click to browse</p>
+                            <small>PNG, JPG, WEBP, BMP</small>
+                            <input type="file" id="imageFileInput" accept="image/*" hidden>
+                        </div>
+                        <div class="upload-preview" id="imagePreviewContainer" hidden>
+                            <img id="imagePreview" alt="Image preview">
+                            <button class="remove-btn" id="removeImageBtn">✕</button>
+                        </div>
+                        <div class="upload-status" id="imageStatus">No image uploaded</div>
                     </div>
-                    <div class="settings-grid">
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="stillMode">
-                                🧘 Still Mode
-                            </label>
+
+                    <div class="upload-card">
+                        <div class="upload-card-header">
+                            <span class="upload-card-icon">🎵</span>
+                            <h3>Audio File</h3>
                         </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="enhancer" checked>
-                                ✨ Enhance Quality
-                            </label>
+                        <div class="upload-dropzone" id="audioDropzone">
+                            <span class="drop-icon">🎤</span>
+                            <p>Drop audio here or click to browse</p>
+                            <small>MP3, WAV, AAC, OGG</small>
+                            <input type="file" id="audioFileInput" accept="audio/*" hidden>
                         </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="faceEnhance" checked>
-                                👤 Face Enhance
-                            </label>
+                        <div class="audio-info" id="audioInfoContainer" hidden>
+                            <div class="audio-meta">
+                                <span class="audio-name" id="audioName">audio.mp3</span>
+                                <span class="audio-duration" id="audioDuration">0:00</span>
+                            </div>
+                            <button class="remove-btn" id="removeAudioBtn">✕</button>
                         </div>
-                        <div class="setting-item">
-                            <label>
-                                <input type="checkbox" id="backgroundEnhance">
-                                🌄 BG Enhance
-                            </label>
+                        <div class="upload-status" id="audioStatus">No audio uploaded</div>
+                    </div>
+
+                    <div class="upload-card">
+                        <div class="upload-card-header">
+                            <span class="upload-card-icon">🎙️</span>
+                            <h3>Record Audio</h3>
                         </div>
-                        <div class="setting-item">
-                            <label>🎞️ FPS</label>
-                            <input type="number" id="fps" value="25" min="15" max="60" step="1">
+                        <div class="record-controls">
+                            <button class="record-btn" id="startRecordBtn">⏺ Start Recording</button>
+                            <button class="record-btn" id="stopRecordBtn" disabled>⏹ Stop</button>
+                            <button class="record-btn" id="playRecordBtn" disabled>▶ Playback</button>
                         </div>
-                        <div class="setting-item">
-                            <label>📦 Batch</label>
-                            <input type="number" id="batchSize" value="4" min="1" max="8" step="1">
+                        <div class="record-status" id="recordStatus">Ready to record</div>
+                        <div class="waveform-preview" id="recordWaveform"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Audio View -->
+            <section id="view-audio" class="view">
+                <div class="view-header">
+                    <h2>🎵 Audio Analysis</h2>
+                    <p>Visualize and process your audio</p>
+                </div>
+                <div class="audio-analysis">
+                    <div class="spectrum-container">
+                        <canvas id="spectrumCanvas"></canvas>
+                    </div>
+                    <div class="audio-controls">
+                        <button class="btn btn-secondary" id="analyzeBtn">🔍 Analyze</button>
+                        <button class="btn btn-secondary" id="normalizeBtn">⚖️ Normalize</button>
+                        <button class="btn btn-secondary" id="noiseBtn">🔇 Noise Suppression</button>
+                    </div>
+                    <div class="phoneme-display">
+                        <span class="phoneme-label">Visemes:</span>
+                        <span class="phoneme-values" id="phonemeValues">—</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section id="view-settings" class="view">
+                <div class="view-header">
+                    <h2>⚙️ Settings</h2>
+                    <p>Configure animation and rendering parameters</p>
+                </div>
+                <div class="settings-grid">
+                    <div class="settings-group">
+                        <h3>Animation</h3>
+                        <div class="setting-row">
+                            <label for="animSpeed">Animation Speed</label>
+                            <input type="range" id="animSpeed" min="0.5" max="2" step="0.1" value="1">
+                            <span class="setting-value" id="animSpeedVal">1.0x</span>
                         </div>
-                        <div class="setting-item">
-                            <label>🔄 Preprocess</label>
-                            <select id="preprocess">
-                                <option value="crop">Crop</option>
-                                <option value="resize">Resize</option>
-                                <option value="full">Full</option>
+                        <div class="setting-row">
+                            <label for="blinkFreq">Blink Frequency</label>
+                            <input type="range" id="blinkFreq" min="0" max="100" step="1" value="30">
+                            <span class="setting-value" id="blinkFreqVal">30%</span>
+                        </div>
+                        <div class="setting-row">
+                            <label for="headMotion">Head Motion</label>
+                            <input type="range" id="headMotion" min="0" max="100" step="1" value="50">
+                            <span class="setting-value" id="headMotionVal">50%</span>
+                        </div>
+                        <div class="setting-row">
+                            <label for="mouthSensitivity">Mouth Sensitivity</label>
+                            <input type="range" id="mouthSensitivity" min="1" max="10" step="1" value="5">
+                            <span class="setting-value" id="mouthSensitivityVal">5</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Audio</h3>
+                        <div class="setting-row">
+                            <label for="audioGain">Audio Gain</label>
+                            <input type="range" id="audioGain" min="0" max="200" step="5" value="100">
+                            <span class="setting-value" id="audioGainVal">100%</span>
+                        </div>
+                        <div class="setting-row">
+                            <label for="noiseReduction">Noise Reduction</label>
+                            <input type="range" id="noiseReduction" min="0" max="100" step="1" value="50">
+                            <span class="setting-value" id="noiseReductionVal">50%</span>
+                        </div>
+                        <div class="setting-row">
+                            <label for="autoPlay">Auto Play</label>
+                            <input type="checkbox" id="autoPlay" checked>
+                        </div>
+                        <div class="setting-row">
+                            <label for="showDebug">Debug Overlay</label>
+                            <input type="checkbox" id="showDebug">
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Rendering</h3>
+                        <div class="setting-row">
+                            <label for="renderQuality">Render Quality</label>
+                            <select id="renderQuality">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="ultra">Ultra</option>
                             </select>
                         </div>
-                        <div class="setting-item">
-                            <label>👤 Face Model</label>
-                            <select id="faceModel">
-                                <option value="face_detection">Detection</option>
-                                <option value="face_recognition">Recognition</option>
+                        <div class="setting-row">
+                            <label for="canvasRes">Canvas Resolution</label>
+                            <select id="canvasRes">
+                                <option value="512">512x512</option>
+                                <option value="720" selected>720x720</option>
+                                <option value="1080">1080x1080</option>
+                                <option value="1440">1440x1440</option>
+                                <option value="2160">2160x2160</option>
                             </select>
+                        </div>
+                        <div class="setting-row">
+                            <label for="bgBlur">Background Blur</label>
+                            <input type="range" id="bgBlur" min="0" max="20" step="1" value="0">
+                            <span class="setting-value" id="bgBlurVal">0px</span>
+                        </div>
+                    </div>
+
+                    <div class="settings-group">
+                        <h3>Appearance</h3>
+                        <div class="setting-row">
+                            <label for="themeSelect">Theme</label>
+                            <select id="themeSelect">
+                                <option value="dark">Dark</option>
+                                <option value="light">Light</option>
+                                <option value="system">System</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <label for="languageSelect">Language</label>
+                            <select id="languageSelect">
+                                <option value="en">English</option>
+                                <option value="es">Español</option>
+                                <option value="fr">Français</option>
+                                <option value="de">Deutsch</option>
+                                <option value="zh">中文</option>
+                                <option value="ja">日本語</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <label for="reducedMotion">Reduced Motion</label>
+                            <input type="checkbox" id="reducedMotion">
+                        </div>
+                        <div class="setting-row">
+                            <label for="highContrast">High Contrast</label>
+                            <input type="checkbox" id="highContrast">
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Generate -->
-                <div class="generate-section">
-                    <button class="generate-btn" id="generateBtn" disabled>
-                        🎬 Generate Video
-                    </button>
-                    <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);margin-top:6px;">
-                        <span id="shortcutHint">Press Ctrl+Enter to generate</span>
-                        <span id="queueStatus">Queue: 0</span>
+            <!-- Export View -->
+            <section id="view-export" class="view">
+                <div class="view-header">
+                    <h2>💾 Export</h2>
+                    <p>Export your animated video</p>
+                </div>
+                <div class="export-grid">
+                    <div class="export-card">
+                        <h3>Video Settings</h3>
+                        <div class="export-option">
+                            <label for="exportQuality">Quality</label>
+                            <select id="exportQuality">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="lossless">Lossless</option>
+                            </select>
+                        </div>
+                        <div class="export-option">
+                            <label for="exportFps">FPS</label>
+                            <select id="exportFps">
+                                <option value="24">24</option>
+                                <option value="30" selected>30</option>
+                                <option value="60">60</option>
+                            </select>
+                        </div>
+                        <div class="export-option">
+                            <label for="exportResolution">Resolution</label>
+                            <select id="exportResolution">
+                                <option value="720">720p</option>
+                                <option value="1080" selected>1080p</option>
+                                <option value="2160">4K</option>
+                            </select>
+                        </div>
+                        <div class="export-option">
+                            <label for="exportFormat">Format</label>
+                            <select id="exportFormat">
+                                <option value="webm">WebM</option>
+                                <option value="mp4">MP4 (if supported)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="export-card">
+                        <h3>Export Controls</h3>
+                        <button class="export-btn" id="exportBtn">🎬 Export Video</button>
+                        <div class="export-progress" id="exportProgress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="exportProgressFill"></div>
+                            </div>
+                            <div class="progress-text" id="exportProgressText">Processing...</div>
+                        </div>
+                        <button class="export-btn" id="cancelExportBtn" style="display:none;background:var(--error);">⏹ Cancel</button>
+                        <div style="margin-top:12px;font-size:0.8rem;color:var(--text-muted);">
+                            <span id="exportStatus">Ready to export</span>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Progress -->
-                <div class="progress-container" id="progressContainer">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <div class="progress-info">
-                        <span class="progress-status" id="progressStatus">Initializing...</span>
-                        <span class="progress-percent" id="progressPercent">0%</span>
-                    </div>
-                </div>
-
-                <!-- Result -->
-                <div class="result-container" id="resultContainer">
-                    <video id="resultVideo" controls playsinline></video>
-                    <div class="result-meta" id="resultMeta">
-                        <span>📹 <span id="resultDuration">0:00</span></span>
-                        <span>📐 <span id="resultResolution">-</span></span>
-                        <span>📊 <span id="resultSize">-</span></span>
-                    </div>
-                    <div class="result-actions">
-                        <a class="btn btn-success" id="downloadLink" download>📥 Download</a>
-                        <button class="btn btn-secondary" onclick="resetResult()">🔄 New Generation</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== HISTORY ===== -->
-        <div class="history-container">
-            <div class="history-header">
-                <h2>📚 History <span class="badge-count" id="historyCount">0 videos</span></h2>
-                <div class="history-controls">
-                    <input type="text" id="searchInput" placeholder="🔍 Search videos..." oninput="debounceSearch()">
-                    <select id="sortBy" onchange="loadHistory()">
-                        <option value="modified">Date Modified</option>
-                        <option value="created">Date Created</option>
-                        <option value="size">Size</option>
-                        <option value="filename">Name</option>
-                    </select>
-                    <select id="sortOrder" onchange="loadHistory()">
-                        <option value="desc">Newest ↓</option>
-                        <option value="asc">Oldest ↑</option>
-                    </select>
-                    <button class="btn btn-danger btn-sm" onclick="clearAllHistory()">🗑️ All</button>
-                </div>
-            </div>
-            <div id="historyList" class="history-grid">
-                <div class="empty-history">
-                    <span class="icon">🎬</span>
-                    <h3>No videos yet</h3>
-                    <p>Generate your first talking head video!</p>
-                </div>
-            </div>
-            <div id="paginationContainer" class="pagination"></div>
-        </div>
-
-        <!-- ===== FOOTER ===== -->
-        <footer style="text-align:center;padding:24px 0 12px;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border-color);margin-top:24px;">
-            <p>🎭 SadTalker Pro v2.0 · Powered by <span style="color:var(--gradient-start);">Advanced Lip Sync AI</span></p>
-            <p style="margin-top:4px;font-size:0.7rem;">Made with ❤️ · <span id="systemInfo">System ready</span></p>
-        </footer>
+            </section>
+        </main>
     </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
 
     <!-- ============================================================ -->
-    <!-- ===== JAVASCRIPT - LipSyncClient + Application ===== -->
+    <!-- JavaScript -->
     <!-- ============================================================ -->
     <script>
         /**
-         * LipSyncClient - API Client for SadTalker Backend
-         * Handles all communication with the backend server
+         * AI Talking Face Pro - Main Application
+         * Complete browser-based lip sync engine
          */
-        class LipSyncClient {
-            constructor(baseUrl = "/api") {
-                this.baseUrl = baseUrl;
-                this._cache = new Map();
-                this._retryCount = 3;
-                this._retryDelay = 1000;
-            }
-
-            /**
-             * Get the base URL with proper formatting
-             */
-            get url() {
-                return this.baseUrl.replace(/\/+$/, '');
-            }
-
-            /**
-             * Make a request with retry logic
-             */
-            async _request(endpoint, options = {}, retries = this._retryCount) {
-                const url = `${this.url}${endpoint}`;
-                const controller = new AbortController();
-                const timeout = setTimeout(() => controller.abort(), options.timeout || 30000);
-
-                try {
-                    const response = await fetch(url, {
-                        ...options,
-                        signal: controller.signal,
-                        headers: {
-                            ...options.headers,
-                            'Accept': 'application/json',
-                        },
-                    });
-
-                    clearTimeout(timeout);
-
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
-                    }
-
-                    return response;
-
-                } catch (error) {
-                    clearTimeout(timeout);
-
-                    if (retries > 0 && error.name !== 'AbortError') {
-                        await new Promise(resolve => setTimeout(resolve, this._retryDelay));
-                        return this._request(endpoint, options, retries - 1);
-                    }
-
-                    throw error;
-                }
-            }
-
-            /**
-             * Health check endpoint
-             */
-            async health() {
-                try {
-                    const response = await this._request('/health', {
-                        timeout: 5000,
-                    }, 1);
-                    return response.json();
-                } catch (error) {
-                    return {
-                        status: 'error',
-                        detail: error.message,
-                        timestamp: new Date().toISOString()
-                    };
-                }
-            }
-
-            /**
-             * Generate a talking head video
-             * @param {File} imageFile - Image file (PNG, JPG, WEBP, etc.)
-             * @param {File} audioFile - Audio file (MP3, WAV, M4A, etc.)
-             * @param {Object} options - Generation options
-             * @param {boolean} options.still - Still mode
-             * @param {boolean} options.enhancer - Enhance quality
-             * @param {boolean} options.face_enhance - Face enhancement
-             * @param {boolean} options.background_enhance - Background enhancement
-             * @param {number} options.fps - Frames per second (15-60)
-             * @param {number} options.batch_size - Batch size (1-8)
-             * @param {string} options.preprocess - Preprocess method (crop, resize, full)
-             * @param {string} options.face_model - Face model (face_detection, face_recognition)
-             * @returns {Promise<Object>} Generation result
-             */
-            async generate(imageFile, audioFile, options = {}) {
-                if (!imageFile || !audioFile) {
-                    throw new Error('Both image and audio files are required');
-                }
-
-                const form = new FormData();
-                form.append('image', imageFile);
-                form.append('audio', audioFile);
-
-                const defaults = {
-                    still: false,
-                    enhancer: true,
-                    face_enhance: true,
-                    background_enhance: false,
-                    fps: 25,
-                    batch_size: 4,
-                    preprocess: 'crop',
-                    face_model: 'face_detection',
-                };
-
-                const merged = { ...defaults, ...options };
-                Object.entries(merged).forEach(([key, value]) => {
-                    form.append(key, typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value));
-                });
-
-                const response = await this._request('/generate', {
-                    method: 'POST',
-                    body: form,
-                    timeout: 300000,
-                });
-
-                return response.json();
-            }
-
-            /**
-             * Get generation progress
-             * @param {string} jobId - Job ID from generate response
-             * @returns {Promise<Object>} Progress data
-             */
-            async getProgress(jobId) {
-                if (!jobId) {
-                    throw new Error('Job ID is required');
-                }
-                const response = await this._request(`/progress/${jobId}`, {
-                    timeout: 10000,
-                });
-                return response.json();
-            }
-
-            /**
-             * List all generated videos
-             * @param {Object} params - Query parameters
-             * @param {number} params.page - Page number
-             * @param {number} params.per_page - Items per page
-             * @param {string} params.search - Search query
-             * @param {string} params.sort_by - Sort field
-             * @param {string} params.sort_order - Sort order (asc/desc)
-             * @returns {Promise<Object>} List of videos
-             */
-            async listVideos(params = {}) {
-                const query = new URLSearchParams();
-                Object.entries(params).forEach(([key, value]) => {
-                    if (value) query.append(key, value);
-                });
-
-                const response = await this._request(`/list?${query.toString()}`, {
-                    timeout: 10000,
-                });
-                return response.json();
-            }
-
-            /**
-             * Download a video file
-             * @param {string} filename - Video filename
-             * @returns {string} Download URL
-             */
-            getDownloadUrl(filename) {
-                return `${this.url}/download/${filename}`;
-            }
-
-            /**
-             * Get video playback URL
-             * @param {string} filename - Video filename
-             * @returns {string} Video URL
-             */
-            getVideoUrl(filename) {
-                return `${this.url}/api/results/${filename}`;
-            }
-
-            /**
-             * Delete a video
-             * @param {string} filename - Video filename
-             * @returns {Promise<Object>} Deletion result
-             */
-            async deleteVideo(filename) {
-                if (!filename) {
-                    throw new Error('Filename is required');
-                }
-                const response = await this._request(`/cleanup/${filename}`, {
-                    method: 'DELETE',
-                    timeout: 10000,
-                });
-                return response.json();
-            }
-
-            /**
-             * Delete all videos
-             * @returns {Promise<Object>} Deletion result
-             */
-            async deleteAllVideos() {
-                const response = await this._request('/cleanup/all', {
-                    method: 'DELETE',
-                    timeout: 10000,
-                });
-                return response.json();
-            }
-
-            /**
-             * Cancel a generation job
-             * @param {string} jobId - Job ID
-             * @returns {Promise<Object>} Cancellation result
-             */
-            async cancelJob(jobId) {
-                if (!jobId) {
-                    throw new Error('Job ID is required');
-                }
-                const response = await this._request(`/cancel/${jobId}`, {
-                    method: 'POST',
-                    timeout: 10000,
-                });
-                return response.json();
-            }
-
-            /**
-             * Get GPU status
-             * @returns {Promise<Object>} GPU status
-             */
-            async getGpuStatus() {
-                const response = await this._request('/gpu', {
-                    timeout: 10000,
-                });
-                return response.json();
-            }
-
-            /**
-             * Get system status
-             * @returns {Promise<Object>} System status
-             */
-            async getSystemStatus() {
-                const response = await this._request('/system', {
-                    timeout: 10000,
-                });
-                return response.json();
-            }
-
-            /**
-             * Get model status
-             * @returns {Promise<Object>} Model status
-             */
-            async getModelStatus() {
-                const response = await this._request('/models', {
-                    timeout: 10000,
-                });
-                return response.json();
-            }
-
-            /**
-             * Poll for generation completion
-             * @param {string} jobId - Job ID
-             * @param {Function} onProgress - Progress callback
-             * @param {number} interval - Poll interval in ms
-             * @param {number} timeout - Timeout in ms
-             * @returns {Promise<Object>} Final result
-             */
-            async pollGeneration(jobId, onProgress = null, interval = 1000, timeout = 300000) {
-                const startTime = Date.now();
-                let lastProgress = -1;
-
-                while (true) {
-                    if (Date.now() - startTime > timeout) {
-                        throw new Error('Generation timed out');
-                    }
-
-                    const progress = await this.getProgress(jobId);
-
-                    if (onProgress && progress.progress !== lastProgress) {
-                        onProgress(progress);
-                        lastProgress = progress.progress;
-                    }
-
-                    if (progress.status === 'completed') {
-                        return progress;
-                    }
-
-                    if (progress.status === 'failed' || progress.status === 'cancelled') {
-                        throw new Error(progress.error || `Generation ${progress.status}`);
-                    }
-
-                    await new Promise(resolve => setTimeout(resolve, interval));
-                }
-            }
-        }
 
         // ============================================================
-        // APPLICATION STATE & CONFIG
+        // APP STATE
         // ============================================================
-        const CONFIG = {
-            API_URL: localStorage.getItem('sadtalker_api_url') ||
-                (() => {
-                    const hostname = window.location.hostname;
-                    const port = window.location.port || '5000';
-                    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                        return `http://${hostname}:${port}/api`;
-                    }
-                    return window.location.origin + '/api';
-                })(),
-            DEFAULT_FPS: 25,
-            MAX_FILE_SIZE: 50 * 1024 * 1024,
-            PAGE_SIZE: 12,
-            HISTORY_INTERVAL: 30000,
-        };
-
-        // Initialize LipSyncClient
-        const lipSync = new LipSyncClient(CONFIG.API_URL);
-
-        // Application state
-        const state = {
+        const APP = {
             image: null,
             audio: null,
-            isProcessing: false,
-            isConnected: false,
-            currentJob: null,
-            historyInterval: null,
-            theme: localStorage.getItem('sadtalker_theme') || 'light',
-            modalOpen: false,
-            searchTimeout: null,
-            historyPage: 1,
-            generationStats: {
-                total: 0,
-                successful: 0,
-                failed: 0,
+            audioContext: null,
+            audioBuffer: null,
+            isPlaying: false,
+            isRecording: false,
+            currentTime: 0,
+            duration: 0,
+            fps: 60,
+            frameCount: 0,
+            lastFrameTime: 0,
+            animationId: null,
+            faceData: null,
+            mouthShapes: [],
+            currentViseme: 'A',
+            settings: {
+                animSpeed: 1.0,
+                blinkFreq: 30,
+                headMotion: 50,
+                mouthSensitivity: 5,
+                audioGain: 100,
+                noiseReduction: 50,
+                autoPlay: true,
+                showDebug: false,
+                renderQuality: 'medium',
+                canvasRes: 720,
+                bgBlur: 0,
+                theme: 'dark',
+                language: 'en',
+                reducedMotion: false,
+                highContrast: false,
             },
+            stats: {
+                fps: 60,
+                memory: 0,
+                gpu: 'Active',
+            },
+            exportState: {
+                isExporting: false,
+                progress: 0,
+            }
         };
 
         // ============================================================
@@ -1829,103 +1618,108 @@
         const $$ = (sel) => document.querySelectorAll(sel);
 
         const DOM = {
-            imageInput: $('#imageInput'),
-            audioInput: $('#audioInput'),
-            imageDropZone: $('#imageDropZone'),
-            audioDropZone: $('#audioDropZone'),
+            sidebar: $('#sidebar'),
+            sidebarToggle: $('#sidebarToggle'),
+            navItems: $$('.nav-item'),
+            views: $$('.view'),
+
+            previewCanvas: $('#previewCanvas'),
+            previewOverlay: $('#previewOverlay'),
+            dropZone: $('#dropZone'),
+            imageUpload: $('#imageUpload'),
+
+            playBtn: $('#playBtn'),
+            timelineSlider: $('#timelineSlider'),
+            timeDisplay: $('#timeDisplay'),
+            playPauseBtn: $('#playPauseBtn'),
+            rewindBtn: $('#rewindBtn'),
+            forwardBtn: $('#forwardBtn'),
+            recordBtn: $('#recordBtn'),
+
+            waveformCanvas: $('#waveformCanvas'),
+            spectrumCanvas: $('#spectrumCanvas'),
+            phonemeValues: $('#phonemeValues'),
+
+            fpsCounter: $('#fpsCounter'),
+            memoryUsage: $('#memoryUsage'),
+            gpuStatus: $('#gpuStatus'),
+            statusDot: $('#statusDot'),
+            statusText: $('#statusText'),
+
+            // Upload
+            imageDropzone: $('#imageDropzone'),
+            imageFileInput: $('#imageFileInput'),
+            imagePreviewContainer: $('#imagePreviewContainer'),
             imagePreview: $('#imagePreview'),
-            audioPreview: $('#audioPreview'),
-            imagePreviewImg: $('#imagePreviewImg'),
-            imageName: $('#imageName'),
-            imageSize: $('#imageSize'),
+            removeImageBtn: $('#removeImageBtn'),
             imageStatus: $('#imageStatus'),
-            imageValid: $('#imageValid'),
+
+            audioDropzone: $('#audioDropzone'),
+            audioFileInput: $('#audioFileInput'),
+            audioInfoContainer: $('#audioInfoContainer'),
             audioName: $('#audioName'),
-            audioSize: $('#audioSize'),
+            audioDuration: $('#audioDuration'),
+            removeAudioBtn: $('#removeAudioBtn'),
             audioStatus: $('#audioStatus'),
-            audioValid: $('#audioValid'),
-            audioPreviewPlayer: $('#audioPreviewPlayer'),
-            generateBtn: $('#generateBtn'),
-            progressContainer: $('#progressContainer'),
-            progressFill: $('#progressFill'),
-            progressStatus: $('#progressStatus'),
-            progressPercent: $('#progressPercent'),
-            resultContainer: $('#resultContainer'),
-            resultVideo: $('#resultVideo'),
-            resultDuration: $('#resultDuration'),
-            resultResolution: $('#resultResolution'),
-            resultSize: $('#resultSize'),
-            downloadLink: $('#downloadLink'),
-            historyList: $('#historyList'),
-            historyCount: $('#historyCount'),
-            searchInput: $('#searchInput'),
-            sortBy: $('#sortBy'),
-            sortOrder: $('#sortOrder'),
-            paginationContainer: $('#paginationContainer'),
-            statusBadge: $('#statusBadge'),
-            themeToggle: $('#themeToggle'),
-            installBtn: $('#installBtn'),
+
+            startRecordBtn: $('#startRecordBtn'),
+            stopRecordBtn: $('#stopRecordBtn'),
+            playRecordBtn: $('#playRecordBtn'),
+            recordStatus: $('#recordStatus'),
+            recordWaveform: $('#recordWaveform'),
+
+            // Settings
+            animSpeed: $('#animSpeed'),
+            animSpeedVal: $('#animSpeedVal'),
+            blinkFreq: $('#blinkFreq'),
+            blinkFreqVal: $('#blinkFreqVal'),
+            headMotion: $('#headMotion'),
+            headMotionVal: $('#headMotionVal'),
+            mouthSensitivity: $('#mouthSensitivity'),
+            mouthSensitivityVal: $('#mouthSensitivityVal'),
+            audioGain: $('#audioGain'),
+            audioGainVal: $('#audioGainVal'),
+            noiseReduction: $('#noiseReduction'),
+            noiseReductionVal: $('#noiseReductionVal'),
+            autoPlay: $('#autoPlay'),
+            showDebug: $('#showDebug'),
+            renderQuality: $('#renderQuality'),
+            canvasRes: $('#canvasRes'),
+            bgBlur: $('#bgBlur'),
+            bgBlurVal: $('#bgBlurVal'),
+            themeSelect: $('#themeSelect'),
+            languageSelect: $('#languageSelect'),
+            reducedMotion: $('#reducedMotion'),
+            highContrast: $('#highContrast'),
+
+            // Export
+            exportQuality: $('#exportQuality'),
+            exportFps: $('#exportFps'),
+            exportResolution: $('#exportResolution'),
+            exportFormat: $('#exportFormat'),
+            exportBtn: $('#exportBtn'),
+            exportProgress: $('#exportProgress'),
+            exportProgressFill: $('#exportProgressFill'),
+            exportProgressText: $('#exportProgressText'),
+            cancelExportBtn: $('#cancelExportBtn'),
+            exportStatus: $('#exportStatus'),
+
             toastContainer: $('#toastContainer'),
-            modalOverlay: $('#modalOverlay'),
-            modalTitle: $('#modalTitle'),
-            modalBody: $('#modalBody'),
-            modalFooter: $('#modalFooter'),
-            stillMode: $('#stillMode'),
-            enhancer: $('#enhancer'),
-            faceEnhance: $('#faceEnhance'),
-            backgroundEnhance: $('#backgroundEnhance'),
-            fps: $('#fps'),
-            batchSize: $('#batchSize'),
-            preprocess: $('#preprocess'),
-            faceModel: $('#faceModel'),
-            shortcutHint: $('#shortcutHint'),
-            queueStatus: $('#queueStatus'),
-            systemInfo: $('#systemInfo'),
         };
-
-        // ============================================================
-        // THEME
-        // ============================================================
-        function setTheme(theme) {
-            state.theme = theme;
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('sadtalker_theme', theme);
-            DOM.themeToggle.textContent = theme === 'dark' ? '☀️' : '🌙';
-        }
-
-        function toggleTheme() {
-            setTheme(state.theme === 'dark' ? 'light' : 'dark');
-        }
-
-        DOM.themeToggle.addEventListener('click', toggleTheme);
-
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
-                e.preventDefault();
-                toggleTheme();
-            }
-        });
 
         // ============================================================
         // TOAST SYSTEM
         // ============================================================
         function showToast(message, type = 'info', duration = 4000) {
-            const icons = {
-                success: '✅',
-                error: '❌',
-                warning: '⚠️',
-                info: 'ℹ️'
-            };
-
+            const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.innerHTML = `
-                <span class="toast-icon">${icons[type] || 'ℹ️'}</span>
+                <span>${icons[type] || 'ℹ️'}</span>
                 <span>${message}</span>
                 <button class="toast-close" onclick="this.closest('.toast').remove()">✕</button>
             `;
             DOM.toastContainer.appendChild(toast);
-
             setTimeout(() => {
                 toast.classList.add('removing');
                 setTimeout(() => toast.remove(), 400);
@@ -1933,698 +1727,1106 @@
         }
 
         // ============================================================
-        // MODAL SYSTEM
+        // THEME
         // ============================================================
-        function openModal(type) {
-            const modals = {
-                api: {
-                    title: '⚙️ API Configuration',
-                    body: `
-                        <p style="margin-bottom:16px;color:var(--text-muted);">Configure the backend API URL for the LipSync client.</p>
-                        <input type="url" id="apiUrlInput" value="${lipSync.url}" 
-                               style="width:100%;padding:12px 16px;border:2px solid var(--border-color);border-radius:12px;
-                                      background:var(--bg-primary);color:var(--text-primary);font-size:1rem;">
-                        <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;">
-                            Current: <span id="apiUrlDisplay">${lipSync.url}</span>
-                        </p>
-                        <button class="btn btn-secondary w-full mt-16" onclick="testApiConnection()">🔍 Test Connection</button>
-                        <div id="apiTestResult" style="margin-top:8px;font-size:0.9rem;"></div>
-                    `,
-                    footer: `
-                        <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                        <button class="btn btn-primary" onclick="saveApiConfig()">Save & Test</button>
-                    `
-                },
-                settings: {
-                    title: '🛠️ Advanced Settings',
-                    body: `
-                        <div style="display:grid;gap:14px;">
-                            <div class="setting-item">
-                                <label style="flex:1;">Default FPS</label>
-                                <input type="number" id="defaultFps" value="${CONFIG.DEFAULT_FPS}" min="15" max="60" step="1"
-                                       style="padding:6px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);width:80px;">
-                            </div>
-                            <div class="setting-item">
-                                <label style="flex:1;">Max File Size (MB)</label>
-                                <input type="number" id="maxFileSize" value="${CONFIG.MAX_FILE_SIZE / 1024 / 1024}" min="10" max="500"
-                                       style="padding:6px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);width:80px;">
-                            </div>
-                            <div class="setting-item">
-                                <label style="flex:1;">History Refresh (s)</label>
-                                <input type="number" id="historyInterval" value="${CONFIG.HISTORY_INTERVAL / 1000}" min="5" max="300"
-                                       style="padding:6px 12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);width:80px;">
-                            </div>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;">
-                                <button class="btn btn-danger" onclick="clearAllHistory()" style="flex:1;">🗑️ Delete All Videos</button>
-                                <button class="btn btn-secondary" onclick="clearCache()" style="flex:1;">🧹 Clear Cache</button>
-                            </div>
-                        </div>
-                    `,
-                    footer: `
-                        <button class="btn btn-secondary" onclick="closeModal()">Close</button>
-                        <button class="btn btn-primary" onclick="saveSettings()">Save Settings</button>
-                    `
-                },
-                diagnostics: {
-                    title: '📊 System Diagnostics',
-                    body: `
-                        <div id="diagnosticsContent" style="font-family:monospace;font-size:0.8rem;background:var(--bg-primary);padding:16px;border-radius:12px;max-height:450px;overflow-y:auto;line-height:1.8;">
-                            <div style="text-align:center;padding:20px;color:var(--text-muted);">⏳ Loading diagnostics...</div>
-                        </div>
-                    `,
-                    footer: `
-                        <button class="btn btn-secondary" onclick="closeModal()">Close</button>
-                        <button class="btn btn-primary" onclick="refreshDiagnostics()">🔄 Refresh</button>
-                    `
-                }
-            };
-
-            const modal = modals[type];
-            if (!modal) return;
-
-            DOM.modalTitle.textContent = modal.title;
-            DOM.modalBody.innerHTML = modal.body;
-            DOM.modalFooter.innerHTML = modal.footer;
-            DOM.modalOverlay.classList.add('active');
-            state.modalOpen = true;
-
-            if (type === 'diagnostics') {
-                refreshDiagnostics();
+        function setTheme(theme) {
+            if (theme === 'system') {
+                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
             }
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('ai-face-theme', theme);
+            APP.settings.theme = theme;
         }
 
-        function closeModal() {
-            DOM.modalOverlay.classList.remove('active');
-            state.modalOpen = false;
+        function loadTheme() {
+            const saved = localStorage.getItem('ai-face-theme') || 'dark';
+            DOM.themeSelect.value = saved;
+            setTheme(saved);
         }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && state.modalOpen) {
-                closeModal();
-            }
+        DOM.themeSelect.addEventListener('change', () => {
+            setTheme(DOM.themeSelect.value);
         });
 
         // ============================================================
-        // API CONFIG
+        // NAVIGATION
         // ============================================================
-        function saveApiConfig() {
-            const url = document.getElementById('apiUrlInput').value.trim();
-            if (!url) {
-                showToast('Please enter a valid URL', 'error');
-                return;
-            }
-            const cleanUrl = url.replace(/\/+$/, '');
-            lipSync.baseUrl = cleanUrl;
-            CONFIG.API_URL = cleanUrl;
-            localStorage.setItem('sadtalker_api_url', cleanUrl);
-            document.getElementById('apiUrlDisplay').textContent = cleanUrl;
-            showToast('✅ API URL updated successfully', 'success');
-            closeModal();
-            checkSystemStatus();
-            loadHistory();
-        }
+        DOM.navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                DOM.navItems.forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                const view = item.dataset.view;
+                DOM.views.forEach(v => v.classList.remove('active'));
+                const target = document.getElementById(`view-${view}`);
+                if (target) target.classList.add('active');
+            });
+        });
 
-        async function testApiConnection() {
-            const url = document.getElementById('apiUrlInput').value.trim().replace(/\/+$/, '');
-            const resultEl = document.getElementById('apiTestResult');
-
-            resultEl.innerHTML = '⏳ Testing connection...';
-            resultEl.style.color = 'var(--text-muted)';
-
-            try {
-                const testClient = new LipSyncClient(url);
-                const data = await testClient.health();
-                if (data.status && data.status !== 'error') {
-                    resultEl.innerHTML = `✅ Connected! Status: ${data.status}`;
-                    resultEl.style.color = 'var(--success)';
-                } else {
-                    resultEl.innerHTML = `⚠️ ${data.detail || 'Connected but health check returned error'}`;
-                    resultEl.style.color = 'var(--warning)';
-                }
-            } catch (error) {
-                resultEl.innerHTML = `❌ Cannot connect: ${error.message}`;
-                resultEl.style.color = 'var(--error)';
-            }
-        }
+        DOM.sidebarToggle.addEventListener('click', () => {
+            DOM.sidebar.classList.toggle('collapsed');
+        });
 
         // ============================================================
-        // SETTINGS
+        // IMAGE UPLOAD
         // ============================================================
-        function saveSettings() {
-            const fps = parseInt(document.getElementById('defaultFps').value);
-            const maxSize = parseFloat(document.getElementById('maxFileSize').value);
-            const interval = parseInt(document.getElementById('historyInterval').value);
-
-            if (fps >= 15 && fps <= 60) CONFIG.DEFAULT_FPS = fps;
-            if (maxSize >= 10 && maxSize <= 500) CONFIG.MAX_FILE_SIZE = maxSize * 1024 * 1024;
-            if (interval >= 5 && interval <= 300) {
-                CONFIG.HISTORY_INTERVAL = interval * 1000;
-                if (state.historyInterval) {
-                    clearInterval(state.historyInterval);
-                    state.historyInterval = setInterval(loadHistory, CONFIG.HISTORY_INTERVAL);
-                }
-            }
-
-            showToast('✅ Settings saved successfully', 'success');
-            closeModal();
-        }
-
-        function clearCache() {
-            localStorage.clear();
-            showToast('🧹 Cache cleared successfully', 'success');
-            setTimeout(() => location.reload(), 500);
-        }
-
-        // ============================================================
-        // DIAGNOSTICS
-        // ============================================================
-        async function refreshDiagnostics() {
-            const container = document.getElementById('diagnosticsContent');
-            container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">⏳ Loading diagnostics...</div>';
-
-            try {
-                const [system, gpu, models, health] = await Promise.all([
-                    lipSync.getSystemStatus().catch(() => null),
-                    lipSync.getGpuStatus().catch(() => null),
-                    lipSync.getModelStatus().catch(() => null),
-                    lipSync.health().catch(() => null),
-                ]);
-
-                const html = `
-                    <div style="display:grid;gap:6px;">
-                        <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">🔌 Connection</div>
-                        <div style="color:var(--text-muted);">API URL: ${lipSync.url}</div>
-                        <div style="color:var(--text-muted);">Health: ${health?.status || 'Unknown'}</div>
-                        <hr style="border-color:var(--border-color);">
-
-                        <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">💻 Hardware</div>
-                        <div style="color:var(--text-muted);">GPU Available: ${gpu?.available ? '✅' : '❌'}</div>
-                        <div style="color:var(--text-muted);">Device: ${gpu?.device || 'CPU'}</div>
-                        ${gpu?.gpu_memory ? Object.entries(gpu.gpu_memory).map(([name, info]) => `
-                            <div style="color:var(--text-muted);padding-left:12px;">
-                                ${name}: ${info.name} · ${(info.total_memory / 1024 / 1024 / 1024).toFixed(2)} GB
-                            </div>
-                        `).join('') : ''}
-                        <hr style="border-color:var(--border-color);">
-
-                        <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">🧠 Models</div>
-                        ${models ? Object.entries(models).map(([name, info]) => `
-                            <div style="color:var(--text-muted);">
-                                ${name}: ${info.exists ? '✅' : '❌'} ${info.size ? `(${(info.size / 1024 / 1024).toFixed(2)} MB)` : ''}
-                            </div>
-                        `).join('') : '<div style="color:var(--text-muted);">No models found</div>'}
-                        <hr style="border-color:var(--border-color);">
-
-                        <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">📈 Stats</div>
-                        <div style="color:var(--text-muted);">Total Generations: ${state.generationStats.total}</div>
-                        <div style="color:var(--text-muted);">Successful: ${state.generationStats.successful}</div>
-                        <div style="color:var(--text-muted);">Failed: ${state.generationStats.failed}</div>
-                        <div style="color:var(--text-muted);">Success Rate: ${state.generationStats.total > 0 ? Math.round(state.generationStats.successful / state.generationStats.total * 100) : 0}%</div>
-                        <hr style="border-color:var(--border-color);">
-
-                        <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">📋 Client Info</div>
-                        <div style="color:var(--text-muted);">Base URL: ${lipSync.url}</div>
-                        <div style="color:var(--text-muted);">Retry Count: ${lipSync._retryCount}</div>
-                        <div style="color:var(--text-muted);">Cache Size: ${lipSync._cache.size}</div>
-                    </div>
-                `;
-                container.innerHTML = html;
-            } catch (error) {
-                container.innerHTML = `
-                    <div style="text-align:center;padding:20px;color:var(--error);">
-                        ❌ Failed to load diagnostics: ${error.message}
-                    </div>
-                `;
-            }
-        }
-
-        // ============================================================
-        // FILE HANDLING
-        // ============================================================
-        function handleImage(file) {
+        function handleImageFile(file) {
             if (!file || !file.type.startsWith('image/')) {
                 showToast('Please upload a valid image file', 'error');
                 return;
             }
 
-            if (file.size > CONFIG.MAX_FILE_SIZE) {
-                showToast(`Image too large (max ${CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB)`, 'error');
-                return;
-            }
-
-            state.image = file;
             const reader = new FileReader();
             reader.onload = (e) => {
-                DOM.imagePreviewImg.src = e.target.result;
-                DOM.imagePreview.classList.remove('hidden');
-                DOM.imageDropZone.classList.add('hidden');
-                DOM.imageName.textContent = file.name;
-                DOM.imageSize.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-                DOM.imageStatus.textContent = '✅ Loaded';
-                DOM.imageStatus.className = 'badge-count';
-                DOM.imageValid.className = 'upload-status valid';
-                DOM.imageValid.textContent = '✅ Valid';
-                updateGenerateButton();
-                showToast(`✅ Image loaded: ${file.name}`, 'success');
+                const img = new Image();
+                img.onload = () => {
+                    APP.image = img;
+                    DOM.imagePreview.src = e.target.result;
+                    DOM.imagePreviewContainer.hidden = false;
+                    DOM.imageDropzone.style.display = 'none';
+                    DOM.imageStatus.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+                    DOM.imageStatus.style.color = 'var(--success)';
+                    showToast(`✅ Image loaded: ${file.name}`, 'success');
+
+                    // Auto-detect face and set up canvas
+                    setupPreviewCanvas();
+                    updatePreviewOverlay();
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        function handleAudio(file) {
+        DOM.imageFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleImageFile(e.target.files[0]);
+            }
+            e.target.value = '';
+        });
+
+        DOM.imageDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            DOM.imageDropzone.style.borderColor = 'var(--gradient-start)';
+        });
+
+        DOM.imageDropzone.addEventListener('dragleave', () => {
+            DOM.imageDropzone.style.borderColor = '';
+        });
+
+        DOM.imageDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            DOM.imageDropzone.style.borderColor = '';
+            const file = e.dataTransfer.files[0];
+            if (file) handleImageFile(file);
+        });
+
+        DOM.imageDropzone.addEventListener('click', () => {
+            DOM.imageFileInput.click();
+        });
+
+        DOM.removeImageBtn.addEventListener('click', () => {
+            APP.image = null;
+            DOM.imagePreviewContainer.hidden = true;
+            DOM.imageDropzone.style.display = '';
+            DOM.imageStatus.textContent = 'No image uploaded';
+            DOM.imageStatus.style.color = '';
+            updatePreviewOverlay();
+        });
+
+        // ============================================================
+        // AUDIO UPLOAD
+        // ============================================================
+        async function handleAudioFile(file) {
             if (!file || !file.type.startsWith('audio/')) {
                 showToast('Please upload a valid audio file', 'error');
                 return;
             }
 
-            if (file.size > CONFIG.MAX_FILE_SIZE) {
-                showToast(`Audio too large (max ${CONFIG.MAX_FILE_SIZE / 1024 / 1024}MB)`, 'error');
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+
+                APP.audioBuffer = audioBuffer;
+                APP.audioContext = audioContext;
+                APP.duration = audioBuffer.duration;
+
+                DOM.audioName.textContent = file.name;
+                DOM.audioDuration.textContent = formatTime(audioBuffer.duration);
+                DOM.audioInfoContainer.hidden = false;
+                DOM.audioDropzone.style.display = 'none';
+                DOM.audioStatus.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
+                DOM.audioStatus.style.color = 'var(--success)';
+
+                // Draw waveform
+                drawWaveform(audioBuffer);
+
+                showToast(`✅ Audio loaded: ${file.name}`, 'success');
+                updatePreviewOverlay();
+
+            } catch (error) {
+                showToast(`❌ Error loading audio: ${error.message}`, 'error');
+            }
+        }
+
+        DOM.audioFileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleAudioFile(e.target.files[0]);
+            }
+            e.target.value = '';
+        });
+
+        DOM.audioDropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            DOM.audioDropzone.style.borderColor = 'var(--gradient-start)';
+        });
+
+        DOM.audioDropzone.addEventListener('dragleave', () => {
+            DOM.audioDropzone.style.borderColor = '';
+        });
+
+        DOM.audioDropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            DOM.audioDropzone.style.borderColor = '';
+            const file = e.dataTransfer.files[0];
+            if (file) handleAudioFile(file);
+        });
+
+        DOM.audioDropzone.addEventListener('click', () => {
+            DOM.audioFileInput.click();
+        });
+
+        DOM.removeAudioBtn.addEventListener('click', () => {
+            APP.audioBuffer = null;
+            APP.audioContext = null;
+            APP.duration = 0;
+            DOM.audioInfoContainer.hidden = true;
+            DOM.audioDropzone.style.display = '';
+            DOM.audioStatus.textContent = 'No audio uploaded';
+            DOM.audioStatus.style.color = '';
+            updatePreviewOverlay();
+        });
+
+        // ============================================================
+        // AUDIO RECORDING
+        // ============================================================
+        let mediaRecorder = null;
+        let recordedChunks = [];
+        let recordingStream = null;
+
+        DOM.startRecordBtn.addEventListener('click', async () => {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                recordingStream = stream;
+                mediaRecorder = new MediaRecorder(stream);
+                recordedChunks = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) recordedChunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+                    const file = new File([blob], 'recording.webm', { type: 'audio/webm' });
+                    await handleAudioFile(file);
+                    DOM.recordStatus.textContent = '✅ Recording saved';
+                    DOM.playRecordBtn.disabled = false;
+                };
+
+                mediaRecorder.start();
+                DOM.isRecording = true;
+                DOM.startRecordBtn.disabled = true;
+                DOM.startRecordBtn.textContent = '⏺ Recording...';
+                DOM.startRecordBtn.classList.add('recording');
+                DOM.stopRecordBtn.disabled = false;
+                DOM.recordStatus.textContent = '🔴 Recording...';
+
+            } catch (error) {
+                showToast(`❌ Microphone error: ${error.message}`, 'error');
+            }
+        });
+
+        DOM.stopRecordBtn.addEventListener('click', () => {
+            if (mediaRecorder && DOM.isRecording) {
+                mediaRecorder.stop();
+                DOM.isRecording = false;
+                DOM.startRecordBtn.disabled = false;
+                DOM.startRecordBtn.textContent = '⏺ Start Recording';
+                DOM.startRecordBtn.classList.remove('recording');
+                DOM.stopRecordBtn.disabled = true;
+                DOM.recordStatus.textContent = '⏹ Stopped';
+
+                if (recordingStream) {
+                    recordingStream.getTracks().forEach(track => track.stop());
+                    recordingStream = null;
+                }
+            }
+        });
+
+        DOM.playRecordBtn.addEventListener('click', () => {
+            if (APP.audioBuffer && APP.audioContext) {
+                playAudio();
+            }
+        });
+
+        // ============================================================
+        // AUDIO PLAYBACK
+        // ============================================================
+        let audioSource = null;
+        let audioStartTime = 0;
+        let audioPauseTime = 0;
+
+        function playAudio() {
+            if (!APP.audioBuffer || !APP.audioContext) return;
+
+            if (APP.isPlaying) {
+                pauseAudio();
                 return;
             }
 
-            state.audio = file;
-            const url = URL.createObjectURL(file);
-            DOM.audioPreviewPlayer.src = url;
-            DOM.audioPreview.classList.remove('hidden');
-            DOM.audioDropZone.classList.add('hidden');
-            DOM.audioName.textContent = file.name;
-            DOM.audioSize.textContent = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-            DOM.audioStatus.textContent = '✅ Loaded';
-            DOM.audioStatus.className = 'badge-count';
-            DOM.audioValid.className = 'upload-status valid';
-            DOM.audioValid.textContent = '✅ Valid';
-            updateGenerateButton();
-            showToast(`✅ Audio loaded: ${file.name}`, 'success');
+            const source = APP.audioContext.createBufferSource();
+            source.buffer = APP.audioBuffer;
+            source.connect(APP.audioContext.destination);
+            source.start(0, audioPauseTime);
+            audioSource = source;
+            APP.isPlaying = true;
+            audioStartTime = APP.audioContext.currentTime - audioPauseTime;
+
+            DOM.playBtn.textContent = '⏸';
+            DOM.playPauseBtn.textContent = '⏸';
+
+            source.onended = () => {
+                APP.isPlaying = false;
+                audioPauseTime = 0;
+                DOM.playBtn.textContent = '▶';
+                DOM.playPauseBtn.textContent = '▶';
+            };
+
+            // Start animation loop
+            if (!APP.animationId) {
+                animate();
+            }
         }
 
-        function removeImage() {
-            state.image = null;
-            DOM.imagePreview.classList.add('hidden');
-            DOM.imageDropZone.classList.remove('hidden');
-            DOM.imageInput.value = '';
-            DOM.imagePreviewImg.src = '';
-            DOM.imageStatus.textContent = 'No file';
-            DOM.imageStatus.className = 'badge-count';
-            updateGenerateButton();
+        function pauseAudio() {
+            if (audioSource) {
+                audioPauseTime = APP.audioContext.currentTime - audioStartTime;
+                audioSource.stop();
+                audioSource = null;
+            }
+            APP.isPlaying = false;
+            DOM.playBtn.textContent = '▶';
+            DOM.playPauseBtn.textContent = '▶';
         }
 
-        function removeAudio() {
-            state.audio = null;
-            DOM.audioPreview.classList.add('hidden');
-            DOM.audioDropZone.classList.remove('hidden');
-            DOM.audioInput.value = '';
-            DOM.audioPreviewPlayer.src = '';
-            DOM.audioStatus.textContent = 'No file';
-            DOM.audioStatus.className = 'badge-count';
-            updateGenerateButton();
+        DOM.playBtn.addEventListener('click', playAudio);
+        DOM.playPauseBtn.addEventListener('click', playAudio);
+
+        // ============================================================
+        // TIMELINE
+        // ============================================================
+        DOM.timelineSlider.addEventListener('input', (e) => {
+            const pct = parseFloat(e.target.value) / 100;
+            APP.currentTime = pct * APP.duration;
+            updateTimeDisplay();
+            if (APP.isPlaying) {
+                pauseAudio();
+            }
+            seekAudio(APP.currentTime);
+        });
+
+        function seekAudio(time) {
+            if (APP.audioContext && APP.audioBuffer) {
+                audioPauseTime = Math.min(time, APP.duration);
+                if (APP.isPlaying) {
+                    pauseAudio();
+                    playAudio();
+                }
+            }
+        }
+
+        function updateTimeDisplay() {
+            DOM.timeDisplay.textContent = `${formatTime(APP.currentTime)} / ${formatTime(APP.duration)}`;
+            DOM.timelineSlider.value = APP.duration > 0 ? (APP.currentTime / APP.duration) * 100 : 0;
+        }
+
+        function formatTime(seconds) {
+            if (!seconds || isNaN(seconds)) return '0:00';
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${m}:${String(s).padStart(2, '0')}`;
         }
 
         // ============================================================
-        // DRAG AND DROP
+        // WAVEFORM
         // ============================================================
-        function setupDropZones() {
-            const zones = [
-                { el: DOM.imageDropZone, handler: handleImage, input: DOM.imageInput },
-                { el: DOM.audioDropZone, handler: handleAudio, input: DOM.audioInput },
+        function drawWaveform(buffer) {
+            const canvas = DOM.waveformCanvas;
+            const ctx = canvas.getContext('2d');
+            const width = canvas.parentElement.clientWidth || 600;
+            const height = canvas.parentElement.clientHeight || 60;
+            canvas.width = width * devicePixelRatio;
+            canvas.height = height * devicePixelRatio;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(devicePixelRatio, devicePixelRatio);
+
+            const data = buffer.getChannelData(0);
+            const step = Math.floor(data.length / width);
+            const amp = 0.8;
+
+            ctx.clearRect(0, 0, width, height);
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.1)';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.beginPath();
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.8)';
+            ctx.lineWidth = 2;
+
+            for (let i = 0; i < width; i++) {
+                const index = Math.floor(i * step);
+                const value = data[index] || 0;
+                const y = (height / 2) + (value * amp * height / 2);
+                if (i === 0) ctx.moveTo(i, y);
+                else ctx.lineTo(i, y);
+            }
+            ctx.stroke();
+
+            // Fill area
+            ctx.lineTo(width, height / 2);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(102, 126, 234, 0.15)';
+            ctx.fill();
+        }
+
+        // ============================================================
+        // PREVIEW CANVAS SETUP
+        // ============================================================
+        function setupPreviewCanvas() {
+            const canvas = DOM.previewCanvas;
+            const container = canvas.parentElement;
+            const rect = container.getBoundingClientRect();
+            const size = Math.min(rect.width - 20, rect.height - 80, 800);
+
+            canvas.width = size * devicePixelRatio;
+            canvas.height = size * devicePixelRatio;
+            canvas.style.width = size + 'px';
+            canvas.style.height = size + 'px';
+        }
+
+        function updatePreviewOverlay() {
+            if (APP.image && APP.audioBuffer) {
+                DOM.previewOverlay.classList.add('hidden');
+            } else {
+                DOM.previewOverlay.classList.remove('hidden');
+            }
+        }
+
+        // ============================================================
+        // ANIMATION ENGINE
+        // ============================================================
+        let visemeTimeline = [];
+        let currentFrame = 0;
+        let totalFrames = 0;
+
+        function animate() {
+            if (!APP.animationId) {
+                APP.animationId = requestAnimationFrame(animate);
+                return;
+            }
+
+            const now = performance.now();
+            const delta = now - APP.lastFrameTime;
+            APP.lastFrameTime = now;
+
+            // Update FPS counter
+            APP.frameCount++;
+            if (now - APP.fpsCounterUpdate > 1000) {
+                APP.stats.fps = APP.frameCount;
+                DOM.fpsCounter.textContent = APP.stats.fps;
+                APP.frameCount = 0;
+                APP.fpsCounterUpdate = now;
+            }
+
+            // Update memory
+            if (performance.memory) {
+                DOM.memoryUsage.textContent = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(0) + ' MB';
+            }
+
+            // Render frame
+            renderFrame();
+
+            APP.animationId = requestAnimationFrame(animate);
+        }
+
+        function renderFrame() {
+            const canvas = DOM.previewCanvas;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.clearRect(0, 0, w, h);
+
+            // Draw background
+            const gradient = ctx.createRadialGradient(w/2, h/2, 0, w/2, h/2, w/2);
+            gradient.addColorStop(0, '#1a1a3e');
+            gradient.addColorStop(1, '#0a0a1a');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, w, h);
+
+            if (!APP.image) {
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.font = `${w/15}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🎭', w/2, h/2 - 20);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.font = `${w/25}px sans-serif`;
+                ctx.fillText('Upload a portrait to begin', w/2, h/2 + 40);
+                return;
+            }
+
+            // Draw image
+            const img = APP.image;
+            const imgAspect = img.width / img.height;
+            const canvasAspect = w / h;
+            let drawW, drawH, offsetX, offsetY;
+
+            if (imgAspect > canvasAspect) {
+                drawW = w;
+                drawH = w / imgAspect;
+                offsetX = 0;
+                offsetY = (h - drawH) / 2;
+            } else {
+                drawH = h;
+                drawW = h * imgAspect;
+                offsetX = (w - drawW) / 2;
+                offsetY = 0;
+            }
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.ellipse(w/2, h/2, w/2 * 0.95, h/2 * 0.95, 0, 0, Math.PI * 2);
+            ctx.clip();
+
+            // Draw image with face detection simulation
+            ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+
+            // Face overlay (simulated face detection)
+            const faceX = w * 0.35;
+            const faceY = h * 0.2;
+            const faceW = w * 0.3;
+            const faceH = h * 0.35;
+
+            // Draw face outline
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(faceX, faceY, faceW, faceH);
+            ctx.setLineDash([]);
+
+            // Draw facial landmarks (simulated)
+            const landmarks = [
+                [faceX + faceW * 0.2, faceY + faceH * 0.3],
+                [faceX + faceW * 0.8, faceY + faceH * 0.3],
+                [faceX + faceW * 0.5, faceY + faceH * 0.6],
+                [faceX + faceW * 0.3, faceY + faceH * 0.8],
+                [faceX + faceW * 0.7, faceY + faceH * 0.8],
             ];
 
-            zones.forEach(({ el, handler, input }) => {
-                el.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    el.classList.add('dragover');
+            landmarks.forEach(([lx, ly]) => {
+                ctx.beginPath();
+                ctx.arc(lx, ly, 4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(102, 126, 234, 0.8)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+
+            // Draw mouth (animated based on audio)
+            const mouthX = faceX + faceW * 0.5;
+            const mouthY = faceY + faceH * 0.7;
+            const mouthW = faceW * 0.3;
+            const mouthH = faceH * 0.12 * (1 + getMouthOpenness());
+
+            ctx.beginPath();
+            ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(180, 60, 60, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Draw eyes with blink
+            const blinkAmount = getBlinkAmount();
+            const eyeY = faceY + faceH * 0.35;
+            const eyeW = faceW * 0.12;
+            const eyeH = faceH * 0.08 * (1 - blinkAmount);
+
+            [-1, 1].forEach(side => {
+                const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
+                ctx.beginPath();
+                ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fill();
+                if (eyeH > 2) {
+                    ctx.beginPath();
+                    ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
+                    ctx.fill();
+                }
+            });
+
+            ctx.restore();
+
+            // Debug overlay
+            if (APP.settings.showDebug) {
+                ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                ctx.fillRect(10, 10, 200, 100);
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                ctx.font = '12px monospace';
+                ctx.textAlign = 'left';
+                ctx.textBaseline = 'top';
+                ctx.fillText(`FPS: ${APP.stats.fps}`, 20, 20);
+                ctx.fillText(`Viseme: ${APP.currentViseme}`, 20, 40);
+                ctx.fillText(`Time: ${formatTime(APP.currentTime)}`, 20, 60);
+                ctx.fillText(`Mouth: ${(getMouthOpenness() * 100).toFixed(0)}%`, 20, 80);
+            }
+        }
+
+        // ============================================================
+        // LIP SYNC ENGINE
+        // ============================================================
+        let blinkTimer = 0;
+        let blinkState = 0;
+        let mouthOpenness = 0;
+        let targetMouthOpenness = 0;
+
+        function getMouthOpenness() {
+            // Simulate mouth openness based on audio amplitude
+            if (!APP.audioBuffer || !APP.isPlaying) {
+                // Idle mouth movement
+                return 0.2 + 0.1 * Math.sin(performance.now() / 500);
+            }
+
+            // Get current audio amplitude
+            const time = APP.audioContext ? APP.audioContext.currentTime - audioStartTime : 0;
+            const sampleIndex = Math.floor(time * APP.audioBuffer.sampleRate);
+            const data = APP.audioBuffer.getChannelData(0);
+
+            if (sampleIndex < data.length) {
+                const windowSize = Math.min(1024, data.length - sampleIndex);
+                let sum = 0;
+                for (let i = 0; i < windowSize; i++) {
+                    sum += Math.abs(data[sampleIndex + i] || 0);
+                }
+                const amplitude = sum / windowSize;
+
+                // Apply sensitivity and gain
+                const sensitivity = APP.settings.mouthSensitivity / 5;
+                const gain = APP.settings.audioGain / 100;
+                const raw = amplitude * gain * sensitivity * 3;
+
+                // Smooth transition
+                targetMouthOpenness = Math.min(Math.max(raw, 0.05), 1.0);
+                mouthOpenness += (targetMouthOpenness - mouthOpenness) * 0.3;
+
+                // Map to viseme
+                updateViseme(mouthOpenness);
+
+                return mouthOpenness;
+            }
+
+            return 0.2;
+        }
+
+        function getBlinkAmount() {
+            const freq = APP.settings.blinkFreq / 100;
+            blinkTimer += 0.016 * (1 + freq * 2);
+
+            if (blinkTimer > 1) {
+                blinkTimer = 0;
+                blinkState = 1;
+            }
+
+            if (blinkState > 0) {
+                blinkState += 0.02;
+                if (blinkState > 1) {
+                    blinkState = 0;
+                }
+                return Math.sin(blinkState * Math.PI) * 0.9;
+            }
+
+            return 0;
+        }
+
+        function updateViseme(openness) {
+            // Map openness to viseme categories
+            const visemes = [
+                { name: 'A', threshold: 0.8 },
+                { name: 'E', threshold: 0.6 },
+                { name: 'I', threshold: 0.4 },
+                { name: 'O', threshold: 0.25 },
+                { name: 'U', threshold: 0.1 },
+                { name: 'M', threshold: 0.05 },
+            ];
+
+            let current = 'A';
+            for (const v of visemes) {
+                if (openness >= v.threshold) {
+                    current = v.name;
+                    break;
+                }
+            }
+
+            // Add some randomness for natural feel
+            if (APP.currentViseme !== current) {
+                APP.currentViseme = current;
+                DOM.phonemeValues.textContent = current;
+            }
+        }
+
+        // ============================================================
+        // EXPORT
+        // ============================================================
+        DOM.exportBtn.addEventListener('click', async () => {
+            if (APP.exportState.isExporting) return;
+            if (!APP.image) {
+                showToast('Please upload an image first', 'warning');
+                return;
+            }
+
+            APP.exportState.isExporting = true;
+            DOM.exportBtn.disabled = true;
+            DOM.exportBtn.textContent = '⏳ Exporting...';
+            DOM.exportProgress.classList.add('active');
+            DOM.cancelExportBtn.style.display = 'block';
+            DOM.exportStatus.textContent = 'Initializing export...';
+
+            try {
+                const quality = DOM.exportQuality.value;
+                const fps = parseInt(DOM.exportFps.value);
+                const resolution = parseInt(DOM.exportResolution.value);
+                const duration = APP.duration || 5;
+
+                // Setup capture canvas
+                const captureCanvas = document.createElement('canvas');
+                const size = resolution;
+                captureCanvas.width = size;
+                captureCanvas.height = size;
+                const ctx = captureCanvas.getContext('2d');
+
+                // Setup recorder
+                const stream = captureCanvas.captureStream(fps);
+                const recorder = new MediaRecorder(stream, {
+                    mimeType: 'video/webm;codecs=vp9',
+                    videoBitsPerSecond: quality === 'lossless' ? 50000000 :
+                                      quality === 'high' ? 20000000 :
+                                      quality === 'medium' ? 10000000 : 5000000,
                 });
 
-                el.addEventListener('dragleave', () => {
-                    el.classList.remove('dragover');
+                const chunks = [];
+                recorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
+
+                const exportPromise = new Promise((resolve) => {
+                    recorder.onstop = () => {
+                        const blob = new Blob(chunks, { type: 'video/webm' });
+                        resolve(blob);
+                    };
                 });
 
-                el.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    el.classList.remove('dragover');
-                    const file = e.dataTransfer.files[0];
-                    if (file) handler(file);
-                });
+                // Start recording
+                recorder.start(1000 / fps);
 
-                input.addEventListener('change', (e) => {
-                    const file = e.target.files[0];
-                    if (file) handler(file);
-                    input.value = '';
+                // Render frames
+                const totalFrames = Math.ceil(duration * fps);
+                const frameInterval = 1000 / fps;
+
+                let startTime = performance.now();
+                let frameIndex = 0;
+
+                // Pre-render animation
+                const originalPlayState = APP.isPlaying;
+                const originalTime = APP.currentTime;
+
+                while (frameIndex < totalFrames) {
+                    const progress = frameIndex / totalFrames;
+                    DOM.exportProgressFill.style.width = `${(progress * 100)}%`;
+                    DOM.exportProgressText.textContent = `Exporting... ${Math.round(progress * 100)}%`;
+                    DOM.exportStatus.textContent = `Frame ${frameIndex + 1}/${totalFrames}`;
+
+                    // Render frame
+                    ctx.clearRect(0, 0, size, size);
+
+                    // Draw background
+                    const gradient = ctx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
+                    gradient.addColorStop(0, '#1a1a3e');
+                    gradient.addColorStop(1, '#0a0a1a');
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, size, size);
+
+                    if (APP.image) {
+                        const img = APP.image;
+                        const imgAspect = img.width / img.height;
+                        const canvasAspect = size / size;
+                        let drawW, drawH, offsetX, offsetY;
+
+                        if (imgAspect > canvasAspect) {
+                            drawW = size;
+                            drawH = size / imgAspect;
+                            offsetX = 0;
+                            offsetY = (size - drawH) / 2;
+                        } else {
+                            drawH = size;
+                            drawW = size * imgAspect;
+                            offsetX = (size - drawW) / 2;
+                            offsetY = 0;
+                        }
+
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.ellipse(size/2, size/2, size/2 * 0.95, size/2 * 0.95, 0, 0, Math.PI * 2);
+                        ctx.clip();
+                        ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+
+                        // Animate mouth
+                        const time = (frameIndex / fps);
+                        const audioAmplitude = APP.audioBuffer ? getAudioAmplitudeAtTime(time) : 0.3;
+                        const openness = Math.min(audioAmplitude * 3 * (APP.settings.mouthSensitivity / 5), 1);
+
+                        // Mouth
+                        const faceX = size * 0.35;
+                        const faceY = size * 0.2;
+                        const faceW = size * 0.3;
+                        const faceH = size * 0.35;
+
+                        const mouthX = faceX + faceW * 0.5;
+                        const mouthY = faceY + faceH * 0.7;
+                        const mouthW = faceW * 0.3;
+                        const mouthH = faceH * 0.12 * (1 + openness);
+
+                        ctx.beginPath();
+                        ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
+                        ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
+                        ctx.fill();
+
+                        // Eyes with blink
+                        const blink = Math.sin(frameIndex / 60 * 3) * 0.5 + 0.5;
+                        const blinkAmount = blink > 0.8 ? 0.9 : 0;
+                        const eyeY = faceY + faceH * 0.35;
+                        const eyeW = faceW * 0.12;
+                        const eyeH = faceH * 0.08 * (1 - blinkAmount);
+
+                        [-1, 1].forEach(side => {
+                            const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
+                            ctx.beginPath();
+                            ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
+                            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                            ctx.fill();
+                            if (eyeH > 2) {
+                                ctx.beginPath();
+                                ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.3, 0, Math.PI * 2);
+                                ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
+                                ctx.fill();
+                            }
+                        });
+
+                        ctx.restore();
+                    }
+
+                    frameIndex++;
+
+                    // Wait for frame interval
+                    const elapsed = performance.now() - startTime;
+                    const targetTime = frameIndex * frameInterval;
+                    if (elapsed < targetTime) {
+                        await new Promise(resolve => setTimeout(resolve, targetTime - elapsed));
+                    }
+                }
+
+                // Stop recording
+                recorder.stop();
+                const blob = await exportPromise;
+
+                // Download
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `talking_face_${Date.now()}.webm`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                DOM.exportProgressFill.style.width = '100%';
+                DOM.exportProgressText.textContent = '✅ Export complete!';
+                DOM.exportStatus.textContent = 'Export complete!';
+
+                showToast('✅ Video exported successfully!', 'success');
+
+            } catch (error) {
+                showToast(`❌ Export error: ${error.message}`, 'error');
+                DOM.exportStatus.textContent = `❌ Error: ${error.message}`;
+            } finally {
+                APP.exportState.isExporting = false;
+                DOM.exportBtn.disabled = false;
+                DOM.exportBtn.textContent = '🎬 Export Video';
+                DOM.cancelExportBtn.style.display = 'none';
+                setTimeout(() => {
+                    DOM.exportProgress.classList.remove('active');
+                }, 3000);
+            }
+        });
+
+        DOM.cancelExportBtn.addEventListener('click', () => {
+            APP.exportState.isExporting = false;
+            DOM.exportBtn.disabled = false;
+            DOM.exportBtn.textContent = '🎬 Export Video';
+            DOM.exportProgress.classList.remove('active');
+            DOM.cancelExportBtn.style.display = 'none';
+            DOM.exportStatus.textContent = 'Export cancelled';
+            showToast('Export cancelled', 'warning');
+        });
+
+        // ============================================================
+        // AUDIO AMPLITUDE
+        // ============================================================
+        function getAudioAmplitudeAtTime(time) {
+            if (!APP.audioBuffer) return 0.3;
+            const sampleRate = APP.audioBuffer.sampleRate;
+            const data = APP.audioBuffer.getChannelData(0);
+            const startIndex = Math.floor(time * sampleRate);
+            const windowSize = Math.min(512, data.length - startIndex);
+
+            if (startIndex < 0 || startIndex >= data.length) return 0.3;
+
+            let sum = 0;
+            for (let i = 0; i < windowSize; i++) {
+                sum += Math.abs(data[startIndex + i] || 0);
+            }
+            return sum / windowSize;
+        }
+
+        // ============================================================
+        // SPECTRUM ANALYZER
+        // ============================================================
+        function drawSpectrum() {
+            const canvas = DOM.spectrumCanvas;
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            const width = rect.width - 32;
+            const height = rect.height - 32;
+
+            canvas.width = width * devicePixelRatio;
+            canvas.height = height * devicePixelRatio;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(devicePixelRatio, devicePixelRatio);
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (!APP.audioBuffer) {
+                ctx.fillStyle = 'rgba(255,255,255,0.1)';
+                ctx.font = '14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('Upload audio to see spectrum', width/2, height/2);
+                return;
+            }
+
+            const data = APP.audioBuffer.getChannelData(0);
+            const sampleRate = APP.audioBuffer.sampleRate;
+            const fftSize = 1024;
+            const step = Math.floor(data.length / fftSize);
+
+            ctx.beginPath();
+            for (let i = 0; i < fftSize / 2; i++) {
+                const index = Math.floor(i * step);
+                const value = data[index] || 0;
+                const x = (i / (fftSize / 2)) * width;
+                const y = height / 2 + value * height / 2 * -1;
+                if (i === 0) ctx.moveTo(x, height / 2);
+                else ctx.lineTo(x, y);
+            }
+            ctx.strokeStyle = 'rgba(102, 126, 234, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Frequency bars
+            const barCount = 64;
+            const barWidth = width / barCount;
+            for (let i = 0; i < barCount; i++) {
+                const index = Math.floor((i / barCount) * fftSize / 2);
+                const value = data[index] || 0;
+                const barHeight = Math.abs(value) * height * 0.8;
+                const x = i * barWidth;
+                const y = height / 2 - barHeight / 2;
+
+                const hue = 220 + (i / barCount) * 60;
+                ctx.fillStyle = `hsla(${hue}, 80%, 60%, 0.5)`;
+                ctx.fillRect(x, y, barWidth - 1, barHeight);
+            }
+        }
+
+        // ============================================================
+        // SETTINGS BINDING
+        // ============================================================
+        function bindSettings() {
+            const bindings = [
+                { el: DOM.animSpeed, val: DOM.animSpeedVal, key: 'animSpeed', formatter: v => `${v}x` },
+                { el: DOM.blinkFreq, val: DOM.blinkFreqVal, key: 'blinkFreq', formatter: v => `${v}%` },
+                { el: DOM.headMotion, val: DOM.headMotionVal, key: 'headMotion', formatter: v => `${v}%` },
+                { el: DOM.mouthSensitivity, val: DOM.mouthSensitivityVal, key: 'mouthSensitivity', formatter: v => v },
+                { el: DOM.audioGain, val: DOM.audioGainVal, key: 'audioGain', formatter: v => `${v}%` },
+                { el: DOM.noiseReduction, val: DOM.noiseReductionVal, key: 'noiseReduction', formatter: v => `${v}%` },
+                { el: DOM.bgBlur, val: DOM.bgBlurVal, key: 'bgBlur', formatter: v => `${v}px` },
+            ];
+
+            bindings.forEach(({ el, val, key, formatter }) => {
+                el.addEventListener('input', () => {
+                    const value = parseFloat(el.value);
+                    APP.settings[key] = value;
+                    val.textContent = formatter(value);
                 });
+            });
+
+            // Checkboxes
+            DOM.autoPlay.addEventListener('change', () => {
+                APP.settings.autoPlay = DOM.autoPlay.checked;
+            });
+
+            DOM.showDebug.addEventListener('change', () => {
+                APP.settings.showDebug = DOM.showDebug.checked;
+            });
+
+            DOM.reducedMotion.addEventListener('change', () => {
+                APP.settings.reducedMotion = DOM.reducedMotion.checked;
+                if (DOM.reducedMotion.checked) {
+                    document.body.style.setProperty('--transition', 'none');
+                } else {
+                    document.body.style.setProperty('--transition', 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)');
+                }
+            });
+
+            DOM.highContrast.addEventListener('change', () => {
+                APP.settings.highContrast = DOM.highContrast.checked;
+                if (DOM.highContrast.checked) {
+                    document.body.classList.add('high-contrast');
+                } else {
+                    document.body.classList.remove('high-contrast');
+                }
+            });
+
+            // Selects
+            DOM.renderQuality.addEventListener('change', () => {
+                APP.settings.renderQuality = DOM.renderQuality.value;
+            });
+
+            DOM.canvasRes.addEventListener('change', () => {
+                APP.settings.canvasRes = parseInt(DOM.canvasRes.value);
+                setupPreviewCanvas();
+            });
+
+            DOM.languageSelect.addEventListener('change', () => {
+                APP.settings.language = DOM.languageSelect.value;
+                showToast(`Language set to ${DOM.languageSelect.options[DOM.languageSelect.selectedIndex].text}`, 'info');
             });
         }
 
         // ============================================================
-        // GENERATE
+        // KEYBOARD SHORTCUTS
         // ============================================================
-        function updateGenerateButton() {
-            const ready = state.image && state.audio && state.isConnected && !state.isProcessing;
-            DOM.generateBtn.disabled = !ready;
-            if (ready && !state.isProcessing) {
-                DOM.generateBtn.innerHTML = '🎬 Generate Video';
-            } else if (state.isProcessing) {
-                DOM.generateBtn.innerHTML = '<span class="spinner"></span> Processing...';
-            } else {
-                DOM.generateBtn.innerHTML = '🎬 Generate Video';
-            }
-        }
-
-        async function generateVideo() {
-            if (state.isProcessing || !state.image || !state.audio) return;
-
-            state.isProcessing = true;
-            state.generationStats.total++;
-            DOM.generateBtn.disabled = true;
-            DOM.generateBtn.innerHTML = '<span class="spinner"></span> Starting...';
-            DOM.progressContainer.classList.add('active');
-            DOM.progressFill.style.width = '0%';
-            DOM.progressStatus.textContent = 'Preparing...';
-            DOM.progressPercent.textContent = '0%';
-            DOM.resultContainer.classList.remove('active');
-
-            try {
-                const options = {
-                    still: DOM.stillMode.checked,
-                    enhancer: DOM.enhancer.checked,
-                    face_enhance: DOM.faceEnhance.checked,
-                    background_enhance: DOM.backgroundEnhance.checked,
-                    fps: parseInt(DOM.fps.value) || CONFIG.DEFAULT_FPS,
-                    batch_size: parseInt(DOM.batchSize.value) || 4,
-                    preprocess: DOM.preprocess.value,
-                    face_model: DOM.faceModel.value,
-                };
-
-                const result = await lipSync.generate(state.image, state.audio, options);
-                state.currentJob = result.job_id;
-                showToast('✅ Generation started!', 'success');
-
-                // Poll for progress
-                await lipSync.pollGeneration(
-                    result.job_id,
-                    (progress) => {
-                        DOM.progressFill.style.width = `${progress.progress}%`;
-                        DOM.progressPercent.textContent = `${Math.round(progress.progress)}%`;
-                        DOM.progressStatus.textContent = progress.status || 'Processing...';
-                    },
-                    1000,
-                    300000
-                );
-
-                state.generationStats.successful++;
-                DOM.progressFill.style.width = '100%';
-                DOM.progressPercent.textContent = '100%';
-                DOM.progressStatus.textContent = '✅ Complete!';
-
-                // Fetch the latest video
-                const listData = await lipSync.listVideos({ page: 1, per_page: 1 });
-                if (listData.videos && listData.videos.length > 0) {
-                    const latest = listData.videos[0];
-                    const videoUrl = lipSync.getVideoUrl(latest.filename);
-                    DOM.resultVideo.src = videoUrl;
-                    DOM.resultVideo.load();
-                    DOM.downloadLink.href = lipSync.getDownloadUrl(latest.filename);
-                    DOM.resultDuration.textContent = '~5s';
-                    DOM.resultResolution.textContent = latest.resolution || '1280x720';
-                    DOM.resultSize.textContent = latest.size_human || 'Unknown';
-                    DOM.resultContainer.classList.add('active');
-                    showToast('✅ Video generated successfully!', 'success');
-                    DOM.resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-
-            } catch (error) {
-                state.generationStats.failed++;
-                showToast(`❌ Error: ${error.message}`, 'error');
-            } finally {
-                state.isProcessing = false;
-                DOM.generateBtn.innerHTML = '🎬 Generate Video';
-                updateGenerateButton();
-                DOM.progressContainer.classList.remove('active');
-                loadHistory();
-            }
-        }
-
-        // Keyboard shortcut: Ctrl+Enter to generate
         document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+            // Space: Play/Pause
+            if (e.key === ' ' && !e.target.matches('input, textarea, select')) {
                 e.preventDefault();
-                if (!DOM.generateBtn.disabled) generateVideo();
+                playAudio();
             }
-        });
-
-        // ============================================================
-        // HISTORY
-        // ============================================================
-        async function loadHistory() {
-            try {
-                const search = DOM.searchInput.value.trim();
-                const sortBy = DOM.sortBy.value;
-                const sortOrder = DOM.sortOrder.value;
-
-                const data = await lipSync.listVideos({
-                    page: state.historyPage,
-                    per_page: CONFIG.PAGE_SIZE,
-                    search: search || undefined,
-                    sort_by: sortBy,
-                    sort_order: sortOrder,
-                });
-
-                const videos = data.videos || [];
-                DOM.historyCount.textContent = `${data.pagination?.total || 0} videos`;
-
-                if (videos.length === 0) {
-                    DOM.historyList.innerHTML = `
-                        <div class="empty-history">
-                            <span class="icon">🎬</span>
-                            <h3>No videos yet</h3>
-                            <p>Generate your first talking head video!</p>
-                        </div>
-                    `;
-                    DOM.paginationContainer.innerHTML = '';
-                    return;
-                }
-
-                DOM.historyList.innerHTML = videos.map(video => `
-                    <div class="history-item">
-                        <div class="thumbnail" onclick="playVideo('${video.filename}')">
-                            ${video.thumbnail ? `<img src="${lipSync.url}${video.thumbnail}" alt="Thumbnail" loading="lazy">` :
-                                               `<video muted playsinline><source src="${lipSync.getVideoUrl(video.filename)}"></video>`}
-                            <div class="play-overlay">▶️</div>
-                        </div>
-                        <div class="info">
-                            <div class="name" title="${video.filename}">${video.filename}</div>
-                            <div class="meta">
-                                <span>📅 ${new Date(video.modified).toLocaleString()}</span>
-                                <span>📊 ${video.size_human || 'Unknown'}</span>
-                            </div>
-                        </div>
-                        <div class="actions">
-                            <button class="btn btn-primary btn-sm" onclick="downloadVideo('${video.filename}')">📥</button>
-                            <button class="btn btn-secondary btn-sm" onclick="playVideo('${video.filename}')">▶️</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteVideo('${video.filename}')">🗑️</button>
-                        </div>
-                    </div>
-                `).join('');
-
-                // Pagination
-                const totalPages = data.pagination?.pages || 1;
-                const currentPage = data.pagination?.page || 1;
-                let paginationHTML = '';
-
-                if (totalPages > 1) {
-                    paginationHTML += `
-                        <button onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>◀</button>
-                    `;
-
-                    const maxVisible = 5;
-                    let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
-                    let endPage = Math.min(totalPages, startPage + maxVisible - 1);
-                    if (endPage - startPage < maxVisible - 1) {
-                        startPage = Math.max(1, endPage - maxVisible + 1);
-                    }
-
-                    for (let i = startPage; i <= endPage; i++) {
-                        paginationHTML += `
-                            <button onclick="goToPage(${i})" class="${i === currentPage ? 'active' : ''}">${i}</button>
-                        `;
-                    }
-
-                    paginationHTML += `
-                        <button onclick="goToPage(${currentPage + 1})" ${currentPage >= totalPages ? 'disabled' : ''}>▶</button>
-                    `;
-                }
-
-                DOM.paginationContainer.innerHTML = paginationHTML;
-
-            } catch (error) {
-                console.error('History error:', error);
-                DOM.historyList.innerHTML = `
-                    <div class="empty-history" style="color:var(--error);">
-                        <span class="icon">❌</span>
-                        <h3>Failed to load history</h3>
-                        <p>${error.message}</p>
-                    </div>
-                `;
-            }
-        }
-
-        function goToPage(page) {
-            if (page < 1) return;
-            state.historyPage = page;
-            loadHistory();
-            window.scrollTo({ top: document.querySelector('.history-container').offsetTop - 80, behavior: 'smooth' });
-        }
-
-        function debounceSearch() {
-            if (state.searchTimeout) clearTimeout(state.searchTimeout);
-            state.searchTimeout = setTimeout(() => {
-                state.historyPage = 1;
-                loadHistory();
-            }, 300);
-        }
-
-        function downloadVideo(filename) {
-            window.open(lipSync.getDownloadUrl(filename), '_blank');
-        }
-
-        function playVideo(filename) {
-            const videoUrl = lipSync.getVideoUrl(filename);
-            DOM.resultVideo.src = videoUrl;
-            DOM.resultVideo.load();
-            DOM.resultVideo.play();
-            DOM.resultContainer.classList.add('active');
-            DOM.resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            DOM.downloadLink.href = lipSync.getDownloadUrl(filename);
-        }
-
-        async function deleteVideo(filename) {
-            if (!confirm(`Delete "${filename}"?`)) return;
-
-            try {
-                await lipSync.deleteVideo(filename);
-                showToast(`🗑️ Deleted: ${filename}`, 'success');
-                await loadHistory();
-            } catch (error) {
-                showToast(`❌ Error: ${error.message}`, 'error');
-            }
-        }
-
-        async function clearAllHistory() {
-            if (!confirm('Delete ALL videos? This action cannot be undone.')) return;
-
-            try {
-                const result = await lipSync.deleteAllVideos();
-                showToast(`🗑️ Deleted ${result.deleted_count} videos`, 'success');
-                await loadHistory();
-            } catch (error) {
-                showToast(`❌ Error: ${error.message}`, 'error');
-            }
-        }
-
-        function resetResult() {
-            DOM.resultContainer.classList.remove('active');
-            DOM.resultVideo.src = '';
-            DOM.resultVideo.load();
-        }
-
-        // ============================================================
-        // SYSTEM STATUS
-        // ============================================================
-        async function checkSystemStatus() {
-            try {
-                const data = await lipSync.health();
-
-                if (data.status === 'error') {
-                    throw new Error(data.detail || 'Health check failed');
-                }
-
-                state.isConnected = true;
-
-                if (data.status === 'ready') {
-                    DOM.statusBadge.className = 'badge online';
-                    DOM.statusBadge.innerHTML = `<span class="dot"></span> Ready`;
-                    DOM.systemInfo.textContent = '✅ System operational';
-                } else if (data.status === 'demo') {
-                    DOM.statusBadge.className = 'badge demo';
-                    DOM.statusBadge.innerHTML = `<span class="dot"></span> Demo Mode`;
-                    DOM.systemInfo.textContent = '⚠️ Running in demo mode';
-                    showToast('⚠️ Running in demo mode. Install SadTalker for full features.', 'warning', 5000);
+            // R: Record
+            if (e.key === 'r' && !e.target.matches('input, textarea, select')) {
+                if (!DOM.isRecording) {
+                    DOM.startRecordBtn.click();
                 } else {
-                    DOM.statusBadge.className = 'badge offline';
-                    DOM.statusBadge.innerHTML = `<span class="dot"></span> ${data.status}`;
-                    DOM.systemInfo.textContent = `⚠️ Status: ${data.status}`;
+                    DOM.stopRecordBtn.click();
                 }
-
-                updateGenerateButton();
-
-            } catch (error) {
-                state.isConnected = false;
-                DOM.statusBadge.className = 'badge offline';
-                DOM.statusBadge.innerHTML = `<span class="dot"></span> Offline`;
-                DOM.systemInfo.textContent = '❌ Cannot connect to backend';
-                updateGenerateButton();
-                console.error('Health check failed:', error);
             }
-        }
-
-        // ============================================================
-        // PWA INSTALL
-        // ============================================================
-        let deferredPrompt;
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            DOM.installBtn.style.display = 'flex';
-        });
-
-        DOM.installBtn.addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                const result = await deferredPrompt.userChoice;
-                if (result.outcome === 'accepted') {
-                    showToast('✅ App installed successfully!', 'success');
-                    DOM.installBtn.style.display = 'none';
+            // Escape: Close modals
+            if (e.key === 'Escape') {
+                // Close any open modals
+            }
+            // 1-5: Navigate
+            if (e.key >= '1' && e.key <= '5') {
+                const index = parseInt(e.key) - 1;
+                if (DOM.navItems[index]) {
+                    DOM.navItems[index].click();
                 }
-                deferredPrompt = null;
             }
         });
 
         // ============================================================
-        // SERVICE WORKER
+        // RESIZE HANDLER
         // ============================================================
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js')
-                .then(reg => console.log('Service Worker registered'))
-                .catch(err => console.error('Service Worker registration failed:', err));
-        }
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                setupPreviewCanvas();
+                if (APP.audioBuffer) {
+                    drawWaveform(APP.audioBuffer);
+                }
+                drawSpectrum();
+            }, 250);
+        });
 
         // ============================================================
         // INITIALIZATION
         // ============================================================
         function init() {
-            // Set initial theme
-            setTheme(state.theme);
+            // Load theme
+            loadTheme();
 
-            // Setup drop zones
-            setupDropZones();
+            // Setup canvas
+            setupPreviewCanvas();
 
-            // Event listeners
-            DOM.generateBtn.addEventListener('click', generateVideo);
+            // Bind settings
+            bindSettings();
 
-            // Initial status check
-            checkSystemStatus();
+            // Start animation loop
+            animate();
 
-            // Load history
-            loadHistory();
+            // Draw spectrum
+            drawSpectrum();
 
-            // Periodic updates
-            setInterval(checkSystemStatus, 60000);
-            state.historyInterval = setInterval(loadHistory, CONFIG.HISTORY_INTERVAL);
+            // Update status
+            DOM.statusDot.className = 'status-dot online';
+            DOM.statusText.textContent = 'Ready';
 
-            // Update system info
-            DOM.systemInfo.textContent = `🖥️ ${navigator.platform} · ${navigator.userAgent.includes('Mobile') ? '📱 Mobile' : '💻 Desktop'}`;
+            // Check for WebGL support
+            try {
+                const canvas = document.createElement('canvas');
+                const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                if (gl) {
+                    DOM.gpuStatus.textContent = 'WebGL Active';
+                } else {
+                    DOM.gpuStatus.textContent = 'CPU Only';
+                }
+            } catch {
+                DOM.gpuStatus.textContent = 'CPU Only';
+            }
 
-            console.log('🎭 SadTalker Pro with LipSyncClient initialized');
-            console.log(`📡 API URL: ${lipSync.url}`);
-            console.log('💡 Press Ctrl+Enter to generate, Ctrl+D for dark mode');
+            // Check for performance API
+            if (!performance.memory) {
+                DOM.memoryUsage.textContent = 'N/A';
+            }
+
+            console.log('🎭 AI Talking Face Pro initialized');
+            console.log(`📐 Canvas: ${APP.settings.canvasRes}x${APP.settings.canvasRes}`);
+            console.log('💡 Press Space to play/pause, R to record');
+            console.log('💡 Press 1-5 to navigate views');
+
+            showToast('🎭 Welcome to AI Talking Face Pro!', 'info', 3000);
         }
 
         // Run on DOM ready
@@ -2635,29 +2837,12 @@
         }
 
         // ============================================================
-        // EXPOSE FUNCTIONS FOR INLINE HTML
+        // EXPOSE FOR DEBUGGING
         // ============================================================
-        window.openModal = openModal;
-        window.closeModal = closeModal;
-        window.saveApiConfig = saveApiConfig;
-        window.testApiConnection = testApiConnection;
-        window.saveSettings = saveSettings;
-        window.clearCache = clearCache;
-        window.refreshDiagnostics = refreshDiagnostics;
-        window.removeImage = removeImage;
-        window.removeAudio = removeAudio;
-        window.generateVideo = generateVideo;
-        window.loadHistory = loadHistory;
-        window.goToPage = goToPage;
-        window.debounceSearch = debounceSearch;
-        window.downloadVideo = downloadVideo;
-        window.playVideo = playVideo;
-        window.deleteVideo = deleteVideo;
-        window.clearAllHistory = clearAllHistory;
-        window.resetResult = resetResult;
-        window.toggleTheme = toggleTheme;
+        window.APP = APP;
         window.showToast = showToast;
-        window.lipSync = lipSync;
+        window.playAudio = playAudio;
+        window.pauseAudio = pauseAudio;
     </script>
 </body>
 </html>
