@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎭 SadTalker AI Pro - Advanced Talking Head Generator</title>
+    <title>🎭 SadTalker Pro - Advanced Talking Head Generator</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#667eea">
+    <meta name="description" content="AI-powered talking head video generator with advanced lip sync">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <style>
         /* ===== RESET & BASE ===== */
         * {
@@ -108,13 +113,6 @@
             -webkit-backdrop-filter: blur(20px) saturate(180%);
             border: 1px solid var(--glass-border);
             box-shadow: var(--shadow);
-        }
-
-        .glass-dark {
-            background: rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
         /* ===== APP CONTAINER ===== */
@@ -1250,18 +1248,10 @@
         .w-full { width: 100%; }
         .relative { position: relative; }
         .overflow-hidden { overflow: hidden; }
-
-        /* ===== LOADING SHIMMER ===== */
-        .shimmer {
-            background: linear-gradient(90deg, var(--bg-primary) 25%, var(--bg-card) 50%, var(--bg-primary) 75%);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
+        .text-muted { color: var(--text-muted); }
+        .text-success { color: var(--success); }
+        .text-error { color: var(--error); }
+        .text-warning { color: var(--warning); }
     </style>
 </head>
 <body>
@@ -1293,7 +1283,7 @@
                 <span class="icon">🎭</span>
                 <div class="brand">
                     <h1>SadTalker Pro</h1>
-                    <span class="subtitle">AI Talking Head Generator</span>
+                    <span class="subtitle">AI Lip Sync Generator</span>
                 </div>
             </div>
             <div class="header-actions">
@@ -1488,44 +1478,332 @@
 
         <!-- ===== FOOTER ===== -->
         <footer style="text-align:center;padding:24px 0 12px;color:var(--text-muted);font-size:0.8rem;border-top:1px solid var(--border-color);margin-top:24px;">
-            <p>🎭 SadTalker Pro v2.0 · Powered by <a href="#" style="color:var(--gradient-start);text-decoration:none;">Advanced AI</a></p>
+            <p>🎭 SadTalker Pro v2.0 · Powered by <span style="color:var(--gradient-start);">Advanced Lip Sync AI</span></p>
             <p style="margin-top:4px;font-size:0.7rem;">Made with ❤️ · <span id="systemInfo">System ready</span></p>
         </footer>
     </div>
 
-    <!-- ===== JAVASCRIPT ===== -->
+    <!-- ============================================================ -->
+    <!-- ===== JAVASCRIPT - LipSyncClient + Application ===== -->
+    <!-- ============================================================ -->
     <script>
         /**
-         * SadTalker Pro - Complete Application
-         * All logic in one file for self-contained deployment
+         * LipSyncClient - API Client for SadTalker Backend
+         * Handles all communication with the backend server
          */
+        class LipSyncClient {
+            constructor(baseUrl = "/api") {
+                this.baseUrl = baseUrl;
+                this._cache = new Map();
+                this._retryCount = 3;
+                this._retryDelay = 1000;
+            }
+
+            /**
+             * Get the base URL with proper formatting
+             */
+            get url() {
+                return this.baseUrl.replace(/\/+$/, '');
+            }
+
+            /**
+             * Make a request with retry logic
+             */
+            async _request(endpoint, options = {}, retries = this._retryCount) {
+                const url = `${this.url}${endpoint}`;
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), options.timeout || 30000);
+
+                try {
+                    const response = await fetch(url, {
+                        ...options,
+                        signal: controller.signal,
+                        headers: {
+                            ...options.headers,
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    clearTimeout(timeout);
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                    }
+
+                    return response;
+
+                } catch (error) {
+                    clearTimeout(timeout);
+
+                    if (retries > 0 && error.name !== 'AbortError') {
+                        await new Promise(resolve => setTimeout(resolve, this._retryDelay));
+                        return this._request(endpoint, options, retries - 1);
+                    }
+
+                    throw error;
+                }
+            }
+
+            /**
+             * Health check endpoint
+             */
+            async health() {
+                try {
+                    const response = await this._request('/health', {
+                        timeout: 5000,
+                    }, 1);
+                    return response.json();
+                } catch (error) {
+                    return {
+                        status: 'error',
+                        detail: error.message,
+                        timestamp: new Date().toISOString()
+                    };
+                }
+            }
+
+            /**
+             * Generate a talking head video
+             * @param {File} imageFile - Image file (PNG, JPG, WEBP, etc.)
+             * @param {File} audioFile - Audio file (MP3, WAV, M4A, etc.)
+             * @param {Object} options - Generation options
+             * @param {boolean} options.still - Still mode
+             * @param {boolean} options.enhancer - Enhance quality
+             * @param {boolean} options.face_enhance - Face enhancement
+             * @param {boolean} options.background_enhance - Background enhancement
+             * @param {number} options.fps - Frames per second (15-60)
+             * @param {number} options.batch_size - Batch size (1-8)
+             * @param {string} options.preprocess - Preprocess method (crop, resize, full)
+             * @param {string} options.face_model - Face model (face_detection, face_recognition)
+             * @returns {Promise<Object>} Generation result
+             */
+            async generate(imageFile, audioFile, options = {}) {
+                if (!imageFile || !audioFile) {
+                    throw new Error('Both image and audio files are required');
+                }
+
+                const form = new FormData();
+                form.append('image', imageFile);
+                form.append('audio', audioFile);
+
+                const defaults = {
+                    still: false,
+                    enhancer: true,
+                    face_enhance: true,
+                    background_enhance: false,
+                    fps: 25,
+                    batch_size: 4,
+                    preprocess: 'crop',
+                    face_model: 'face_detection',
+                };
+
+                const merged = { ...defaults, ...options };
+                Object.entries(merged).forEach(([key, value]) => {
+                    form.append(key, typeof value === 'boolean' ? (value ? 'true' : 'false') : String(value));
+                });
+
+                const response = await this._request('/generate', {
+                    method: 'POST',
+                    body: form,
+                    timeout: 300000,
+                });
+
+                return response.json();
+            }
+
+            /**
+             * Get generation progress
+             * @param {string} jobId - Job ID from generate response
+             * @returns {Promise<Object>} Progress data
+             */
+            async getProgress(jobId) {
+                if (!jobId) {
+                    throw new Error('Job ID is required');
+                }
+                const response = await this._request(`/progress/${jobId}`, {
+                    timeout: 10000,
+                });
+                return response.json();
+            }
+
+            /**
+             * List all generated videos
+             * @param {Object} params - Query parameters
+             * @param {number} params.page - Page number
+             * @param {number} params.per_page - Items per page
+             * @param {string} params.search - Search query
+             * @param {string} params.sort_by - Sort field
+             * @param {string} params.sort_order - Sort order (asc/desc)
+             * @returns {Promise<Object>} List of videos
+             */
+            async listVideos(params = {}) {
+                const query = new URLSearchParams();
+                Object.entries(params).forEach(([key, value]) => {
+                    if (value) query.append(key, value);
+                });
+
+                const response = await this._request(`/list?${query.toString()}`, {
+                    timeout: 10000,
+                });
+                return response.json();
+            }
+
+            /**
+             * Download a video file
+             * @param {string} filename - Video filename
+             * @returns {string} Download URL
+             */
+            getDownloadUrl(filename) {
+                return `${this.url}/download/${filename}`;
+            }
+
+            /**
+             * Get video playback URL
+             * @param {string} filename - Video filename
+             * @returns {string} Video URL
+             */
+            getVideoUrl(filename) {
+                return `${this.url}/api/results/${filename}`;
+            }
+
+            /**
+             * Delete a video
+             * @param {string} filename - Video filename
+             * @returns {Promise<Object>} Deletion result
+             */
+            async deleteVideo(filename) {
+                if (!filename) {
+                    throw new Error('Filename is required');
+                }
+                const response = await this._request(`/cleanup/${filename}`, {
+                    method: 'DELETE',
+                    timeout: 10000,
+                });
+                return response.json();
+            }
+
+            /**
+             * Delete all videos
+             * @returns {Promise<Object>} Deletion result
+             */
+            async deleteAllVideos() {
+                const response = await this._request('/cleanup/all', {
+                    method: 'DELETE',
+                    timeout: 10000,
+                });
+                return response.json();
+            }
+
+            /**
+             * Cancel a generation job
+             * @param {string} jobId - Job ID
+             * @returns {Promise<Object>} Cancellation result
+             */
+            async cancelJob(jobId) {
+                if (!jobId) {
+                    throw new Error('Job ID is required');
+                }
+                const response = await this._request(`/cancel/${jobId}`, {
+                    method: 'POST',
+                    timeout: 10000,
+                });
+                return response.json();
+            }
+
+            /**
+             * Get GPU status
+             * @returns {Promise<Object>} GPU status
+             */
+            async getGpuStatus() {
+                const response = await this._request('/gpu', {
+                    timeout: 10000,
+                });
+                return response.json();
+            }
+
+            /**
+             * Get system status
+             * @returns {Promise<Object>} System status
+             */
+            async getSystemStatus() {
+                const response = await this._request('/system', {
+                    timeout: 10000,
+                });
+                return response.json();
+            }
+
+            /**
+             * Get model status
+             * @returns {Promise<Object>} Model status
+             */
+            async getModelStatus() {
+                const response = await this._request('/models', {
+                    timeout: 10000,
+                });
+                return response.json();
+            }
+
+            /**
+             * Poll for generation completion
+             * @param {string} jobId - Job ID
+             * @param {Function} onProgress - Progress callback
+             * @param {number} interval - Poll interval in ms
+             * @param {number} timeout - Timeout in ms
+             * @returns {Promise<Object>} Final result
+             */
+            async pollGeneration(jobId, onProgress = null, interval = 1000, timeout = 300000) {
+                const startTime = Date.now();
+                let lastProgress = -1;
+
+                while (true) {
+                    if (Date.now() - startTime > timeout) {
+                        throw new Error('Generation timed out');
+                    }
+
+                    const progress = await this.getProgress(jobId);
+
+                    if (onProgress && progress.progress !== lastProgress) {
+                        onProgress(progress);
+                        lastProgress = progress.progress;
+                    }
+
+                    if (progress.status === 'completed') {
+                        return progress;
+                    }
+
+                    if (progress.status === 'failed' || progress.status === 'cancelled') {
+                        throw new Error(progress.error || `Generation ${progress.status}`);
+                    }
+
+                    await new Promise(resolve => setTimeout(resolve, interval));
+                }
+            }
+        }
 
         // ============================================================
-        // CONFIGURATION
+        // APPLICATION STATE & CONFIG
         // ============================================================
         const CONFIG = {
-            API_URL: localStorage.getItem('sadtalker_api_url') || 
-                     (() => {
-                         // Auto-detect backend URL
-                         const hostname = window.location.hostname;
-                         const port = window.location.port || '5000';
-                         if (hostname === 'localhost' || hostname === '127.0.0.1') {
-                             return `http://${hostname}:${port}/api`;
-                         }
-                         return window.location.origin + '/api';
-                     })(),
+            API_URL: localStorage.getItem('sadtalker_api_url') ||
+                (() => {
+                    const hostname = window.location.hostname;
+                    const port = window.location.port || '5000';
+                    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+                        return `http://${hostname}:${port}/api`;
+                    }
+                    return window.location.origin + '/api';
+                })(),
             DEFAULT_FPS: 25,
             MAX_FILE_SIZE: 50 * 1024 * 1024,
             PAGE_SIZE: 12,
             HISTORY_INTERVAL: 30000,
-            GENERATION_TIMEOUT: 300000,
-            RETRY_DELAY: 1000,
-            MAX_RETRIES: 3,
         };
 
-        // ============================================================
-        // STATE
-        // ============================================================
+        // Initialize LipSyncClient
+        const lipSync = new LipSyncClient(CONFIG.API_URL);
+
+        // Application state
         const state = {
             image: null,
             audio: null,
@@ -1537,7 +1815,6 @@
             modalOpen: false,
             searchTimeout: null,
             historyPage: 1,
-            queueCount: 0,
             generationStats: {
                 total: 0,
                 successful: 0,
@@ -1622,7 +1899,6 @@
 
         DOM.themeToggle.addEventListener('click', toggleTheme);
 
-        // Keyboard shortcut: Ctrl+D for theme toggle
         document.addEventListener('keydown', (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
                 e.preventDefault();
@@ -1664,12 +1940,12 @@
                 api: {
                     title: '⚙️ API Configuration',
                     body: `
-                        <p style="margin-bottom:16px;color:var(--text-muted);">Configure the backend API URL.</p>
-                        <input type="url" id="apiUrlInput" value="${CONFIG.API_URL}" 
+                        <p style="margin-bottom:16px;color:var(--text-muted);">Configure the backend API URL for the LipSync client.</p>
+                        <input type="url" id="apiUrlInput" value="${lipSync.url}" 
                                style="width:100%;padding:12px 16px;border:2px solid var(--border-color);border-radius:12px;
                                       background:var(--bg-primary);color:var(--text-primary);font-size:1rem;">
                         <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;">
-                            Current: <span id="apiUrlDisplay">${CONFIG.API_URL}</span>
+                            Current: <span id="apiUrlDisplay">${lipSync.url}</span>
                         </p>
                         <button class="btn btn-secondary w-full mt-16" onclick="testApiConnection()">🔍 Test Connection</button>
                         <div id="apiTestResult" style="margin-top:8px;font-size:0.9rem;"></div>
@@ -1702,10 +1978,6 @@
                                 <button class="btn btn-danger" onclick="clearAllHistory()" style="flex:1;">🗑️ Delete All Videos</button>
                                 <button class="btn btn-secondary" onclick="clearCache()" style="flex:1;">🧹 Clear Cache</button>
                             </div>
-                            <div style="display:flex;gap:8px;flex-wrap:wrap;">
-                                <button class="btn btn-secondary" onclick="exportData()" style="flex:1;">💾 Export Data</button>
-                                <button class="btn btn-secondary" onclick="importData()" style="flex:1;">📂 Import Data</button>
-                            </div>
                         </div>
                     `,
                     footer: `
@@ -1723,7 +1995,6 @@
                     footer: `
                         <button class="btn btn-secondary" onclick="closeModal()">Close</button>
                         <button class="btn btn-primary" onclick="refreshDiagnostics()">🔄 Refresh</button>
-                        <button class="btn btn-secondary" onclick="exportDiagnostics()">📤 Export</button>
                     `
                 }
             };
@@ -1747,7 +2018,6 @@
             state.modalOpen = false;
         }
 
-        // Close modal on Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && state.modalOpen) {
                 closeModal();
@@ -1763,9 +2033,11 @@
                 showToast('Please enter a valid URL', 'error');
                 return;
             }
-            CONFIG.API_URL = url.replace(/\/+$/, '');
-            localStorage.setItem('sadtalker_api_url', CONFIG.API_URL);
-            document.getElementById('apiUrlDisplay').textContent = CONFIG.API_URL;
+            const cleanUrl = url.replace(/\/+$/, '');
+            lipSync.baseUrl = cleanUrl;
+            CONFIG.API_URL = cleanUrl;
+            localStorage.setItem('sadtalker_api_url', cleanUrl);
+            document.getElementById('apiUrlDisplay').textContent = cleanUrl;
             showToast('✅ API URL updated successfully', 'success');
             closeModal();
             checkSystemStatus();
@@ -1780,14 +2052,14 @@
             resultEl.style.color = 'var(--text-muted)';
 
             try {
-                const response = await fetch(`${url}/health`, { signal: AbortSignal.timeout(5000) });
-                if (response.ok) {
-                    const data = await response.json();
-                    resultEl.innerHTML = `✅ Connected! Status: ${data.status || 'OK'}`;
+                const testClient = new LipSyncClient(url);
+                const data = await testClient.health();
+                if (data.status && data.status !== 'error') {
+                    resultEl.innerHTML = `✅ Connected! Status: ${data.status}`;
                     resultEl.style.color = 'var(--success)';
                 } else {
-                    resultEl.innerHTML = `❌ Server error: HTTP ${response.status}`;
-                    resultEl.style.color = 'var(--error)';
+                    resultEl.innerHTML = `⚠️ ${data.detail || 'Connected but health check returned error'}`;
+                    resultEl.style.color = 'var(--warning)';
                 }
             } catch (error) {
                 resultEl.innerHTML = `❌ Cannot connect: ${error.message}`;
@@ -1823,60 +2095,6 @@
             setTimeout(() => location.reload(), 500);
         }
 
-        function exportData() {
-            const data = {
-                api_url: CONFIG.API_URL,
-                theme: state.theme,
-                settings: {
-                    default_fps: CONFIG.DEFAULT_FPS,
-                    max_file_size: CONFIG.MAX_FILE_SIZE,
-                },
-                stats: state.generationStats,
-                exported_at: new Date().toISOString()
-            };
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `sadtalker_data_${Date.now()}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('✅ Data exported successfully', 'success');
-        }
-
-        function importData() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json';
-            input.onchange = (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.onload = (ev) => {
-                    try {
-                        const data = JSON.parse(ev.target.result);
-                        if (data.api_url) {
-                            CONFIG.API_URL = data.api_url;
-                            localStorage.setItem('sadtalker_api_url', CONFIG.API_URL);
-                        }
-                        if (data.theme) setTheme(data.theme);
-                        if (data.settings) {
-                            if (data.settings.default_fps) CONFIG.DEFAULT_FPS = data.settings.default_fps;
-                            if (data.settings.max_file_size) CONFIG.MAX_FILE_SIZE = data.settings.max_file_size;
-                        }
-                        if (data.stats) state.generationStats = data.stats;
-                        showToast('✅ Data imported successfully', 'success');
-                        checkSystemStatus();
-                        loadHistory();
-                    } catch (error) {
-                        showToast('❌ Invalid data file', 'error');
-                    }
-                };
-                reader.readAsText(file);
-            };
-            input.click();
-        }
-
         // ============================================================
         // DIAGNOSTICS
         // ============================================================
@@ -1885,18 +2103,18 @@
             container.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);">⏳ Loading diagnostics...</div>';
 
             try {
-                const [system, gpu, models, queue] = await Promise.all([
-                    fetch(`${CONFIG.API_URL}/system`).then(r => r.json()).catch(() => null),
-                    fetch(`${CONFIG.API_URL}/gpu`).then(r => r.json()).catch(() => null),
-                    fetch(`${CONFIG.API_URL}/models`).then(r => r.json()).catch(() => null),
-                    fetch(`${CONFIG.API_URL}/progress`).then(r => r.json()).catch(() => null),
+                const [system, gpu, models, health] = await Promise.all([
+                    lipSync.getSystemStatus().catch(() => null),
+                    lipSync.getGpuStatus().catch(() => null),
+                    lipSync.getModelStatus().catch(() => null),
+                    lipSync.health().catch(() => null),
                 ]);
 
                 const html = `
                     <div style="display:grid;gap:6px;">
                         <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">🔌 Connection</div>
-                        <div style="color:var(--text-muted);">API URL: ${CONFIG.API_URL}</div>
-                        <div style="color:var(--text-muted);">Status: ${system?.status || 'Unknown'}</div>
+                        <div style="color:var(--text-muted);">API URL: ${lipSync.url}</div>
+                        <div style="color:var(--text-muted);">Health: ${health?.status || 'Unknown'}</div>
                         <hr style="border-color:var(--border-color);">
 
                         <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">💻 Hardware</div>
@@ -1917,18 +2135,17 @@
                         `).join('') : '<div style="color:var(--text-muted);">No models found</div>'}
                         <hr style="border-color:var(--border-color);">
 
-                        <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">📊 Queue</div>
-                        <div style="color:var(--text-muted);">Total Jobs: ${queue?.total || 0}</div>
-                        <div style="color:var(--text-muted);">Queued: ${queue?.queued || 0}</div>
-                        <div style="color:var(--text-muted);">Processing: ${queue?.processing || 0}</div>
-                        <div style="color:var(--text-muted);">Completed: ${queue?.completed || 0}</div>
-                        <hr style="border-color:var(--border-color);">
-
                         <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">📈 Stats</div>
                         <div style="color:var(--text-muted);">Total Generations: ${state.generationStats.total}</div>
                         <div style="color:var(--text-muted);">Successful: ${state.generationStats.successful}</div>
                         <div style="color:var(--text-muted);">Failed: ${state.generationStats.failed}</div>
                         <div style="color:var(--text-muted);">Success Rate: ${state.generationStats.total > 0 ? Math.round(state.generationStats.successful / state.generationStats.total * 100) : 0}%</div>
+                        <hr style="border-color:var(--border-color);">
+
+                        <div style="color:var(--text-primary);font-weight:700;font-size:0.9rem;">📋 Client Info</div>
+                        <div style="color:var(--text-muted);">Base URL: ${lipSync.url}</div>
+                        <div style="color:var(--text-muted);">Retry Count: ${lipSync._retryCount}</div>
+                        <div style="color:var(--text-muted);">Cache Size: ${lipSync._cache.size}</div>
                     </div>
                 `;
                 container.innerHTML = html;
@@ -1939,19 +2156,6 @@
                     </div>
                 `;
             }
-        }
-
-        function exportDiagnostics() {
-            const container = document.getElementById('diagnosticsContent');
-            const text = container.textContent || container.innerText;
-            const blob = new Blob([text], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `diagnostics_${Date.now()}.txt`;
-            a.click();
-            URL.revokeObjectURL(url);
-            showToast('✅ Diagnostics exported', 'success');
         }
 
         // ============================================================
@@ -2096,124 +2300,65 @@
             DOM.progressPercent.textContent = '0%';
             DOM.resultContainer.classList.remove('active');
 
-            const formData = new FormData();
-            formData.append('image', state.image);
-            formData.append('audio', state.audio);
-            formData.append('still', DOM.stillMode.checked ? 'true' : 'false');
-            formData.append('enhancer', DOM.enhancer.checked ? 'true' : 'false');
-            formData.append('face_enhance', DOM.faceEnhance.checked ? 'true' : 'false');
-            formData.append('background_enhance', DOM.backgroundEnhance.checked ? 'true' : 'false');
-            formData.append('fps', DOM.fps.value || CONFIG.DEFAULT_FPS);
-            formData.append('batch_size', DOM.batchSize.value || 4);
-            formData.append('preprocess', DOM.preprocess.value);
-            formData.append('face_model', DOM.faceModel.value);
-
             try {
-                const response = await fetch(`${CONFIG.API_URL}/generate`, {
-                    method: 'POST',
-                    body: formData,
-                    signal: AbortSignal.timeout(CONFIG.GENERATION_TIMEOUT),
-                });
+                const options = {
+                    still: DOM.stillMode.checked,
+                    enhancer: DOM.enhancer.checked,
+                    face_enhance: DOM.faceEnhance.checked,
+                    background_enhance: DOM.backgroundEnhance.checked,
+                    fps: parseInt(DOM.fps.value) || CONFIG.DEFAULT_FPS,
+                    batch_size: parseInt(DOM.batchSize.value) || 4,
+                    preprocess: DOM.preprocess.value,
+                    face_model: DOM.faceModel.value,
+                };
 
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Generation failed');
-                }
-
-                state.currentJob = data.job_id;
+                const result = await lipSync.generate(state.image, state.audio, options);
+                state.currentJob = result.job_id;
                 showToast('✅ Generation started!', 'success');
 
                 // Poll for progress
-                await pollProgress(data.job_id);
+                await lipSync.pollGeneration(
+                    result.job_id,
+                    (progress) => {
+                        DOM.progressFill.style.width = `${progress.progress}%`;
+                        DOM.progressPercent.textContent = `${Math.round(progress.progress)}%`;
+                        DOM.progressStatus.textContent = progress.status || 'Processing...';
+                    },
+                    1000,
+                    300000
+                );
+
+                state.generationStats.successful++;
+                DOM.progressFill.style.width = '100%';
+                DOM.progressPercent.textContent = '100%';
+                DOM.progressStatus.textContent = '✅ Complete!';
+
+                // Fetch the latest video
+                const listData = await lipSync.listVideos({ page: 1, per_page: 1 });
+                if (listData.videos && listData.videos.length > 0) {
+                    const latest = listData.videos[0];
+                    const videoUrl = lipSync.getVideoUrl(latest.filename);
+                    DOM.resultVideo.src = videoUrl;
+                    DOM.resultVideo.load();
+                    DOM.downloadLink.href = lipSync.getDownloadUrl(latest.filename);
+                    DOM.resultDuration.textContent = '~5s';
+                    DOM.resultResolution.textContent = latest.resolution || '1280x720';
+                    DOM.resultSize.textContent = latest.size_human || 'Unknown';
+                    DOM.resultContainer.classList.add('active');
+                    showToast('✅ Video generated successfully!', 'success');
+                    DOM.resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
 
             } catch (error) {
                 state.generationStats.failed++;
                 showToast(`❌ Error: ${error.message}`, 'error');
-                DOM.progressContainer.classList.remove('active');
+            } finally {
                 state.isProcessing = false;
-                updateGenerateButton();
                 DOM.generateBtn.innerHTML = '🎬 Generate Video';
+                updateGenerateButton();
+                DOM.progressContainer.classList.remove('active');
+                loadHistory();
             }
-        }
-
-        async function pollProgress(jobId) {
-            let attempts = 0;
-            const maxAttempts = 300;
-
-            while (attempts < maxAttempts) {
-                try {
-                    const response = await fetch(`${CONFIG.API_URL}/progress/${jobId}`);
-                    const data = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(data.error || 'Progress check failed');
-                    }
-
-                    DOM.progressFill.style.width = `${data.progress}%`;
-                    DOM.progressPercent.textContent = `${Math.round(data.progress)}%`;
-                    DOM.progressStatus.textContent = data.status || 'Processing...';
-
-                    if (data.status === 'completed') {
-                        state.generationStats.successful++;
-                        DOM.progressFill.style.width = '100%';
-                        DOM.progressPercent.textContent = '100%';
-                        DOM.progressStatus.textContent = '✅ Complete!';
-
-                        // Fetch the latest video
-                        const listResponse = await fetch(`${CONFIG.API_URL}/list`);
-                        const listData = await listResponse.json();
-                        if (listData.videos && listData.videos.length > 0) {
-                            const latest = listData.videos[0];
-                            const videoUrl = `${CONFIG.API_URL}${latest.url}`;
-                            DOM.resultVideo.src = videoUrl;
-                            DOM.resultVideo.load();
-                            DOM.downloadLink.href = `${CONFIG.API_URL}/download/${latest.filename}`;
-
-                            // Try to get metadata
-                            try {
-                                const metaResponse = await fetch(`${CONFIG.API_URL}/system`);
-                                const metaData = await metaResponse.json();
-                                DOM.resultDuration.textContent = '~' + Math.round(data.duration || 0) + 's';
-                                DOM.resultResolution.textContent = latest.resolution || '1280x720';
-                                DOM.resultSize.textContent = latest.size_human || 'Unknown';
-                            } catch {
-                                DOM.resultDuration.textContent = '~5s';
-                                DOM.resultResolution.textContent = '1280x720';
-                                DOM.resultSize.textContent = latest.size_human || 'Unknown';
-                            }
-
-                            DOM.resultContainer.classList.add('active');
-                            showToast('✅ Video generated successfully!', 'success');
-                            DOM.resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }
-
-                        state.isProcessing = false;
-                        DOM.generateBtn.innerHTML = '🎬 Generate Video';
-                        updateGenerateButton();
-                        DOM.progressContainer.classList.remove('active');
-                        loadHistory();
-                        return;
-                    }
-
-                    if (data.status === 'failed' || data.status === 'cancelled') {
-                        state.generationStats.failed++;
-                        throw new Error(data.error || 'Generation failed');
-                    }
-
-                    attempts++;
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-
-                } catch (error) {
-                    if (error.message.includes('404')) {
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        continue;
-                    }
-                    throw error;
-                }
-            }
-
-            throw new Error('Generation timed out');
         }
 
         // Keyboard shortcut: Ctrl+Enter to generate
@@ -2233,19 +2378,13 @@
                 const sortBy = DOM.sortBy.value;
                 const sortOrder = DOM.sortOrder.value;
 
-                const url = new URL(`${CONFIG.API_URL}/list`);
-                url.searchParams.set('page', state.historyPage);
-                url.searchParams.set('per_page', CONFIG.PAGE_SIZE);
-                if (search) url.searchParams.set('search', search);
-                if (sortBy) url.searchParams.set('sort_by', sortBy);
-                if (sortOrder) url.searchParams.set('sort_order', sortOrder);
-
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(data.error || 'Failed to load history');
-                }
+                const data = await lipSync.listVideos({
+                    page: state.historyPage,
+                    per_page: CONFIG.PAGE_SIZE,
+                    search: search || undefined,
+                    sort_by: sortBy,
+                    sort_order: sortOrder,
+                });
 
                 const videos = data.videos || [];
                 DOM.historyCount.textContent = `${data.pagination?.total || 0} videos`;
@@ -2265,8 +2404,8 @@
                 DOM.historyList.innerHTML = videos.map(video => `
                     <div class="history-item">
                         <div class="thumbnail" onclick="playVideo('${video.filename}')">
-                            ${video.thumbnail ? `<img src="${CONFIG.API_URL}${video.thumbnail}" alt="Thumbnail" loading="lazy">` :
-                                               `<video muted playsinline><source src="${CONFIG.API_URL}${video.url}"></video>`}
+                            ${video.thumbnail ? `<img src="${lipSync.url}${video.thumbnail}" alt="Thumbnail" loading="lazy">` :
+                                               `<video muted playsinline><source src="${lipSync.getVideoUrl(video.filename)}"></video>`}
                             <div class="play-overlay">▶️</div>
                         </div>
                         <div class="info">
@@ -2294,7 +2433,6 @@
                         <button onclick="goToPage(${currentPage - 1})" ${currentPage <= 1 ? 'disabled' : ''}>◀</button>
                     `;
 
-                    // Show page numbers
                     const maxVisible = 5;
                     let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
                     let endPage = Math.min(totalPages, startPage + maxVisible - 1);
@@ -2343,46 +2481,24 @@
         }
 
         function downloadVideo(filename) {
-            window.open(`${CONFIG.API_URL}/download/${filename}`, '_blank');
+            window.open(lipSync.getDownloadUrl(filename), '_blank');
         }
 
         function playVideo(filename) {
-            const videoUrl = `${CONFIG.API_URL}/api/results/${filename}`;
+            const videoUrl = lipSync.getVideoUrl(filename);
             DOM.resultVideo.src = videoUrl;
             DOM.resultVideo.load();
             DOM.resultVideo.play();
             DOM.resultContainer.classList.add('active');
             DOM.resultContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
-            // Update download link
-            DOM.downloadLink.href = `${CONFIG.API_URL}/download/${filename}`;
-
-            // Try to get metadata
-            fetch(`${CONFIG.API_URL}/list`)
-                .then(r => r.json())
-                .then(data => {
-                    const video = data.videos?.find(v => v.filename === filename);
-                    if (video) {
-                        DOM.resultDuration.textContent = '~5s';
-                        DOM.resultResolution.textContent = video.resolution || '1280x720';
-                        DOM.resultSize.textContent = video.size_human || 'Unknown';
-                    }
-                })
-                .catch(() => {});
+            DOM.downloadLink.href = lipSync.getDownloadUrl(filename);
         }
 
         async function deleteVideo(filename) {
             if (!confirm(`Delete "${filename}"?`)) return;
 
             try {
-                const response = await fetch(`${CONFIG.API_URL}/cleanup/${filename}`, {
-                    method: 'DELETE',
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to delete video');
-                }
-
+                await lipSync.deleteVideo(filename);
                 showToast(`🗑️ Deleted: ${filename}`, 'success');
                 await loadHistory();
             } catch (error) {
@@ -2394,16 +2510,8 @@
             if (!confirm('Delete ALL videos? This action cannot be undone.')) return;
 
             try {
-                const response = await fetch(`${CONFIG.API_URL}/cleanup/all`, {
-                    method: 'DELETE',
-                });
-
-                if (!response.ok) {
-                    throw new Error('Failed to delete videos');
-                }
-
-                const data = await response.json();
-                showToast(`🗑️ Deleted ${data.deleted_count} videos`, 'success');
+                const result = await lipSync.deleteAllVideos();
+                showToast(`🗑️ Deleted ${result.deleted_count} videos`, 'success');
                 await loadHistory();
             } catch (error) {
                 showToast(`❌ Error: ${error.message}`, 'error');
@@ -2420,70 +2528,39 @@
         // SYSTEM STATUS
         // ============================================================
         async function checkSystemStatus() {
-            const maxRetries = CONFIG.MAX_RETRIES;
-            let retries = 0;
+            try {
+                const data = await lipSync.health();
 
-            while (retries < maxRetries) {
-                try {
-                    const response = await fetch(`${CONFIG.API_URL}/health`, {
-                        signal: AbortSignal.timeout(5000)
-                    });
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    state.isConnected = true;
-
-                    if (data.status === 'ready') {
-                        DOM.statusBadge.className = 'badge online';
-                        DOM.statusBadge.innerHTML = `<span class="dot"></span> Ready`;
-                        DOM.systemInfo.textContent = '✅ System operational';
-                    } else if (data.status === 'demo') {
-                        DOM.statusBadge.className = 'badge demo';
-                        DOM.statusBadge.innerHTML = `<span class="dot"></span> Demo Mode`;
-                        DOM.systemInfo.textContent = '⚠️ Running in demo mode';
-                        showToast('⚠️ Running in demo mode. Install SadTalker for full features.', 'warning', 5000);
-                    } else {
-                        DOM.statusBadge.className = 'badge offline';
-                        DOM.statusBadge.innerHTML = `<span class="dot"></span> ${data.status}`;
-                        DOM.systemInfo.textContent = `⚠️ Status: ${data.status}`;
-                    }
-
-                    updateGenerateButton();
-
-                    // Get queue status
-                    try {
-                        const queueResponse = await fetch(`${CONFIG.API_URL}/progress`);
-                        const queueData = await queueResponse.json();
-                        if (queueData) {
-                            const queued = queueData.queued || 0;
-                            const processing = queueData.processing || 0;
-                            DOM.queueStatus.textContent = `Queue: ${queued + processing}`;
-                            if (queued > 0 || processing > 0) {
-                                DOM.queueStatus.style.color = 'var(--warning)';
-                            } else {
-                                DOM.queueStatus.style.color = 'var(--text-muted)';
-                            }
-                        }
-                    } catch {}
-
-                    return;
-
-                } catch (error) {
-                    retries++;
-                    if (retries >= maxRetries) {
-                        state.isConnected = false;
-                        DOM.statusBadge.className = 'badge offline';
-                        DOM.statusBadge.innerHTML = `<span class="dot"></span> Offline`;
-                        DOM.systemInfo.textContent = '❌ Cannot connect to backend';
-                        updateGenerateButton();
-                        console.error('Health check failed:', error);
-                        return;
-                    }
-                    await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY * retries));
+                if (data.status === 'error') {
+                    throw new Error(data.detail || 'Health check failed');
                 }
+
+                state.isConnected = true;
+
+                if (data.status === 'ready') {
+                    DOM.statusBadge.className = 'badge online';
+                    DOM.statusBadge.innerHTML = `<span class="dot"></span> Ready`;
+                    DOM.systemInfo.textContent = '✅ System operational';
+                } else if (data.status === 'demo') {
+                    DOM.statusBadge.className = 'badge demo';
+                    DOM.statusBadge.innerHTML = `<span class="dot"></span> Demo Mode`;
+                    DOM.systemInfo.textContent = '⚠️ Running in demo mode';
+                    showToast('⚠️ Running in demo mode. Install SadTalker for full features.', 'warning', 5000);
+                } else {
+                    DOM.statusBadge.className = 'badge offline';
+                    DOM.statusBadge.innerHTML = `<span class="dot"></span> ${data.status}`;
+                    DOM.systemInfo.textContent = `⚠️ Status: ${data.status}`;
+                }
+
+                updateGenerateButton();
+
+            } catch (error) {
+                state.isConnected = false;
+                DOM.statusBadge.className = 'badge offline';
+                DOM.statusBadge.innerHTML = `<span class="dot"></span> Offline`;
+                DOM.systemInfo.textContent = '❌ Cannot connect to backend';
+                updateGenerateButton();
+                console.error('Health check failed:', error);
             }
         }
 
@@ -2545,10 +2622,9 @@
             // Update system info
             DOM.systemInfo.textContent = `🖥️ ${navigator.platform} · ${navigator.userAgent.includes('Mobile') ? '📱 Mobile' : '💻 Desktop'}`;
 
-            console.log('🎭 SadTalker Pro initialized');
-            console.log(`📡 API URL: ${CONFIG.API_URL}`);
+            console.log('🎭 SadTalker Pro with LipSyncClient initialized');
+            console.log(`📡 API URL: ${lipSync.url}`);
             console.log('💡 Press Ctrl+Enter to generate, Ctrl+D for dark mode');
-            console.log('💡 Click the status badge to check connection');
         }
 
         // Run on DOM ready
@@ -2567,10 +2643,7 @@
         window.testApiConnection = testApiConnection;
         window.saveSettings = saveSettings;
         window.clearCache = clearCache;
-        window.exportData = exportData;
-        window.importData = importData;
         window.refreshDiagnostics = refreshDiagnostics;
-        window.exportDiagnostics = exportDiagnostics;
         window.removeImage = removeImage;
         window.removeAudio = removeAudio;
         window.generateVideo = generateVideo;
@@ -2584,7 +2657,7 @@
         window.resetResult = resetResult;
         window.toggleTheme = toggleTheme;
         window.showToast = showToast;
+        window.lipSync = lipSync;
     </script>
-
 </body>
 </html>
