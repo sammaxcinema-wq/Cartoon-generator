@@ -35,8 +35,14 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         /* ===== HEADER ===== */
@@ -93,9 +99,36 @@
             animation: pulse 1.5s ease-in-out infinite;
         }
 
+        .status-badge.demo {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .demo-badge {
+            display: inline-block;
+            background: #f59e0b;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .version-info {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 6px;
         }
 
         /* ===== UPLOAD GRID ===== */
@@ -132,6 +165,11 @@
             border-color: #10b981;
             border-style: solid;
             background: #f0fdf4;
+        }
+
+        .upload-card.error {
+            border-color: #ef4444;
+            background: #fef2f2;
         }
 
         .upload-area {
@@ -173,6 +211,12 @@
             background: #5563c1;
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+        }
+
+        .upload-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
         }
 
         /* ===== PREVIEW ===== */
@@ -240,7 +284,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         .remove-btn:hover {
@@ -398,7 +442,8 @@
             flex-wrap: wrap;
         }
 
-        .download-btn, .reset-btn {
+        .download-btn,
+        .reset-btn {
             flex: 1;
             min-width: 140px;
             padding: 14px 24px;
@@ -494,6 +539,11 @@
             margin-top: 2px;
         }
 
+        .history-item .info .size {
+            font-size: 0.75rem;
+            color: #9ca3af;
+        }
+
         .history-item .actions {
             display: flex;
             gap: 8px;
@@ -537,548 +587,591 @@
             font-size: 0.95rem;
         }
 
-        /* ===== RESPONSIVE TWEAKS ===== */
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #333;
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s ease;
+            max-width: 400px;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.error {
+            background: #dc2626;
+        }
+
+        .toast.success {
+            background: #10b981;
+        }
+
+        .toast.warning {
+            background: #f59e0b;
+        }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 480px) {
             .app-container {
                 padding: 16px;
             }
-
             header h1 {
                 font-size: 1.8rem;
             }
-
             .settings-grid {
                 grid-template-columns: 1fr;
             }
-
             .history-item {
                 flex-direction: column;
                 align-items: stretch;
             }
-
             .history-item video {
                 width: 100%;
                 height: auto;
                 aspect-ratio: 16/9;
             }
-
             .history-item .actions {
                 justify-content: flex-end;
             }
-
             .result-actions {
                 flex-direction: column;
             }
-
             .result-actions .download-btn,
             .result-actions .reset-btn {
                 width: 100%;
             }
         }
 
-        /* ===== UTILITY ===== */
-        .text-center {
-            text-align: center;
+        /* ===== LOADING SPINNER ===== */
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s ease-in-out infinite;
+            margin-right: 8px;
         }
 
-        .mt-8 {
-            margin-top: 8px;
-        }
-
-        .mb-8 {
-            margin-bottom: 8px;
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <!-- HEADER -->
-    <header>
-        <h1>🎭 SadTalker</h1>
-        <p class="subtitle">Generate Talking Head Videos with AI</p>
-        <div id="systemStatus" class="status-badge loading">⏳ Checking system...</div>
-    </header>
+    <!-- ===== TOAST ===== -->
+    <div id="toast" class="toast"></div>
 
-    <!-- UPLOAD SECTION -->
-    <div class="upload-grid">
-        <!-- Image Upload -->
-        <div class="upload-card" id="imageCard">
-            <div class="upload-area" id="imageUploadArea">
-                <span class="upload-icon">🖼️</span>
-                <h3>Upload Photo</h3>
-                <p>JPG, PNG, WebP</p>
-                <input type="file" id="imageInput" accept="image/*" hidden>
-                <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
-                    Choose Image
-                </button>
-            </div>
-            <div id="imagePreview" class="preview-container hidden">
-                <img id="imagePreviewImg" alt="Preview">
-                <button class="remove-btn" onclick="removeImage()">✕</button>
-            </div>
-        </div>
+    <!-- ===== APP ===== -->
+    <div class="app-container">
+        <!-- HEADER -->
+        <header>
+            <h1>🎭 SadTalker</h1>
+            <p class="subtitle">Generate Talking Head Videos with AI</p>
+            <div id="systemStatus" class="status-badge loading">⏳ Checking system...</div>
+            <div class="version-info" id="apiUrlDisplay"></div>
+        </header>
 
-        <!-- Audio Upload -->
-        <div class="upload-card" id="audioCard">
-            <div class="upload-area" id="audioUploadArea">
-                <span class="upload-icon">🎵</span>
-                <h3>Upload Audio</h3>
-                <p>MP3, WAV, M4A</p>
-                <input type="file" id="audioInput" accept="audio/*" hidden>
-                <button class="upload-btn" onclick="document.getElementById('audioInput').click()">
-                    Choose Audio
-                </button>
-            </div>
-            <div id="audioPreview" class="preview-container hidden">
-                <div class="audio-info">
-                    <span class="name" id="audioName">audio.mp3</span>
-                    <span class="duration" id="audioDuration">00:00</span>
+        <!-- UPLOAD -->
+        <div class="upload-grid">
+            <div class="upload-card" id="imageCard">
+                <div class="upload-area" id="imageUploadArea">
+                    <span class="upload-icon">🖼️</span>
+                    <h3>Upload Photo</h3>
+                    <p>JPG, PNG, WebP</p>
+                    <input type="file" id="imageInput" accept="image/*" hidden>
+                    <button class="upload-btn" onclick="document.getElementById('imageInput').click()">Choose Image</button>
                 </div>
-                <button class="remove-btn" onclick="removeAudio()">✕</button>
+                <div id="imagePreview" class="preview-container hidden">
+                    <img id="imagePreviewImg" alt="Preview">
+                    <button class="remove-btn" onclick="removeImage()">✕</button>
+                </div>
+            </div>
+
+            <div class="upload-card" id="audioCard">
+                <div class="upload-area" id="audioUploadArea">
+                    <span class="upload-icon">🎵</span>
+                    <h3>Upload Audio</h3>
+                    <p>MP3, WAV, M4A</p>
+                    <input type="file" id="audioInput" accept="audio/*" hidden>
+                    <button class="upload-btn" onclick="document.getElementById('audioInput').click()">Choose Audio</button>
+                </div>
+                <div id="audioPreview" class="preview-container hidden">
+                    <div class="audio-info">
+                        <span class="name" id="audioName">audio.mp3</span>
+                        <span class="duration" id="audioDuration">00:00</span>
+                    </div>
+                    <button class="remove-btn" onclick="removeAudio()">✕</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- SETTINGS -->
-    <div class="settings-panel">
-        <h3>⚙️ Settings</h3>
-        <div class="settings-grid">
-            <label class="setting-item">
-                <span>🧘 Still Mode (less head movement)</span>
-                <input type="checkbox" id="stillMode">
-            </label>
-            <label class="setting-item">
-                <span>✨ Enhance Quality (GFPGAN)</span>
-                <input type="checkbox" id="enhancer" checked>
-            </label>
-            <label class="setting-item">
-                <span>🎞️ FPS</span>
-                <input type="number" id="fps" value="25" min="15" max="60" step="1">
-            </label>
+        <!-- SETTINGS -->
+        <div class="settings-panel">
+            <h3>⚙️ Settings</h3>
+            <div class="settings-grid">
+                <label class="setting-item">
+                    <span>🧘 Still Mode</span>
+                    <input type="checkbox" id="stillMode">
+                </label>
+                <label class="setting-item">
+                    <span>✨ Enhance Quality</span>
+                    <input type="checkbox" id="enhancer" checked>
+                </label>
+                <label class="setting-item">
+                    <span>🎞️ FPS</span>
+                    <input type="number" id="fps" value="25" min="15" max="60" step="1">
+                </label>
+            </div>
+        </div>
+
+        <!-- GENERATE -->
+        <button id="generateBtn" class="generate-btn" disabled>🎬 Generate Video</button>
+
+        <!-- PROGRESS -->
+        <div id="progressContainer" class="progress-container hidden">
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill" style="width:0%"></div>
+            </div>
+            <p id="progressText">Initializing...</p>
+        </div>
+
+        <!-- RESULT -->
+        <div id="resultContainer" class="result-container hidden">
+            <h3>✅ Video Generated!</h3>
+            <video id="resultVideo" controls playsinline></video>
+            <div class="result-actions">
+                <a id="downloadLink" class="download-btn" download>📥 Download Video</a>
+                <button onclick="resetApp()" class="reset-btn">🔄 Create New</button>
+            </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div id="historyContainer" class="history-container hidden">
+            <h3>📚 Recent Videos</h3>
+            <div id="historyList"></div>
         </div>
     </div>
 
-    <!-- GENERATE -->
-    <button id="generateBtn" class="generate-btn" disabled>
-        🎬 Generate Video
-    </button>
+    <!-- ===== JAVASCRIPT ===== -->
+    <script>
+        (function() {
+            'use strict';
 
-    <!-- PROGRESS -->
-    <div id="progressContainer" class="progress-container hidden">
-        <div class="progress-bar">
-            <div id="progressFill" class="progress-fill" style="width:0%"></div>
-        </div>
-        <p id="progressText">Initializing...</p>
-    </div>
+            // ===== CONFIG =====
+            const API_URL = window.location.origin + '/api';
 
-    <!-- RESULT -->
-    <div id="resultContainer" class="result-container hidden">
-        <h3>✅ Video Generated!</h3>
-        <video id="resultVideo" controls playsinline></video>
-        <div class="result-actions">
-            <a id="downloadLink" class="download-btn" download>📥 Download Video</a>
-            <button onclick="resetApp()" class="reset-btn">🔄 Create New</button>
-        </div>
-    </div>
+            // ===== STATE =====
+            let currentImage = null;
+            let currentAudio = null;
+            let isProcessing = false;
+            let isBackendAvailable = false;
+            let historyRefreshInterval = null;
 
-    <!-- HISTORY -->
-    <div id="historyContainer" class="history-container hidden">
-        <h3>📚 Recent Videos</h3>
-        <div id="historyList"></div>
-    </div>
-</div>
-
-<!-- ====================== JAVASCRIPT ====================== -->
-<script>
-    (function() {
-        'use strict';
-
-        // ===== CONFIG =====
-        const API_URL = 'http://localhost:5000/api';
-
-        // ===== STATE =====
-        let currentImage = null;
-        let currentAudio = null;
-        let isProcessing = false;
-        let historyRefreshInterval = null;
-
-        // ===== DOM REFS =====
-        const $ = (id) => document.getElementById(id);
-        const els = {
-            imageInput: $('imageInput'),
-            audioInput: $('audioInput'),
-            imageUploadArea: $('imageUploadArea'),
-            audioUploadArea: $('audioUploadArea'),
-            imagePreview: $('imagePreview'),
-            imagePreviewImg: $('imagePreviewImg'),
-            audioPreview: $('audioPreview'),
-            audioName: $('audioName'),
-            audioDuration: $('audioDuration'),
-            generateBtn: $('generateBtn'),
-            progressContainer: $('progressContainer'),
-            progressFill: $('progressFill'),
-            progressText: $('progressText'),
-            resultContainer: $('resultContainer'),
-            resultVideo: $('resultVideo'),
-            downloadLink: $('downloadLink'),
-            historyContainer: $('historyContainer'),
-            historyList: $('historyList'),
-            stillMode: $('stillMode'),
-            enhancer: $('enhancer'),
-            fps: $('fps'),
-            statusBadge: $('systemStatus'),
-            imageCard: $('imageCard'),
-            audioCard: $('audioCard'),
-        };
-
-        // ===== HELPERS =====
-        function formatDuration(seconds) {
-            if (!seconds || isNaN(seconds)) return '00:00';
-            const m = Math.floor(seconds / 60);
-            const s = Math.floor(seconds % 60);
-            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-        }
-
-        function getFileExtension(filename) {
-            return filename.split('.').pop().toLowerCase();
-        }
-
-        function isImageFile(file) {
-            return file && file.type && file.type.startsWith('image/');
-        }
-
-        function isAudioFile(file) {
-            return file && file.type && file.type.startsWith('audio/');
-        }
-
-        // ===== SYSTEM STATUS =====
-        async function checkSystemStatus() {
-            try {
-                const resp = await fetch(`${API_URL}/health`);
-                const data = await resp.json();
-
-                if (data.status === 'ready') {
-                    els.statusBadge.textContent = '✅ System Ready';
-                    els.statusBadge.className = 'status-badge ready';
-                } else {
-                    const missing = (data.models && data.models.missing) ? data.models.missing.join(', ') : 'unknown';
-                    els.statusBadge.textContent = `⚠️ Missing Models: ${missing}`;
-                    els.statusBadge.className = 'status-badge error';
-                }
-            } catch (err) {
-                els.statusBadge.textContent = '❌ Backend Not Available (http://localhost:5000)';
-                els.statusBadge.className = 'status-badge error';
-                console.error('Health check failed:', err);
-            }
-        }
-
-        // ===== FILE HANDLING =====
-        function processImage(file) {
-            if (!isImageFile(file)) {
-                alert('Please upload a valid image file (JPG, PNG, WebP).');
-                return false;
-            }
-
-            currentImage = file;
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                els.imagePreviewImg.src = e.target.result;
-                els.imagePreview.classList.remove('hidden');
-                els.imageUploadArea.classList.add('hidden');
-                els.imageCard.classList.add('has-file');
-                updateGenerateButton();
-            };
-            reader.readAsDataURL(file);
-            return true;
-        }
-
-        function processAudio(file) {
-            if (!isAudioFile(file)) {
-                alert('Please upload a valid audio file (MP3, WAV, M4A).');
-                return false;
-            }
-
-            currentAudio = file;
-            els.audioName.textContent = file.name;
-
-            // Get duration
-            const url = URL.createObjectURL(file);
-            const audioEl = new Audio(url);
-            audioEl.onloadedmetadata = () => {
-                els.audioDuration.textContent = formatDuration(audioEl.duration);
-                URL.revokeObjectURL(url);
-            };
-            audioEl.onerror = () => {
-                els.audioDuration.textContent = '00:00';
-                URL.revokeObjectURL(url);
+            // ===== DOM REFS =====
+            const els = {
+                imageInput: document.getElementById('imageInput'),
+                audioInput: document.getElementById('audioInput'),
+                imageUploadArea: document.getElementById('imageUploadArea'),
+                audioUploadArea: document.getElementById('audioUploadArea'),
+                imagePreview: document.getElementById('imagePreview'),
+                imagePreviewImg: document.getElementById('imagePreviewImg'),
+                audioPreview: document.getElementById('audioPreview'),
+                audioName: document.getElementById('audioName'),
+                audioDuration: document.getElementById('audioDuration'),
+                generateBtn: document.getElementById('generateBtn'),
+                progressContainer: document.getElementById('progressContainer'),
+                progressFill: document.getElementById('progressFill'),
+                progressText: document.getElementById('progressText'),
+                resultContainer: document.getElementById('resultContainer'),
+                resultVideo: document.getElementById('resultVideo'),
+                downloadLink: document.getElementById('downloadLink'),
+                historyContainer: document.getElementById('historyContainer'),
+                historyList: document.getElementById('historyList'),
+                stillMode: document.getElementById('stillMode'),
+                enhancer: document.getElementById('enhancer'),
+                fps: document.getElementById('fps'),
+                statusBadge: document.getElementById('systemStatus'),
+                apiUrlDisplay: document.getElementById('apiUrlDisplay'),
+                imageCard: document.getElementById('imageCard'),
+                audioCard: document.getElementById('audioCard'),
+                toast: document.getElementById('toast'),
             };
 
-            els.audioPreview.classList.remove('hidden');
-            els.audioUploadArea.classList.add('hidden');
-            els.audioCard.classList.add('has-file');
-            updateGenerateButton();
-            return true;
-        }
+            // Show API URL
+            els.apiUrlDisplay.textContent = `🔗 API: ${API_URL}`;
 
-        function removeImage() {
-            currentImage = null;
-            els.imagePreview.classList.add('hidden');
-            els.imageUploadArea.classList.remove('hidden');
-            els.imageCard.classList.remove('has-file');
-            els.imageInput.value = '';
-            els.imagePreviewImg.src = '';
-            updateGenerateButton();
-        }
+            // ===== TOAST =====
+            let toastTimeout = null;
 
-        function removeAudio() {
-            currentAudio = null;
-            els.audioPreview.classList.add('hidden');
-            els.audioUploadArea.classList.remove('hidden');
-            els.audioCard.classList.remove('has-file');
-            els.audioInput.value = '';
-            els.audioName.textContent = 'audio.mp3';
-            els.audioDuration.textContent = '00:00';
-            updateGenerateButton();
-        }
-
-        // ===== UPDATE UI =====
-        function updateGenerateButton() {
-            els.generateBtn.disabled = !(currentImage && currentAudio) || isProcessing;
-        }
-
-        // ===== GENERATE VIDEO =====
-        async function generateVideo() {
-            if (!currentImage || !currentAudio || isProcessing) return;
-
-            isProcessing = true;
-            els.generateBtn.disabled = true;
-            els.generateBtn.textContent = '⏳ Processing...';
-            els.generateBtn.classList.add('processing');
-
-            els.progressContainer.classList.remove('hidden');
-            els.resultContainer.classList.add('hidden');
-            els.progressFill.style.width = '0%';
-            els.progressText.textContent = 'Preparing...';
-
-            const formData = new FormData();
-            formData.append('image', currentImage);
-            formData.append('audio', currentAudio);
-            formData.append('still', els.stillMode.checked ? 'true' : 'false');
-            formData.append('enhancer', els.enhancer.checked ? 'true' : 'false');
-            formData.append('fps', els.fps.value || '25');
-
-            let progressInterval = null;
-
-            try {
-                // Simulate progress
-                let progress = 0;
-                progressInterval = setInterval(() => {
-                    progress += Math.random() * 6 + 2;
-                    if (progress > 92) progress = 92;
-                    els.progressFill.style.width = `${progress}%`;
-                    els.progressText.textContent = `Processing... ${Math.round(progress)}%`;
-                }, 400);
-
-                const response = await fetch(`${API_URL}/generate`, {
-                    method: 'POST',
-                    body: formData
-                });
-
-                clearInterval(progressInterval);
-
-                if (!response.ok) {
-                    let errorMsg = 'Generation failed';
-                    try {
-                        const errData = await response.json();
-                        errorMsg = errData.error || errorMsg;
-                    } catch (_) {}
-                    throw new Error(errorMsg);
-                }
-
-                const data = await response.json();
-
-                // Complete
-                els.progressFill.style.width = '100%';
-                els.progressText.textContent = '✅ Complete!';
-
-                setTimeout(() => {
-                    showResult(data);
-                }, 400);
-
-            } catch (err) {
-                clearInterval(progressInterval);
-                console.error('Generation error:', err);
-                alert(`❌ Error: ${err.message || 'Unknown error'}`);
-                els.progressContainer.classList.add('hidden');
-                resetGenerationState();
+            function showToast(message, type = 'info', duration = 4000) {
+                const toast = els.toast;
+                toast.textContent = message;
+                toast.className = 'toast';
+                if (type) toast.classList.add(type);
+                if (toastTimeout) clearTimeout(toastTimeout);
+                setTimeout(() => toast.classList.add('show'), 10);
+                toastTimeout = setTimeout(() => toast.classList.remove('show'), duration);
             }
-        }
 
-        function showResult(data) {
-            const videoUrl = `${API_URL}${data.video_url}`;
-            els.resultVideo.src = videoUrl;
-            els.resultVideo.load();
-            els.downloadLink.href = videoUrl;
-            els.resultContainer.classList.remove('hidden');
-
-            resetGenerationState();
-            loadHistory();
-        }
-
-        function resetGenerationState() {
-            isProcessing = false;
-            els.generateBtn.disabled = !(currentImage && currentAudio);
-            els.generateBtn.textContent = '🎬 Generate Video';
-            els.generateBtn.classList.remove('processing');
-            els.progressContainer.classList.add('hidden');
-            els.progressFill.style.width = '0%';
-            els.progressText.textContent = 'Initializing...';
-        }
-
-        function resetApp() {
-            removeImage();
-            removeAudio();
-            els.resultContainer.classList.add('hidden');
-            els.resultVideo.src = '';
-            els.resultVideo.load();
-            updateGenerateButton();
-        }
-
-        // ===== HISTORY =====
-        async function loadHistory() {
-            try {
-                const resp = await fetch(`${API_URL}/list`);
-                if (!resp.ok) {
-                    console.warn('History fetch failed:', resp.status);
-                    return;
-                }
-                const videos = await resp.json();
-
-                if (!videos || videos.length === 0) {
-                    els.historyContainer.classList.add('hidden');
-                    return;
-                }
-
-                els.historyContainer.classList.remove('hidden');
-                els.historyList.innerHTML = videos.map(video => `
-                    <div class="history-item">
-                        <video src="${API_URL}${video.url}" muted playsinline></video>
-                        <div class="info">
-                            <div class="name" title="${video.filename}">${video.filename}</div>
-                            <div class="date">${new Date(video.modified).toLocaleString()}</div>
-                        </div>
-                        <div class="actions">
-                            <button class="dl-btn" onclick="window.downloadHistoryVideo('${video.filename}')" title="Download">📥</button>
-                            <button class="del-btn" onclick="window.deleteHistoryVideo('${video.filename}')" title="Delete">🗑️</button>
-                        </div>
-                    </div>
-                `).join('');
-
-            } catch (err) {
-                console.warn('Failed to load history:', err);
+            // ===== HELPERS =====
+            function formatDuration(seconds) {
+                if (!seconds || isNaN(seconds)) return '00:00';
+                const m = Math.floor(seconds / 60);
+                const s = Math.floor(seconds % 60);
+                return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
             }
-        }
 
-        // Expose history actions to global scope for inline onclick
-        window.downloadHistoryVideo = function(filename) {
-            window.location.href = `${API_URL}/download/${filename}`;
-        };
-
-        window.deleteHistoryVideo = async function(filename) {
-            if (!confirm(`Delete "${filename}"?`)) return;
-            try {
-                const resp = await fetch(`${API_URL}/cleanup/${filename}`, { method: 'DELETE' });
-                if (resp.ok) {
-                    loadHistory();
-                } else {
-                    alert('Failed to delete video.');
-                }
-            } catch (err) {
-                console.error('Delete error:', err);
-                alert('Error deleting video.');
+            function formatFileSize(bytes) {
+                if (bytes < 1024) return bytes + ' B';
+                if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+                return (bytes / 1048576).toFixed(1) + ' MB';
             }
-        };
 
-        // ===== EVENT LISTENERS =====
-        function setupEventListeners() {
-            // File inputs
-            els.imageInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    processImage(e.target.files[0]);
-                }
-                e.target.value = ''; // allow re-selecting same file
-            });
+            function isImageFile(file) {
+                return file && file.type && file.type.startsWith('image/');
+            }
 
-            els.audioInput.addEventListener('change', (e) => {
-                if (e.target.files && e.target.files[0]) {
-                    processAudio(e.target.files[0]);
-                }
-                e.target.value = '';
-            });
+            function isAudioFile(file) {
+                return file && file.type && file.type.startsWith('audio/');
+            }
 
-            // Generate
-            els.generateBtn.addEventListener('click', generateVideo);
+            // ===== SYSTEM STATUS =====
+            async function checkSystemStatus() {
+                try {
+                    const resp = await fetch(`${API_URL}/health`, {
+                        signal: AbortSignal.timeout(5000)
+                    });
+                    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+                    const data = await resp.json();
+                    isBackendAvailable = true;
 
-            // Drag and drop
-            const cards = [els.imageCard, els.audioCard];
-
-            cards.forEach(card => {
-                card.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    card.classList.add('dragover');
-                });
-
-                card.addEventListener('dragleave', (e) => {
-                    e.preventDefault();
-                    card.classList.remove('dragover');
-                });
-
-                card.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    card.classList.remove('dragover');
-                    const files = e.dataTransfer.files;
-                    if (!files || files.length === 0) return;
-
-                    const file = files[0];
-                    if (card === els.imageCard && isImageFile(file)) {
-                        processImage(file);
-                    } else if (card === els.audioCard && isAudioFile(file)) {
-                        processAudio(file);
+                    if (data.status === 'ready') {
+                        els.statusBadge.textContent = '✅ System Ready';
+                        els.statusBadge.className = 'status-badge ready';
+                    } else if (data.status === 'demo') {
+                        els.statusBadge.innerHTML = '⚠️ Demo Mode <span class="demo-badge">DEMO</span>';
+                        els.statusBadge.className = 'status-badge demo';
+                        showToast('⚠️ Running in demo mode. Install SadTalker for full features.', 'warning', 5000);
                     } else {
-                        alert(card === els.imageCard ? 'Please drop an image file.' : 'Please drop an audio file.');
+                        els.statusBadge.textContent = `⚠️ ${data.status}`;
+                        els.statusBadge.className = 'status-badge error';
                     }
+
+                    document.querySelectorAll('.upload-btn').forEach(btn => btn.disabled = false);
+                    updateGenerateButton();
+                } catch (err) {
+                    isBackendAvailable = false;
+                    els.statusBadge.textContent = '❌ Backend Not Available';
+                    els.statusBadge.className = 'status-badge error';
+                    els.apiUrlDisplay.textContent = `🔗 API: ${API_URL} (❌ offline)`;
+                    showToast(`❌ Cannot connect to backend at ${API_URL}`, 'error', 6000);
+                    document.querySelectorAll('.upload-btn').forEach(btn => btn.disabled = true);
+                    els.generateBtn.disabled = true;
+                    console.error('Health check failed:', err);
+                }
+            }
+
+            // ===== FILE HANDLING =====
+            function processImage(file) {
+                if (!isImageFile(file)) {
+                    showToast('Please upload a valid image file.', 'error', 3000);
+                    return false;
+                }
+                currentImage = file;
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    els.imagePreviewImg.src = e.target.result;
+                    els.imagePreview.classList.remove('hidden');
+                    els.imageUploadArea.classList.add('hidden');
+                    els.imageCard.classList.add('has-file');
+                    updateGenerateButton();
+                    showToast(`✅ Image loaded: ${file.name}`, 'success', 2000);
+                };
+                reader.readAsDataURL(file);
+                return true;
+            }
+
+            function processAudio(file) {
+                if (!isAudioFile(file)) {
+                    showToast('Please upload a valid audio file.', 'error', 3000);
+                    return false;
+                }
+                currentAudio = file;
+                els.audioName.textContent = file.name;
+                const url = URL.createObjectURL(file);
+                const audioEl = new Audio(url);
+                audioEl.onloadedmetadata = () => {
+                    els.audioDuration.textContent = formatDuration(audioEl.duration);
+                    URL.revokeObjectURL(url);
+                };
+                audioEl.onerror = () => {
+                    els.audioDuration.textContent = '00:00';
+                    URL.revokeObjectURL(url);
+                };
+                els.audioPreview.classList.remove('hidden');
+                els.audioUploadArea.classList.add('hidden');
+                els.audioCard.classList.add('has-file');
+                updateGenerateButton();
+                showToast(`✅ Audio loaded: ${file.name}`, 'success', 2000);
+                return true;
+            }
+
+            function removeImage() {
+                currentImage = null;
+                els.imagePreview.classList.add('hidden');
+                els.imageUploadArea.classList.remove('hidden');
+                els.imageCard.classList.remove('has-file');
+                els.imageInput.value = '';
+                els.imagePreviewImg.src = '';
+                updateGenerateButton();
+            }
+
+            function removeAudio() {
+                currentAudio = null;
+                els.audioPreview.classList.add('hidden');
+                els.audioUploadArea.classList.remove('hidden');
+                els.audioCard.classList.remove('has-file');
+                els.audioInput.value = '';
+                els.audioName.textContent = 'audio.mp3';
+                els.audioDuration.textContent = '00:00';
+                updateGenerateButton();
+            }
+
+            window.removeImage = removeImage;
+            window.removeAudio = removeAudio;
+            window.resetApp = resetApp;
+
+            // ===== UPDATE UI =====
+            function updateGenerateButton() {
+                const hasFiles = !!(currentImage && currentAudio);
+                els.generateBtn.disabled = !(hasFiles && isBackendAvailable) || isProcessing;
+            }
+
+            // ===== GENERATE VIDEO =====
+            async function generateVideo() {
+                if (!currentImage || !currentAudio || isProcessing) return;
+                if (!isBackendAvailable) {
+                    showToast('❌ Backend not available.', 'error', 4000);
+                    return;
+                }
+
+                isProcessing = true;
+                els.generateBtn.disabled = true;
+                els.generateBtn.textContent = '⏳ Processing...';
+                els.generateBtn.classList.add('processing');
+                els.progressContainer.classList.remove('hidden');
+                els.resultContainer.classList.add('hidden');
+                els.progressFill.style.width = '0%';
+                els.progressText.textContent = 'Preparing files...';
+
+                const formData = new FormData();
+                formData.append('image', currentImage);
+                formData.append('audio', currentAudio);
+                formData.append('still', els.stillMode.checked ? 'true' : 'false');
+                formData.append('enhancer', els.enhancer.checked ? 'true' : 'false');
+                formData.append('fps', els.fps.value || '25');
+
+                let progressInterval = null;
+                try {
+                    let progress = 0;
+                    progressInterval = setInterval(() => {
+                        progress += Math.random() * 5 + 1;
+                        if (progress > 92) progress = 92;
+                        els.progressFill.style.width = `${progress}%`;
+                        els.progressText.textContent = `Processing... ${Math.round(progress)}%`;
+                    }, 500);
+
+                    const response = await fetch(`${API_URL}/generate`, {
+                        method: 'POST',
+                        body: formData,
+                        signal: AbortSignal.timeout(300000)
+                    });
+
+                    clearInterval(progressInterval);
+                    if (!response.ok) {
+                        let errorMsg = 'Generation failed';
+                        try {
+                            const errData = await response.json();
+                            errorMsg = errData.error || errorMsg;
+                        } catch (_) {}
+                        throw new Error(errorMsg);
+                    }
+
+                    const data = await response.json();
+                    els.progressFill.style.width = '100%';
+                    els.progressText.textContent = '✅ Complete!';
+                    setTimeout(() => showResult(data), 500);
+                } catch (err) {
+                    clearInterval(progressInterval);
+                    console.error('Generation error:', err);
+                    showToast(`❌ Error: ${err.message || 'Unknown error'}`, 'error', 5000);
+                    els.progressContainer.classList.add('hidden');
+                    resetGenerationState();
+                }
+            }
+
+            function showResult(data) {
+                const videoUrl = `${API_URL}${data.video_url}`;
+                els.resultVideo.src = videoUrl;
+                els.resultVideo.load();
+                els.downloadLink.href = videoUrl;
+                els.resultContainer.classList.remove('hidden');
+                showToast('✅ Video generated successfully!', 'success', 4000);
+                resetGenerationState();
+                loadHistory();
+            }
+
+            function resetGenerationState() {
+                isProcessing = false;
+                els.generateBtn.disabled = !(currentImage && currentAudio) || !isBackendAvailable;
+                els.generateBtn.textContent = '🎬 Generate Video';
+                els.generateBtn.classList.remove('processing');
+                els.progressContainer.classList.add('hidden');
+                els.progressFill.style.width = '0%';
+                els.progressText.textContent = 'Initializing...';
+            }
+
+            function resetApp() {
+                removeImage();
+                removeAudio();
+                els.resultContainer.classList.add('hidden');
+                els.resultVideo.src = '';
+                els.resultVideo.load();
+                updateGenerateButton();
+                showToast('🔄 Reset complete', 'info', 2000);
+            }
+
+            // ===== HISTORY =====
+            async function loadHistory() {
+                if (!isBackendAvailable) return;
+                try {
+                    const resp = await fetch(`${API_URL}/list`);
+                    if (!resp.ok) return;
+                    const videos = await resp.json();
+                    if (!videos || videos.length === 0) {
+                        els.historyContainer.classList.add('hidden');
+                        return;
+                    }
+                    els.historyContainer.classList.remove('hidden');
+                    els.historyList.innerHTML = videos.map(video => `
+                            <div class="history-item">
+                                <video src="${API_URL}${video.url}" muted playsinline></video>
+                                <div class="info">
+                                    <div class="name" title="${video.filename}">${video.filename}</div>
+                                    <div class="date">${new Date(video.modified).toLocaleString()}</div>
+                                    <div class="size">${video.size_human || formatFileSize(video.size)}</div>
+                                </div>
+                                <div class="actions">
+                                    <button class="dl-btn" onclick="window.downloadHistoryVideo('${video.filename}')" title="Download">📥</button>
+                                    <button class="del-btn" onclick="window.deleteHistoryVideo('${video.filename}')" title="Delete">🗑️</button>
+                                </div>
+                            </div>
+                        `).join('');
+                } catch (err) {
+                    console.warn('Failed to load history:', err);
+                }
+            }
+
+            window.downloadHistoryVideo = function(filename) {
+                window.location.href = `${API_URL}/download/${filename}`;
+            };
+
+            window.deleteHistoryVideo = async function(filename) {
+                if (!confirm(`Delete "${filename}"?`)) return;
+                try {
+                    const resp = await fetch(`${API_URL}/cleanup/${filename}`, { method: 'DELETE' });
+                    if (resp.ok) {
+                        showToast('🗑️ Video deleted.', 'info', 2000);
+                        loadHistory();
+                    } else {
+                        showToast('Failed to delete video.', 'error', 3000);
+                    }
+                } catch (err) {
+                    showToast('Error deleting video.', 'error', 3000);
+                }
+            };
+
+            // ===== EVENT LISTENERS =====
+            function setupEventListeners() {
+                els.imageInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) processImage(e.target.files[0]);
+                    e.target.value = '';
                 });
-            });
 
-            // Prevent default drag on document
-            document.addEventListener('dragover', (e) => e.preventDefault());
-            document.addEventListener('drop', (e) => e.preventDefault());
+                els.audioInput.addEventListener('change', (e) => {
+                    if (e.target.files && e.target.files[0]) processAudio(e.target.files[0]);
+                    e.target.value = '';
+                });
 
-            // Auto-refresh history
-            if (historyRefreshInterval) clearInterval(historyRefreshInterval);
-            historyRefreshInterval = setInterval(loadHistory, 30000);
-        }
+                els.generateBtn.addEventListener('click', generateVideo);
 
-        // ===== INIT =====
-        function init() {
-            checkSystemStatus();
-            setupEventListeners();
-            loadHistory();
+                [els.imageCard, els.audioCard].forEach(card => {
+                    card.addEventListener('dragover', (e) => {
+                        e.preventDefault();
+                        card.classList.add('dragover');
+                    });
+                    card.addEventListener('dragleave', (e) => {
+                        e.preventDefault();
+                        card.classList.remove('dragover');
+                    });
+                    card.addEventListener('drop', (e) => {
+                        e.preventDefault();
+                        card.classList.remove('dragover');
+                        const file = e.dataTransfer.files[0];
+                        if (!file) return;
+                        if (card === els.imageCard && isImageFile(file)) {
+                            processImage(file);
+                        } else if (card === els.audioCard && isAudioFile(file)) {
+                            processAudio(file);
+                        } else {
+                            showToast(card === els.imageCard ? 'Please drop an image file.' :
+                                'Please drop an audio file.', 'warning', 3000);
+                        }
+                    });
+                });
 
-            // Check status periodically
-            setInterval(checkSystemStatus, 60000);
-        }
+                document.addEventListener('dragover', (e) => e.preventDefault());
+                document.addEventListener('drop', (e) => e.preventDefault());
 
-        // Run on DOM ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
+                if (historyRefreshInterval) clearInterval(historyRefreshInterval);
+                historyRefreshInterval = setInterval(loadHistory, 30000);
+            }
 
-    })();
-</script>
+            // ===== INIT =====
+            function init() {
+                checkSystemStatus();
+                setupEventListeners();
+                loadHistory();
+                setInterval(checkSystemStatus, 60000);
+                console.log('🎭 SadTalker App initialized');
+                console.log(`📡 API URL: ${API_URL}`);
+                console.log('💡 To use a different backend, add ?api=http://your-api-url to the URL');
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', init);
+            } else {
+                init();
+            }
+
+        })();
+    </script>
 
 </body>
 </html>
