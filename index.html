@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎭 SadTalker AI - Talking Head Generator</title>
+    <style>
+        /* ===== RESET & BASE ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* ===== APP CONTAINER ===== */
+        .app-container {
+            max-width: 1200px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.97);
+            border-radius: 28px;
+            padding: 32px;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+            backdrop-filter: blur(10px);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 20px;
+            position: relative;
+        }
+
+        header h1 {
+            font-size: 2.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 1.05rem;
+            margin-top: 4px;
+            font-weight: 400;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 10px;
+            background: #f3f4f6;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+
+        .status-badge.ready {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge.error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .status-badge.loading {
+            background: #fef3c7;
+            color: #92400e;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* ===== UPLOAD GRID ===== */
+        .upload-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .upload-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .upload-card {
+            border: 2px dashed #d1d5db;
+            border-radius: 16px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            min-height: 200px;
+            position: relative;
+            background: #fafbfc;
+        }
+
+        .upload-card.dragover {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.06);
+            transform: scale(1.01);
+        }
+
+        .upload-card.has-file {
+            border-color: #10b981;
+            border-style: solid;
+            background: #f0fdf4;
+        }
+
+        .upload-area {
+            text-align: center;
+            padding: 20px 10px;
+        }
+
+        .upload-icon {
+            font-size: 3.2rem;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .upload-area h3 {
+            margin-bottom: 4px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .upload-area p {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin-bottom: 14px;
+        }
+
+        .upload-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .upload-btn:hover {
+            background: #5563c1;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
+        }
+
+        /* ===== PREVIEW ===== */
+        .preview-container {
+            position: relative;
+            margin-top: 10px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+        }
+
+        .preview-container img {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .preview-container video {
+            width: 100%;
+            max-height: 220px;
+            object-fit: cover;
+            display: block;
+            background: #000;
+        }
+
+        .audio-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            background: #f9fafb;
+        }
+
+        .audio-info .name {
+            font-weight: 500;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 70%;
+        }
+
+        .audio-info .duration {
+            color: #6b7280;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .remove-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(239, 68, 68, 0.92);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .remove-btn:hover {
+            background: #dc2626;
+            transform: scale(1.12);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ===== SETTINGS ===== */
+        .settings-panel {
+            background: #f9fafb;
+            border-radius: 14px;
+            padding: 22px 24px;
+            margin: 20px 0 18px 0;
+            border: 1px solid #e5e7eb;
+        }
+
+        .settings-panel h3 {
+            margin-bottom: 14px;
+            color: #333;
+            font-size: 1.05rem;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px 24px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #4b5563;
+            font-size: 0.95rem;
+        }
+
+        .setting-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            accent-color: #667eea;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .setting-item input[type="number"] {
+            width: 70px;
+            padding: 6px 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            background: white;
+        }
+
+        .setting-item input[type="number"]:focus {
+            outline: 2px solid #667eea;
+            border-color: transparent;
+        }
+
+        /* ===== GENERATE BUTTON ===== */
+        .generate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 18px 0 12px 0;
+            letter-spacing: 0.3px;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 35px rgba(102, 126, 234, 0.4);
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .generate-btn.processing {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+            cursor: wait;
+        }
+
+        /* ===== PROGRESS ===== */
+        .progress-container {
+            margin: 18px 0 10px 0;
+            padding: 16px 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            border-radius: 6px;
+            width: 0%;
+        }
+
+        #progressText {
+            text-align: center;
+            margin-top: 10px;
+            color: #6b7280;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        /* ===== RESULT ===== */
+        .result-container {
+            margin: 20px 0 12px 0;
+            padding: 24px;
+            background: #f9fafb;
+            border-radius: 14px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .result-container h3 {
+            margin-bottom: 14px;
+            color: #10b981;
+            font-size: 1.15rem;
+        }
+
+        .result-container video {
+            width: 100%;
+            max-height: 500px;
+            border-radius: 12px;
+            background: #000;
+            display: block;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .download-btn, .reset-btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .download-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .download-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.35);
+        }
+
+        .reset-btn {
+            background: #6b7280;
+            color: white;
+        }
+
+        .reset-btn:hover {
+            background: #4b5563;
+            transform: translateY(-2px);
+        }
+
+        /* ===== HISTORY ===== */
+        .history-container {
+            margin-top: 28px;
+            border-top: 2px solid #f0f0f0;
+            padding-top: 20px;
+        }
+
+        .history-container h3 {
+            margin-bottom: 16px;
+            color: #333;
+            font-size: 1.1rem;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 18px;
+            background: #f9fafb;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+
+        .history-item:hover {
+            border-color: #667eea;
+        }
+
+        .history-item video {
+            width: 140px;
+            height: 78px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #000;
+            flex-shrink: 0;
+        }
+
+        .history-item .info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .history-item .info .name {
+            font-weight: 600;
+            color: #333;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .history-item .info .date {
+            font-size: 0.8rem;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        .history-item .actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .history-item .actions button {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+
+        .history-item .actions .dl-btn {
+            background: #667eea;
+            color: white;
+        }
+
+        .history-item .actions .dl-btn:hover {
+            background: #5563c1;
+            transform: scale(1.05);
+        }
+
+        .history-item .actions .del-btn {
+            background: #ef4444;
+            color: white;
+        }
+
+        .history-item .actions .del-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #9ca3af;
+            padding: 30px 0;
+            font-size: 0.95rem;
+        }
+
+        /* ===== RESPONSIVE TWEAKS ===== */
+        @media (max-width: 480px) {
+            .app-container {
+                padding: 16px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            .settings-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .history-item {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .history-item video {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 16/9;
+            }
+
+            .history-item .actions {
+                justify-content: flex-end;
+            }
+
+            .result-actions {
+                flex-direction: column;
+            }
+
+            .result-actions .download-btn,
+            .result-actions .reset-btn {
+                width: 100%;
+            }
+        }
+
+        /* ===== UTILITY ===== */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-8 {
+            margin-top: 8px;
+        }
+
+        .mb-8 {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <!-- HEADER -->
+    <header>
+        <h1>🎭 SadTalker</h1>
+        <p class="subtitle">Generate Talking Head Videos with AI</p>
+        <div id="systemStatus" class="status-badge loading">⏳ Checking system...</div>
+    </header>
+
+    <!-- UPLOAD SECTION -->
+    <div class="upload-grid">
+        <!-- Image Upload -->
+        <div class="upload-card" id="imageCard">
+            <div class="upload-area" id="imageUploadArea">
+                <span class="upload-icon">🖼️</span>
+                <h3>Upload Photo</h3>
+                <p>JPG, PNG, WebP</p>
+                <input type="file" id="imageInput" accept="image/*" hidden>
+                <button class="upload-btn" onclick="document.getElementById('imageInput').click()">
+                    Choose Image
+                </button>
+            </div>
+            <div id="imagePreview" class="preview-container hidden">
+                <img id="imagePreviewImg" alt="Preview">
+                <button class="remove-btn" onclick="removeImage()">✕</button>
+            </div>
+        </div>
+
+        <!-- Audio Upload -->
+        <div class="upload-card" id="audioCard">
+            <div class="upload-area" id="audioUploadArea">
+                <span class="upload-icon">🎵</span>
+                <h3>Upload Audio</h3>
+                <p>MP3, WAV, M4A</p>
+                <input type="file" id="audioInput" accept="audio/*" hidden>
+                <button class="upload-btn" onclick="document.getElementById('audioInput').click()">
+                    Choose Audio
+                </button>
+            </div>
+            <div id="audioPreview" class="preview-container hidden">
+                <div class="audio-info">
+                    <span class="name" id="audioName">audio.mp3</span>
+                    <span class="duration" id="audioDuration">00:00</span>
+                </div>
+                <button class="remove-btn" onclick="removeAudio()">✕</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="settings-panel">
+        <h3>⚙️ Settings</h3>
+        <div class="settings-grid">
+            <label class="setting-item">
+                <span>🧘 Still Mode (less head movement)</span>
+                <input type="checkbox" id="stillMode">
+            </label>
+            <label class="setting-item">
+                <span>✨ Enhance Quality (GFPGAN)</span>
+                <input type="checkbox" id="enhancer" checked>
+            </label>
+            <label class="setting-item">
+                <span>🎞️ FPS</span>
+                <input type="number" id="fps" value="25" min="15" max="60" step="1">
+            </label>
+        </div>
+    </div>
+
+    <!-- GENERATE -->
+    <button id="generateBtn" class="generate-btn" disabled>
+        🎬 Generate Video
+    </button>
+
+    <!-- PROGRESS -->
+    <div id="progressContainer" class="progress-container hidden">
+        <div class="progress-bar">
+            <div id="progressFill" class="progress-fill" style="width:0%"></div>
+        </div>
+        <p id="progressText">Initializing...</p>
+    </div>
+
+    <!-- RESULT -->
+    <div id="resultContainer" class="result-container hidden">
+        <h3>✅ Video Generated!</h3>
+        <video id="resultVideo" controls playsinline></video>
+        <div class="result-actions">
+            <a id="downloadLink" class="download-btn" download>📥 Download Video</a>
+            <button onclick="resetApp()" class="reset-btn">🔄 Create New</button>
+        </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div id="historyContainer" class="history-container hidden">
+        <h3>📚 Recent Videos</h3>
+        <div id="historyList"></div>
+    </div>
+</div>
+
+<!-- ====================== JAVASCRIPT ====================== -->
+<script>
+    (function() {
+        'use strict';
+
+        // ===== CONFIG =====
+        const API_URL = 'http://localhost:5000/api';
+
+        // ===== STATE =====
+        let currentImage = null;
+        let currentAudio = null;
+        let isProcessing = false;
+        let historyRefreshInterval = null;
+
+        // ===== DOM REFS =====
+        const $ = (id) => document.getElementById(id);
+        const els = {
+            imageInput: $('imageInput'),
+            audioInput: $('audioInput'),
+            imageUploadArea: $('imageUploadArea'),
+            audioUploadArea: $('audioUploadArea'),
+            imagePreview: $('imagePreview'),
+            imagePreviewImg: $('imagePreviewImg'),
+            audioPreview: $('audioPreview'),
+            audioName: $('audioName'),
+            audioDuration: $('audioDuration'),
+            generateBtn: $('generateBtn'),
+            progressContainer: $('progressContainer'),
+            progressFill: $('progressFill'),
+            progressText: $('progressText'),
+            resultContainer: $('resultContainer'),
+            resultVideo: $('resultVideo'),
+            downloadLink: $('downloadLink'),
+            historyContainer: $('historyContainer'),
+            historyList: $('historyList'),
+            stillMode: $('stillMode'),
+            enhancer: $('enhancer'),
+            fps: $('fps'),
+            statusBadge: $('systemStatus'),
+            imageCard: $('imageCard'),
+            audioCard: $('audioCard'),
+        };
+
+        // ===== HELPERS =====
+        function formatDuration(seconds) {
+            if (!seconds || isNaN(seconds)) return '00:00';
+            const m = Math.floor(seconds / 60);
+            const s = Math.floor(seconds % 60);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function getFileExtension(filename) {
+            return filename.split('.').pop().toLowerCase();
+        }
+
+        function isImageFile(file) {
+            return file && file.type && file.type.startsWith('image/');
+        }
+
+        function isAudioFile(file) {
+            return file && file.type && file.type.startsWith('audio/');
+        }
+
+        // ===== SYSTEM STATUS =====
+        async function checkSystemStatus() {
+            try {
+                const resp = await fetch(`${API_URL}/health`);
+                const data = await resp.json();
+
+                if (data.status === 'ready') {
+                    els.statusBadge.textContent = '✅ System Ready';
+                    els.statusBadge.className = 'status-badge ready';
+                } else {
+                    const missing = (data.models && data.models.missing) ? data.models.missing.join(', ') : 'unknown';
+                    els.statusBadge.textContent = `⚠️ Missing Models: ${missing}`;
+                    els.statusBadge.className = 'status-badge error';
+                }
+            } catch (err) {
+                els.statusBadge.textContent = '❌ Backend Not Available (http://localhost:5000)';
+                els.statusBadge.className = 'status-badge error';
+                console.error('Health check failed:', err);
+            }
+        }
+
+        // ===== FILE HANDLING =====
+        function processImage(file) {
+            if (!isImageFile(file)) {
+                alert('Please upload a valid image file (JPG, PNG, WebP).');
+                return false;
+            }
+
+            currentImage = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                els.imagePreviewImg.src = e.target.result;
+                els.imagePreview.classList.remove('hidden');
+                els.imageUploadArea.classList.add('hidden');
+                els.imageCard.classList.add('has-file');
+                updateGenerateButton();
+            };
+            reader.readAsDataURL(file);
+            return true;
+        }
+
+        function processAudio(file) {
+            if (!isAudioFile(file)) {
+                alert('Please upload a valid audio file (MP3, WAV, M4A).');
+                return false;
+            }
+
+            currentAudio = file;
+            els.audioName.textContent = file.name;
+
+            // Get duration
+            const url = URL.createObjectURL(file);
+            const audioEl = new Audio(url);
+            audioEl.onloadedmetadata = () => {
+                els.audioDuration.textContent = formatDuration(audioEl.duration);
+                URL.revokeObjectURL(url);
+            };
+            audioEl.onerror = () => {
+                els.audioDuration.textContent = '00:00';
+                URL.revokeObjectURL(url);
+            };
+
+            els.audioPreview.classList.remove('hidden');
+            els.audioUploadArea.classList.add('hidden');
+            els.audioCard.classList.add('has-file');
+            updateGenerateButton();
+            return true;
+        }
+
+        function removeImage() {
+            currentImage = null;
+            els.imagePreview.classList.add('hidden');
+            els.imageUploadArea.classList.remove('hidden');
+            els.imageCard.classList.remove('has-file');
+            els.imageInput.value = '';
+            els.imagePreviewImg.src = '';
+            updateGenerateButton();
+        }
+
+        function removeAudio() {
+            currentAudio = null;
+            els.audioPreview.classList.add('hidden');
+            els.audioUploadArea.classList.remove('hidden');
+            els.audioCard.classList.remove('has-file');
+            els.audioInput.value = '';
+            els.audioName.textContent = 'audio.mp3';
+            els.audioDuration.textContent = '00:00';
+            updateGenerateButton();
+        }
+
+        // ===== UPDATE UI =====
+        function updateGenerateButton() {
+            els.generateBtn.disabled = !(currentImage && currentAudio) || isProcessing;
+        }
+
+        // ===== GENERATE VIDEO =====
+        async function generateVideo() {
+            if (!currentImage || !currentAudio || isProcessing) return;
+
+            isProcessing = true;
+            els.generateBtn.disabled = true;
+            els.generateBtn.textContent = '⏳ Processing...';
+            els.generateBtn.classList.add('processing');
+
+            els.progressContainer.classList.remove('hidden');
+            els.resultContainer.classList.add('hidden');
+            els.progressFill.style.width = '0%';
+            els.progressText.textContent = 'Preparing...';
+
+            const formData = new FormData();
+            formData.append('image', currentImage);
+            formData.append('audio', currentAudio);
+            formData.append('still', els.stillMode.checked ? 'true' : 'false');
+            formData.append('enhancer', els.enhancer.checked ? 'true' : 'false');
+            formData.append('fps', els.fps.value || '25');
+
+            let progressInterval = null;
+
+            try {
+                // Simulate progress
+                let progress = 0;
+                progressInterval = setInterval(() => {
+                    progress += Math.random() * 6 + 2;
+                    if (progress > 92) progress = 92;
+                    els.progressFill.style.width = `${progress}%`;
+                    els.progressText.textContent = `Processing... ${Math.round(progress)}%`;
+                }, 400);
+
+                const response = await fetch(`${API_URL}/generate`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                clearInterval(progressInterval);
+
+                if (!response.ok) {
+                    let errorMsg = 'Generation failed';
+                    try {
+                        const errData = await response.json();
+                        errorMsg = errData.error || errorMsg;
+                    } catch (_) {}
+                    throw new Error(errorMsg);
+                }
+
+                const data = await response.json();
+
+                // Complete
+                els.progressFill.style.width = '100%';
+                els.progressText.textContent = '✅ Complete!';
+
+                setTimeout(() => {
+                    showResult(data);
+                }, 400);
+
+            } catch (err) {
+                clearInterval(progressInterval);
+                console.error('Generation error:', err);
+                alert(`❌ Error: ${err.message || 'Unknown error'}`);
+                els.progressContainer.classList.add('hidden');
+                resetGenerationState();
+            }
+        }
+
+        function showResult(data) {
+            const videoUrl = `${API_URL}${data.video_url}`;
+            els.resultVideo.src = videoUrl;
+            els.resultVideo.load();
+            els.downloadLink.href = videoUrl;
+            els.resultContainer.classList.remove('hidden');
+
+            resetGenerationState();
+            loadHistory();
+        }
+
+        function resetGenerationState() {
+            isProcessing = false;
+            els.generateBtn.disabled = !(currentImage && currentAudio);
+            els.generateBtn.textContent = '🎬 Generate Video';
+            els.generateBtn.classList.remove('processing');
+            els.progressContainer.classList.add('hidden');
+            els.progressFill.style.width = '0%';
+            els.progressText.textContent = 'Initializing...';
+        }
+
+        function resetApp() {
+            removeImage();
+            removeAudio();
+            els.resultContainer.classList.add('hidden');
+            els.resultVideo.src = '';
+            els.resultVideo.load();
+            updateGenerateButton();
+        }
+
+        // ===== HISTORY =====
+        async function loadHistory() {
+            try {
+                const resp = await fetch(`${API_URL}/list`);
+                if (!resp.ok) {
+                    console.warn('History fetch failed:', resp.status);
+                    return;
+                }
+                const videos = await resp.json();
+
+                if (!videos || videos.length === 0) {
+                    els.historyContainer.classList.add('hidden');
+                    return;
+                }
+
+                els.historyContainer.classList.remove('hidden');
+                els.historyList.innerHTML = videos.map(video => `
+                    <div class="history-item">
+                        <video src="${API_URL}${video.url}" muted playsinline></video>
+                        <div class="info">
+                            <div class="name" title="${video.filename}">${video.filename}</div>
+                            <div class="date">${new Date(video.modified).toLocaleString()}</div>
+                        </div>
+                        <div class="actions">
+                            <button class="dl-btn" onclick="window.downloadHistoryVideo('${video.filename}')" title="Download">📥</button>
+                            <button class="del-btn" onclick="window.deleteHistoryVideo('${video.filename}')" title="Delete">🗑️</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (err) {
+                console.warn('Failed to load history:', err);
+            }
+        }
+
+        // Expose history actions to global scope for inline onclick
+        window.downloadHistoryVideo = function(filename) {
+            window.location.href = `${API_URL}/download/${filename}`;
+        };
+
+        window.deleteHistoryVideo = async function(filename) {
+            if (!confirm(`Delete "${filename}"?`)) return;
+            try {
+                const resp = await fetch(`${API_URL}/cleanup/${filename}`, { method: 'DELETE' });
+                if (resp.ok) {
+                    loadHistory();
+                } else {
+                    alert('Failed to delete video.');
+                }
+            } catch (err) {
+                console.error('Delete error:', err);
+                alert('Error deleting video.');
+            }
+        };
+
+        // ===== EVENT LISTENERS =====
+        function setupEventListeners() {
+            // File inputs
+            els.imageInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    processImage(e.target.files[0]);
+                }
+                e.target.value = ''; // allow re-selecting same file
+            });
+
+            els.audioInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    processAudio(e.target.files[0]);
+                }
+                e.target.value = '';
+            });
+
+            // Generate
+            els.generateBtn.addEventListener('click', generateVideo);
+
+            // Drag and drop
+            const cards = [els.imageCard, els.audioCard];
+
+            cards.forEach(card => {
+                card.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    card.classList.add('dragover');
+                });
+
+                card.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    card.classList.remove('dragover');
+                });
+
+                card.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    card.classList.remove('dragover');
+                    const files = e.dataTransfer.files;
+                    if (!files || files.length === 0) return;
+
+                    const file = files[0];
+                    if (card === els.imageCard && isImageFile(file)) {
+                        processImage(file);
+                    } else if (card === els.audioCard && isAudioFile(file)) {
+                        processAudio(file);
+                    } else {
+                        alert(card === els.imageCard ? 'Please drop an image file.' : 'Please drop an audio file.');
+                    }
+                });
+            });
+
+            // Prevent default drag on document
+            document.addEventListener('dragover', (e) => e.preventDefault());
+            document.addEventListener('drop', (e) => e.preventDefault());
+
+            // Auto-refresh history
+            if (historyRefreshInterval) clearInterval(historyRefreshInterval);
+            historyRefreshInterval = setInterval(loadHistory, 30000);
+        }
+
+        // ===== INIT =====
+        function init() {
+            checkSystemStatus();
+            setupEventListeners();
+            loadHistory();
+
+            // Check status periodically
+            setInterval(checkSystemStatus, 60000);
+        }
+
+        // Run on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+
+    })();
+</script>
+
+</body>
+</html>
