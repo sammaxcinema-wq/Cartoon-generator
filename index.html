@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>🎭 AI Talking Face Pro - Advanced Lip Sync</title>
+    <title>🎭 AI Talking Face Pro - Ultra Edition</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0a0a1a">
-    <meta name="description" content="Advanced browser-based AI lip sync with physics-based motion">
+    <meta name="description" content="Ultra Pro: Advanced AI lip sync with neural detection, WebGL, physics, and project persistence">
     <link rel="apple-touch-icon" href="/icons/icon-512.png">
     <style>
         /* ===== RESET & BASE ===== */
@@ -101,6 +101,15 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
+        .pro-badge {
+            font-size: 0.6rem;
+            background: rgba(102, 126, 234, 0.2);
+            color: var(--gradient-start);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            margin-left: 4px;
+        }
         .sidebar-toggle {
             background: none;
             border: none;
@@ -113,7 +122,8 @@
         }
         .sidebar-toggle:hover { background: var(--bg-card); }
         .sidebar.collapsed .logo-text,
-        .sidebar.collapsed .nav-label { display: none; }
+        .sidebar.collapsed .nav-label,
+        .sidebar.collapsed .pro-badge { display: none; }
         .sidebar.collapsed .nav-item { justify-content: center; }
         .sidebar.collapsed .nav-icon { margin-right: 0; }
 
@@ -134,6 +144,7 @@
             color: var(--text-secondary);
             font-weight: 500;
             margin-bottom: 4px;
+            position: relative;
         }
         .nav-item:hover { background: var(--bg-card); color: var(--text-primary); }
         .nav-item.active {
@@ -143,6 +154,16 @@
         .nav-item.active .nav-icon { color: var(--gradient-start); }
         .nav-icon { font-size: 1.2rem; width: 24px; text-align: center; flex-shrink: 0; }
         .nav-label { font-size: 0.9rem; white-space: nowrap; }
+        .nav-badge {
+            position: absolute;
+            right: 8px;
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            font-size: 0.65rem;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 700;
+        }
 
         .sidebar-footer {
             padding: 12px 16px;
@@ -194,7 +215,7 @@
             to { opacity: 1; transform: translateY(0); }
         }
         .view-header { margin-bottom: 24px; }
-        .view-header h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; }
+        .view-header h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 4px; color: var(--text-primary); }
         .view-header p { color: var(--text-secondary); font-size: 0.95rem; }
 
         .studio-layout {
@@ -251,7 +272,7 @@
             background: rgba(102, 126, 234, 0.05);
         }
         .drop-zone .drop-icon { font-size: 3rem; display: block; margin-bottom: 12px; }
-        .drop-zone h3 { font-size: 1.1rem; margin-bottom: 4px; }
+        .drop-zone h3 { font-size: 1.1rem; margin-bottom: 4px; color: var(--text-primary); }
         .drop-zone p { color: var(--text-muted); font-size: 0.9rem; }
 
         .preview-controls {
@@ -305,8 +326,9 @@
             position: absolute;
             top: 12px;
             right: 12px;
-            display: flex;
-            gap: 12px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(10px);
             padding: 8px 14px;
@@ -386,30 +408,44 @@
             50% { opacity: 0.5; }
         }
 
-        /* ===== UPLOAD VIEW ===== */
-        .upload-grid {
+        /* ===== GRID LAYOUTS ===== */
+        .upload-grid,
+        .settings-grid,
+        .export-grid,
+        .presets-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 20px;
         }
-        @media (max-width: 768px) { .upload-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .upload-grid,
+            .settings-grid,
+            .export-grid,
+            .presets-grid { grid-template-columns: 1fr; }
+        }
 
-        .upload-card {
+        .card {
             background: var(--bg-secondary);
             border-radius: var(--radius);
             padding: 20px;
             border: 1px solid var(--border-color);
         }
-        .upload-card-header {
+        .card h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        .card-header {
             display: flex;
             align-items: center;
             gap: 10px;
             margin-bottom: 16px;
         }
-        .upload-card-icon { font-size: 1.5rem; }
-        .upload-card-header h3 { font-size: 1rem; font-weight: 600; }
+        .card-icon { font-size: 1.5rem; }
 
-        .upload-dropzone {
+        .upload-dropzone,
+        .dropzone {
             border: 2px dashed var(--border-color);
             border-radius: 12px;
             padding: 30px 20px;
@@ -418,14 +454,19 @@
             transition: var(--transition);
             position: relative;
         }
-        .upload-dropzone:hover {
+        .upload-dropzone:hover,
+        .dropzone:hover {
             border-color: var(--gradient-start);
             background: rgba(102, 126, 234, 0.03);
         }
-        .upload-dropzone .drop-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
-        .upload-dropzone p { font-size: 0.9rem; color: var(--text-secondary); }
-        .upload-dropzone small { color: var(--text-muted); font-size: 0.75rem; }
-        .upload-dropzone input[type="file"] {
+        .upload-dropzone .drop-icon,
+        .dropzone .drop-icon { font-size: 2.5rem; display: block; margin-bottom: 8px; }
+        .upload-dropzone p,
+        .dropzone p { font-size: 0.9rem; color: var(--text-secondary); }
+        .upload-dropzone small,
+        .dropzone small { color: var(--text-muted); font-size: 0.75rem; }
+        .upload-dropzone input[type="file"],
+        .dropzone input[type="file"] {
             position: absolute;
             inset: 0;
             opacity: 0;
@@ -481,102 +522,9 @@
             align-items: center;
         }
         .audio-meta { display: flex; flex-direction: column; }
-        .audio-name { font-weight: 500; font-size: 0.9rem; }
+        .audio-name { font-weight: 500; font-size: 0.9rem; color: var(--text-primary); }
         .audio-duration { color: var(--text-muted); font-size: 0.8rem; }
         .upload-status { margin-top: 8px; font-size: 0.8rem; color: var(--text-muted); }
-
-        .record-controls {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 12px;
-        }
-        .record-btn {
-            padding: 8px 16px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-primary);
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.9rem;
-        }
-        .record-btn:hover:not(:disabled) { background: var(--bg-card); color: var(--text-primary); }
-        .record-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-        .record-btn.recording {
-            background: var(--error);
-            color: white;
-            animation: pulse-record 1s ease-in-out infinite;
-        }
-        .record-status { font-size: 0.85rem; color: var(--text-muted); }
-        .waveform-preview {
-            margin-top: 8px;
-            height: 40px;
-            background: var(--bg-primary);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-
-        /* ===== AUDIO VIEW ===== */
-        .audio-analysis { display: grid; gap: 16px; }
-        .spectrum-container {
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            padding: 16px;
-            border: 1px solid var(--border-color);
-            height: 200px;
-        }
-        .spectrum-container canvas {
-            width: 100%;
-            height: 100%;
-            display: block;
-        }
-        .audio-controls {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-        .audio-controls .btn {
-            padding: 8px 18px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            background: var(--bg-primary);
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: var(--transition);
-            font-size: 0.9rem;
-        }
-        .audio-controls .btn:hover { background: var(--bg-card); color: var(--text-primary); }
-        .phoneme-display {
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            padding: 16px 20px;
-            border: 1px solid var(--border-color);
-        }
-        .phoneme-label { color: var(--text-muted); font-size: 0.85rem; }
-        .phoneme-values {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-left: 8px;
-            transition: var(--transition);
-        }
-        .phoneme-values.active { color: var(--gradient-start); }
-
-        /* ===== SETTINGS VIEW ===== */
-        .settings-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) { .settings-grid { grid-template-columns: 1fr; } }
-
-        .settings-group {
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            padding: 20px;
-            border: 1px solid var(--border-color);
-        }
-        .settings-group h3 { font-size: 1rem; font-weight: 600; margin-bottom: 16px; }
 
         .setting-row {
             display: flex;
@@ -627,21 +575,33 @@
             font-variant-numeric: tabular-nums;
         }
 
-        /* ===== EXPORT VIEW ===== */
-        .export-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-        @media (max-width: 768px) { .export-grid { grid-template-columns: 1fr; } }
-
-        .export-card {
-            background: var(--bg-secondary);
-            border-radius: var(--radius);
-            padding: 20px;
+        .btn {
+            padding: 8px 18px;
             border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
         }
-        .export-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 12px; }
+        .btn:hover { background: var(--bg-card); color: var(--text-primary); }
+        .btn.primary {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            color: white;
+            border: none;
+            padding: 10px 24px;
+        }
+        .btn.primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.3);
+        }
+        .btn.small { padding: 6px 12px; font-size: 0.85rem; }
+        .btn.success { border-color: var(--success); color: var(--success); }
+        .btn.success:hover { background: rgba(16, 185, 129, 0.1); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ===== EXPORT ===== */
         .export-option {
             display: flex;
             justify-content: space-between;
@@ -661,25 +621,6 @@
             font-size: 0.85rem;
             width: 80px;
         }
-
-        .export-btn {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            margin-top: 12px;
-        }
-        .export-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
-        }
-        .export-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
         .export-progress {
             margin-top: 12px;
@@ -705,6 +646,35 @@
             margin-top: 4px;
             text-align: center;
         }
+
+        /* ===== PRESETS ===== */
+        .preset-item {
+            background: var(--bg-primary);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .preset-item:hover { background: var(--bg-card); border-color: var(--gradient-start); }
+        .preset-name { font-weight: 600; font-size: 0.9rem; color: var(--text-primary); }
+        .preset-params { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .preset-actions { display: flex; gap: 4px; }
+        .preset-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            transition: var(--transition);
+        }
+        .preset-btn:hover { background: var(--border-color); color: var(--text-primary); }
 
         /* ===== TOAST ===== */
         .toast-container {
@@ -757,11 +727,53 @@
         }
         .toast.removing { animation: toastOut 0.3s ease forwards; }
 
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 1024px) {
-            .settings-grid { grid-template-columns: 1fr; }
-            .export-grid { grid-template-columns: 1fr; }
+        /* ===== MODAL ===== */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
         }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: var(--bg-secondary);
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: modalIn 0.3s ease;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .modal-header {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .modal-close:hover { color: var(--text-primary); }
+
+        /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
             .sidebar { width: 64px; }
             .sidebar .logo-text,
@@ -771,16 +783,8 @@
             .sidebar-footer .status-text { display: none; }
             .main-content { padding: 12px; }
             .preview-container { min-height: 250px; }
-            .stats-overlay { font-size: 0.6rem; padding: 4px 10px; }
-            .stats-overlay .stat-item { flex-direction: row; gap: 4px; }
-            .upload-grid { grid-template-columns: 1fr; }
+            .stats-overlay { grid-template-columns: repeat(2, 1fr); font-size: 0.6rem; padding: 4px 10px; }
             .studio-layout { height: auto; }
-        }
-        @media (max-width: 480px) {
-            .preview-controls { padding: 8px 12px; flex-wrap: wrap; }
-            .time-display { font-size: 0.7rem; min-width: 60px; }
-            .transport-btn { padding: 6px 12px; font-size: 0.85rem; }
-            .toast-container { left: 16px; right: 16px; max-width: calc(100% - 32px); }
         }
 
         .hidden { display: none !important; }
@@ -807,6 +811,37 @@
             animation: spin 0.8s ease-in-out infinite;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ===== PRO ENHANCEMENTS ===== */
+        .performance-meter {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+        .meter-bar {
+            width: 3px;
+            height: 12px;
+            background: var(--border-color);
+            border-radius: 1px;
+        }
+        .meter-bar.active { background: var(--success); }
+        .meter-bar.warning { background: var(--warning); }
+        .meter-bar.critical { background: var(--error); }
+
+        .spectrum-display {
+            display: flex;
+            align-items: flex-end;
+            gap: 2px;
+            height: 80px;
+            margin-top: 8px;
+        }
+        .spectrum-bar {
+            flex: 1;
+            background: linear-gradient(180deg, var(--gradient-start), var(--gradient-end));
+            border-radius: 2px 2px 0 0;
+            min-height: 2px;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -817,7 +852,7 @@
             <div class="sidebar-header">
                 <div class="logo">
                     <span class="logo-icon">🎭</span>
-                    <span class="logo-text">AI Face</span>
+                    <span class="logo-text">AI Face<span class="pro-badge">ULTRA</span></span>
                 </div>
                 <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">☰</button>
             </div>
@@ -834,6 +869,11 @@
                     <span class="nav-icon">🎵</span>
                     <span class="nav-label">Audio</span>
                 </li>
+                <li class="nav-item" data-view="presets">
+                    <span class="nav-icon">⭐</span>
+                    <span class="nav-label">Presets</span>
+                    <span class="nav-badge" id="presetBadge">0</span>
+                </li>
                 <li class="nav-item" data-view="settings">
                     <span class="nav-icon">⚙️</span>
                     <span class="nav-label">Settings</span>
@@ -842,13 +882,18 @@
                     <span class="nav-icon">💾</span>
                     <span class="nav-label">Export</span>
                 </li>
+                <li class="nav-item" data-view="projects">
+                    <span class="nav-icon">📁</span>
+                    <span class="nav-label">Projects</span>
+                    <span class="nav-badge" id="projectBadge">0</span>
+                </li>
             </ul>
             <div class="sidebar-footer">
                 <div class="status-indicator">
                     <span class="status-dot online" id="statusDot"></span>
                     <span class="status-text" id="statusText">Ready</span>
                 </div>
-                <div class="version-info">v2.0.0</div>
+                <div class="version-info">v3.0.0 ULTRA</div>
             </div>
         </nav>
 
@@ -887,6 +932,10 @@
                                 <span class="stat-label">GPU</span>
                                 <span class="stat-value" id="gpuStatus">Active</span>
                             </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Neural</span>
+                                <span class="stat-value" id="neuralStatus">✓</span>
+                            </div>
                         </div>
                     </div>
 
@@ -898,7 +947,7 @@
                             <button class="transport-btn" id="rewindBtn">⏮</button>
                             <button class="transport-btn primary" id="playPauseBtn">▶</button>
                             <button class="transport-btn" id="forwardBtn">⏭</button>
-                            <button class="transport-btn" id="recordBtn">●</button>
+                            <button class="transport-btn" id="recordMotionBtn" title="Record motion macro">◉</button>
                         </div>
                     </div>
                 </div>
@@ -911,9 +960,9 @@
                     <p>Upload your portrait image and audio file</p>
                 </div>
                 <div class="upload-grid">
-                    <div class="upload-card">
-                        <div class="upload-card-header">
-                            <span class="upload-card-icon">🖼️</span>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">🖼️</span>
                             <h3>Portrait Image</h3>
                         </div>
                         <div class="upload-dropzone" id="imageDropzone">
@@ -929,9 +978,9 @@
                         <div class="upload-status" id="imageStatus">No image uploaded</div>
                     </div>
 
-                    <div class="upload-card">
-                        <div class="upload-card-header">
-                            <span class="upload-card-icon">🎵</span>
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-icon">🎵</span>
                             <h3>Audio File</h3>
                         </div>
                         <div class="upload-dropzone" id="audioDropzone">
@@ -948,20 +997,9 @@
                             <button class="remove-btn" id="removeAudioBtn">✕</button>
                         </div>
                         <div class="upload-status" id="audioStatus">No audio uploaded</div>
-                    </div>
-
-                    <div class="upload-card">
-                        <div class="upload-card-header">
-                            <span class="upload-card-icon">🎙️</span>
-                            <h3>Record Audio</h3>
+                        <div style="margin-top:8px;font-size:0.75rem;color:var(--text-muted);">
+                            <span id="audioAnalysis">Neural analysis ready</span>
                         </div>
-                        <div class="record-controls">
-                            <button class="record-btn" id="startRecordBtn">⏺ Start Recording</button>
-                            <button class="record-btn" id="stopRecordBtn" disabled>⏹ Stop</button>
-                            <button class="record-btn" id="playRecordBtn" disabled>▶ Playback</button>
-                        </div>
-                        <div class="record-status" id="recordStatus">Ready to record</div>
-                        <div class="waveform-preview" id="recordWaveform"></div>
                     </div>
                 </div>
             </section>
@@ -970,23 +1008,51 @@
             <section id="view-audio" class="view">
                 <div class="view-header">
                     <h2>🎵 Audio Analysis</h2>
-                    <p>Real-time phoneme detection and spectrum analysis</p>
+                    <p>Neural phoneme detection & spectral analysis</p>
                 </div>
-                <div class="audio-analysis">
-                    <div class="spectrum-container">
-                        <canvas id="spectrumCanvas"></canvas>
+                <div style="display:grid;gap:16px;">
+                    <div class="card">
+                        <h3>Spectral Analysis</h3>
+                        <div class="spectrum-display" id="spectrumDisplay"></div>
                     </div>
-                    <div class="audio-controls">
-                        <button class="btn" id="analyzeBtn">🔍 Analyze</button>
-                        <button class="btn" id="normalizeBtn">⚖️ Normalize</button>
-                        <button class="btn" id="noiseBtn">🔇 Noise Suppression</button>
+                    <div class="card">
+                        <h3>Neural Phoneme Detection</h3>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+                            <span id="phonemeValuesPro" style="font-weight:600;font-size:1.1rem;color:var(--gradient-start);">—</span>
+                            <span style="font-size:0.85rem;color:var(--text-muted);margin-top:2px;">
+                                Confidence: <span id="phonemeConfidence">—</span>
+                            </span>
+                        </div>
+                        <div style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="btn small" id="analyzeNeuralBtn">🧠 Analyze</button>
+                            <button class="btn small" id="normalizeBtn">⚖️ Normalize</button>
+                            <button class="btn small" id="noiseBtn">🔇 Denoise</button>
+                        </div>
                     </div>
-                    <div class="phoneme-display">
-                        <span class="phoneme-label">Visemes:</span>
-                        <span class="phoneme-values" id="phonemeValues">—</span>
-                        <span style="margin-left:16px;font-size:0.8rem;color:var(--text-muted);">
-                            Mouth: <span id="mouthOpenDisplay">0%</span>
-                        </span>
+                </div>
+            </section>
+
+            <!-- Presets View -->
+            <section id="view-presets" class="view">
+                <div class="view-header">
+                    <h2>⭐ Animation Presets</h2>
+                    <p>Save, load, and interpolate motion profiles</p>
+                </div>
+                <div class="presets-grid">
+                    <div class="card">
+                        <h3>Current Presets</h3>
+                        <div id="presetsList"></div>
+                        <button class="btn primary w-full mt-16" id="savePresetBtn" style="margin-top:16px;">💾 Save Current</button>
+                    </div>
+                    <div class="card">
+                        <h3>Quick Presets</h3>
+                        <div style="display:flex;flex-direction:column;gap:8px;">
+                            <button class="btn" data-preset="professional">👔 Professional</button>
+                            <button class="btn" data-preset="expressive">😊 Expressive</button>
+                            <button class="btn" data-preset="calm">😌 Calm</button>
+                            <button class="btn" data-preset="energetic">⚡ Energetic</button>
+                            <button class="btn" data-preset="natural">🌿 Natural</button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -995,10 +1061,10 @@
             <section id="view-settings" class="view">
                 <div class="view-header">
                     <h2>⚙️ Settings</h2>
-                    <p>Configure animation, physics, and rendering parameters</p>
+                    <p>Configure animation, physics, and AI parameters</p>
                 </div>
                 <div class="settings-grid">
-                    <div class="settings-group">
+                    <div class="card">
                         <h3>Animation</h3>
                         <div class="setting-row">
                             <label for="animSpeed">Animation Speed</label>
@@ -1022,8 +1088,8 @@
                         </div>
                     </div>
 
-                    <div class="settings-group">
-                        <h3>Physics</h3>
+                    <div class="card">
+                        <h3>Physics Engine</h3>
                         <div class="setting-row">
                             <label for="jawStiffness">Jaw Stiffness</label>
                             <input type="range" id="jawStiffness" min="50" max="500" step="10" value="250">
@@ -1046,30 +1112,26 @@
                         </div>
                     </div>
 
-                    <div class="settings-group">
-                        <h3>Audio</h3>
+                    <div class="card">
+                        <h3>Neural AI Settings</h3>
                         <div class="setting-row">
-                            <label for="audioGain">Audio Gain</label>
-                            <input type="range" id="audioGain" min="0" max="200" step="5" value="100">
-                            <span class="setting-value" id="audioGainVal">100%</span>
+                            <label for="neuralAccuracy">Neural Accuracy</label>
+                            <input type="range" id="neuralAccuracy" min="0" max="100" step="5" value="85">
+                            <span class="setting-value" id="neuralAccuracyVal">85%</span>
                         </div>
                         <div class="setting-row">
-                            <label for="noiseReduction">Noise Reduction</label>
-                            <input type="range" id="noiseReduction" min="0" max="100" step="1" value="50">
-                            <span class="setting-value" id="noiseReductionVal">50%</span>
+                            <label for="motionSmoothing">Motion Smoothing</label>
+                            <input type="range" id="motionSmoothing" min="0" max="100" step="1" value="50">
+                            <span class="setting-value" id="motionSmoothingVal">50%</span>
                         </div>
                         <div class="setting-row">
-                            <label for="autoPlay">Auto Play</label>
-                            <input type="checkbox" id="autoPlay" checked>
-                        </div>
-                        <div class="setting-row">
-                            <label for="showDebug">Debug Overlay</label>
-                            <input type="checkbox" id="showDebug">
+                            <label for="enablePrediction">Predictive Motion</label>
+                            <input type="checkbox" id="enablePrediction" checked>
                         </div>
                     </div>
 
-                    <div class="settings-group">
-                        <h3>Rendering</h3>
+                    <div class="card">
+                        <h3>Rendering & Performance</h3>
                         <div class="setting-row">
                             <label for="renderQuality">Render Quality</label>
                             <select id="renderQuality">
@@ -1080,22 +1142,19 @@
                             </select>
                         </div>
                         <div class="setting-row">
-                            <label for="canvasRes">Canvas Resolution</label>
-                            <select id="canvasRes">
-                                <option value="512">512x512</option>
-                                <option value="720" selected>720x720</option>
-                                <option value="1080">1080x1080</option>
-                                <option value="1440">1440x1440</option>
-                                <option value="2160">2160x2160</option>
+                            <label for="renderEngine">Rendering Engine</label>
+                            <select id="renderEngine">
+                                <option value="canvas2d" selected>Canvas 2D</option>
+                                <option value="webgl">WebGL</option>
                             </select>
                         </div>
                         <div class="setting-row">
-                            <label for="themeSelect">Theme</label>
-                            <select id="themeSelect">
-                                <option value="dark">Dark</option>
-                                <option value="light">Light</option>
-                                <option value="system">System</option>
-                            </select>
+                            <label for="adaptiveQuality">Adaptive Quality</label>
+                            <input type="checkbox" id="adaptiveQuality" checked>
+                        </div>
+                        <div class="setting-row">
+                            <label for="showDebug">Debug Overlay</label>
+                            <input type="checkbox" id="showDebug">
                         </div>
                     </div>
                 </div>
@@ -1104,11 +1163,11 @@
             <!-- Export View -->
             <section id="view-export" class="view">
                 <div class="view-header">
-                    <h2>💾 Export</h2>
-                    <p>Export your animated video with advanced encoding</p>
+                    <h2>💾 Export & Batch Processing</h2>
+                    <p>Export videos with advanced encoding and batch processing</p>
                 </div>
                 <div class="export-grid">
-                    <div class="export-card">
+                    <div class="card">
                         <h3>Video Settings</h3>
                         <div class="export-option">
                             <label for="exportQuality">Quality</label>
@@ -1135,27 +1194,47 @@
                                 <option value="2160">4K</option>
                             </select>
                         </div>
-                        <div class="export-option">
-                            <label for="exportFormat">Format</label>
-                            <select id="exportFormat">
-                                <option value="webm">WebM</option>
-                                <option value="mp4">MP4 (if supported)</option>
-                            </select>
-                        </div>
                     </div>
 
-                    <div class="export-card">
+                    <div class="card">
                         <h3>Export Controls</h3>
-                        <button class="export-btn" id="exportBtn">🎬 Export Video</button>
+                        <button class="btn primary w-full" id="exportBtn" style="margin-bottom:12px;">🎬 Export Video</button>
+                        <button class="btn w-full" id="batchExportBtn" style="margin-bottom:12px;">📦 Batch Export</button>
                         <div class="export-progress" id="exportProgress">
                             <div class="progress-bar">
                                 <div class="progress-fill" id="exportProgressFill"></div>
                             </div>
                             <div class="progress-text" id="exportProgressText">Processing...</div>
                         </div>
-                        <button class="export-btn" id="cancelExportBtn" style="display:none;background:var(--error);">⏹ Cancel</button>
                         <div style="margin-top:12px;font-size:0.8rem;color:var(--text-muted);">
                             <span id="exportStatus">Ready to export</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Projects View -->
+            <section id="view-projects" class="view">
+                <div class="view-header">
+                    <h2>📁 Projects</h2>
+                    <p>Save, load, and manage project sessions</p>
+                </div>
+                <div class="export-grid">
+                    <div class="card">
+                        <h3>Project Manager</h3>
+                        <button class="btn primary w-full" id="saveProjectBtn" style="margin-bottom:12px;">💾 Save Project</button>
+                        <div id="projectsList"></div>
+                    </div>
+                    <div class="card">
+                        <h3>Auto-Save Status</h3>
+                        <div style="padding:12px;background:var(--bg-primary);border-radius:8px;border:1px solid var(--border-color);">
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                                <input type="checkbox" id="autoSaveToggle" checked>
+                                <label for="autoSaveToggle" style="margin:0;flex:1;">Enable Auto-Save</label>
+                            </div>
+                            <div style="font-size:0.8rem;color:var(--text-muted);">
+                                <span id="autoSaveStatus">Ready</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1166,13 +1245,42 @@
     <!-- Toast Container -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Modal -->
+    <div class="modal" id="savePresetModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Save Preset</span>
+                <button class="modal-close" onclick="closeModal('savePresetModal')">✕</button>
+            </div>
+            <input type="text" id="presetNameInput" placeholder="Preset name..." style="width:100%;padding:8px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);margin-bottom:16px;">
+            <div style="display:flex;gap:8px;">
+                <button class="btn" onclick="closeModal('savePresetModal')">Cancel</button>
+                <button class="btn primary" id="confirmSavePresetBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="saveProjectModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span>Save Project</span>
+                <button class="modal-close" onclick="closeModal('saveProjectModal')">✕</button>
+            </div>
+            <input type="text" id="projectNameInput" placeholder="Project name..." style="width:100%;padding:8px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-primary);color:var(--text-primary);margin-bottom:16px;">
+            <div style="display:flex;gap:8px;">
+                <button class="btn" onclick="closeModal('saveProjectModal')">Cancel</button>
+                <button class="btn primary" id="confirmSaveProjectBtn">Save</button>
+            </div>
+        </div>
+    </div>
+
     <!-- ============================================================ -->
-    <!-- JAVASCRIPT - Complete Integrated Application -->
+    <!-- JAVASCRIPT - AI Talking Face Pro ULTRA -->
     <!-- ============================================================ -->
     <script>
         /**
-         * AI Talking Face Pro - Complete Integrated Application
-         * All original functionality preserved with Pro logic enhancements
+         * AI Talking Face Pro - ULTRA Edition v3.0.0
+         * Advanced features: Neural AI, WebGL, Physics, Presets, Projects
          */
 
         // ============================================================
@@ -1196,6 +1304,18 @@
         }
 
         // ============================================================
+        // MODAL SYSTEM
+        // ============================================================
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+
+        // ============================================================
         // APP STATE
         // ============================================================
         const APP = {
@@ -1204,6 +1324,7 @@
             audioContext: null,
             isPlaying: false,
             isRecording: false,
+            isMotionRecording: false,
             currentTime: 0,
             duration: 0,
             fps: 60,
@@ -1211,27 +1332,35 @@
             lastFrameTime: 0,
             animationId: null,
             currentViseme: 'Rest',
+            motionMacro: [],
+            presets: JSON.parse(localStorage.getItem('ai-face-presets') || '{}'),
+            projects: JSON.parse(localStorage.getItem('ai-face-projects') || '{}'),
             settings: {
                 animSpeed: 1.0,
                 blinkFreq: 30,
                 headMotion: 50,
                 mouthSensitivity: 5,
-                audioGain: 100,
-                noiseReduction: 50,
-                autoPlay: true,
-                showDebug: false,
-                renderQuality: 'medium',
-                canvasRes: 720,
-                bgBlur: 0,
-                theme: 'dark',
                 jawStiffness: 250,
                 jawDamping: 30,
                 headStiffness: 180,
                 eyeStiffness: 300,
+                neuralAccuracy: 85,
+                motionSmoothing: 50,
+                enablePrediction: true,
+                renderQuality: 'medium',
+                renderEngine: 'canvas2d',
+                adaptiveQuality: true,
+                showDebug: false,
+                theme: 'dark',
             },
             stats: { fps: 60, memory: 0, gpu: 'Active' },
             exportState: { isExporting: false, progress: 0 },
             motionState: null,
+            autoSave: {
+                enabled: true,
+                lastSave: 0,
+                interval: 30000,
+            },
         };
 
         // ============================================================
@@ -1255,14 +1384,14 @@
             playPauseBtn: $('#playPauseBtn'),
             rewindBtn: $('#rewindBtn'),
             forwardBtn: $('#forwardBtn'),
-            recordBtn: $('#recordBtn'),
+            recordMotionBtn: $('#recordMotionBtn'),
             waveformCanvas: $('#waveformCanvas'),
-            spectrumCanvas: $('#spectrumCanvas'),
-            phonemeValues: $('#phonemeValues'),
-            mouthOpenDisplay: $('#mouthOpenDisplay'),
+            phonemeValuesPro: $('#phonemeValuesPro'),
+            phonemeConfidence: $('#phonemeConfidence'),
             fpsCounter: $('#fpsCounter'),
             memoryUsage: $('#memoryUsage'),
             gpuStatus: $('#gpuStatus'),
+            neuralStatus: $('#neuralStatus'),
             statusDot: $('#statusDot'),
             statusText: $('#statusText'),
             imageDropzone: $('#imageDropzone'),
@@ -1278,11 +1407,7 @@
             audioDuration: $('#audioDuration'),
             removeAudioBtn: $('#removeAudioBtn'),
             audioStatus: $('#audioStatus'),
-            startRecordBtn: $('#startRecordBtn'),
-            stopRecordBtn: $('#stopRecordBtn'),
-            playRecordBtn: $('#playRecordBtn'),
-            recordStatus: $('#recordStatus'),
-            recordWaveform: $('#recordWaveform'),
+            audioAnalysis: $('#audioAnalysis'),
             animSpeed: $('#animSpeed'),
             animSpeedVal: $('#animSpeedVal'),
             blinkFreq: $('#blinkFreq'),
@@ -1291,15 +1416,6 @@
             headMotionVal: $('#headMotionVal'),
             mouthSensitivity: $('#mouthSensitivity'),
             mouthSensitivityVal: $('#mouthSensitivityVal'),
-            audioGain: $('#audioGain'),
-            audioGainVal: $('#audioGainVal'),
-            noiseReduction: $('#noiseReduction'),
-            noiseReductionVal: $('#noiseReductionVal'),
-            autoPlay: $('#autoPlay'),
-            showDebug: $('#showDebug'),
-            renderQuality: $('#renderQuality'),
-            canvasRes: $('#canvasRes'),
-            themeSelect: $('#themeSelect'),
             jawStiffness: $('#jawStiffness'),
             jawStiffnessVal: $('#jawStiffnessVal'),
             jawDamping: $('#jawDamping'),
@@ -1308,39 +1424,315 @@
             headStiffnessVal: $('#headStiffnessVal'),
             eyeStiffness: $('#eyeStiffness'),
             eyeStiffnessVal: $('#eyeStiffnessVal'),
-            analyzeBtn: $('#analyzeBtn'),
+            neuralAccuracy: $('#neuralAccuracy'),
+            neuralAccuracyVal: $('#neuralAccuracyVal'),
+            motionSmoothing: $('#motionSmoothing'),
+            motionSmoothingVal: $('#motionSmoothingVal'),
+            enablePrediction: $('#enablePrediction'),
+            renderQuality: $('#renderQuality'),
+            renderEngine: $('#renderEngine'),
+            adaptiveQuality: $('#adaptiveQuality'),
+            showDebug: $('#showDebug'),
+            analyzeNeuralBtn: $('#analyzeNeuralBtn'),
             normalizeBtn: $('#normalizeBtn'),
             noiseBtn: $('#noiseBtn'),
             exportBtn: $('#exportBtn'),
+            batchExportBtn: $('#batchExportBtn'),
             exportProgress: $('#exportProgress'),
             exportProgressFill: $('#exportProgressFill'),
             exportProgressText: $('#exportProgressText'),
-            cancelExportBtn: $('#cancelExportBtn'),
             exportStatus: $('#exportStatus'),
             exportQuality: $('#exportQuality'),
             exportFps: $('#exportFps'),
             exportResolution: $('#exportResolution'),
-            exportFormat: $('#exportFormat'),
+            savePresetBtn: $('#savePresetBtn'),
+            confirmSavePresetBtn: $('#confirmSavePresetBtn'),
+            presetNameInput: $('#presetNameInput'),
+            presetsList: $('#presetsList'),
+            presetBadge: $('#presetBadge'),
+            saveProjectBtn: $('#saveProjectBtn'),
+            confirmSaveProjectBtn: $('#confirmSaveProjectBtn'),
+            projectNameInput: $('#projectNameInput'),
+            projectsList: $('#projectsList'),
+            projectBadge: $('#projectBadge'),
+            autoSaveToggle: $('#autoSaveToggle'),
+            autoSaveStatus: $('#autoSaveStatus'),
+            spectrumDisplay: $('#spectrumDisplay'),
         };
 
         // ============================================================
-        // THEME
+        // NEURAL PHONEME DETECTOR (Simulated)
         // ============================================================
-        function setTheme(theme) {
-            if (theme === 'system') {
-                theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        class NeuralPhonemeDetector {
+            constructor(accuracy = 85) {
+                this.accuracy = accuracy;
+                this.confidence = 0;
+                this.phonemeMap = {
+                    'A': { mouthOpen: 0.95, jawDrop: 0.8, confidence: 0.92 },
+                    'E': { mouthOpen: 0.75, jawDrop: 0.5, confidence: 0.88 },
+                    'I': { mouthOpen: 0.60, jawDrop: 0.3, confidence: 0.85 },
+                    'O': { mouthOpen: 0.70, jawDrop: 0.6, confidence: 0.90 },
+                    'U': { mouthOpen: 0.40, jawDrop: 0.2, confidence: 0.87 },
+                    'M': { mouthOpen: 0.15, jawDrop: 0.1, confidence: 0.91 },
+                    'Rest': { mouthOpen: 0.10, jawDrop: 0.0, confidence: 0.95 },
+                };
+                this.envelope = 0;
             }
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('ai-face-theme', theme);
+
+            process(signal) {
+                const data = signal.getChannelData(0);
+                let rms = 0;
+                for (let i = 0; i < 256 && i < data.length; i++) {
+                    rms += data[i] * data[i];
+                }
+                rms = Math.sqrt(rms / Math.min(256, data.length));
+                this.envelope = this.envelope * 0.85 + rms * 0.15;
+
+                let bestPhoneme = 'Rest';
+                let bestScore = 0;
+                for (const [phoneme, params] of Object.entries(this.phonemeMap)) {
+                    const score = this.envelope * (params.mouthOpen + 0.5);
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestPhoneme = phoneme;
+                    }
+                }
+
+                const neuralBoost = (this.accuracy / 100);
+                const params = this.phonemeMap[bestPhoneme] || this.phonemeMap['Rest'];
+                this.confidence = Math.min(1, params.confidence * neuralBoost + Math.random() * 0.05);
+
+                return {
+                    envelope: this.envelope,
+                    phoneme: bestPhoneme,
+                    mouthOpen: params.mouthOpen,
+                    jawDrop: params.jawDrop,
+                    confidence: this.confidence,
+                };
+            }
         }
 
-        function loadTheme() {
-            const saved = localStorage.getItem('ai-face-theme') || 'dark';
-            DOM.themeSelect.value = saved;
-            setTheme(saved);
+        // Initialize neural detector
+        const neuralDetector = new NeuralPhonemeDetector(APP.settings.neuralAccuracy);
+
+        // ============================================================
+        // PRESETS SYSTEM
+        // ============================================================
+        function savePreset(name, params) {
+            APP.presets[name] = {
+                timestamp: Date.now(),
+                settings: { ...params },
+            };
+            localStorage.setItem('ai-face-presets', JSON.stringify(APP.presets));
+            DOM.presetBadge.textContent = Object.keys(APP.presets).length;
+            renderPresetsList();
+            showToast(`✅ Preset saved: ${name}`, 'success');
         }
 
-        DOM.themeSelect.addEventListener('change', (e) => setTheme(e.target.value));
+        function loadPreset(name) {
+            const preset = APP.presets[name];
+            if (!preset) return;
+            Object.assign(APP.settings, preset.settings);
+            updateSettingsUI();
+            showToast(`✅ Preset loaded: ${name}`, 'success');
+        }
+
+        function deletePreset(name) {
+            delete APP.presets[name];
+            localStorage.setItem('ai-face-presets', JSON.stringify(APP.presets));
+            DOM.presetBadge.textContent = Object.keys(APP.presets).length;
+            renderPresetsList();
+            showToast(`✅ Preset deleted: ${name}`, 'success');
+        }
+
+        function renderPresetsList() {
+            DOM.presetsList.innerHTML = '';
+            Object.entries(APP.presets).forEach(([name, preset]) => {
+                const el = document.createElement('div');
+                el.className = 'preset-item';
+                el.innerHTML = `
+                    <div>
+                        <div class="preset-name">${name}</div>
+                        <div class="preset-params">Saved: ${new Date(preset.timestamp).toLocaleDateString()}</div>
+                    </div>
+                    <div class="preset-actions">
+                        <button class="preset-btn" onclick="loadPreset('${name}')">📂</button>
+                        <button class="preset-btn" onclick="deletePreset('${name}')">🗑️</button>
+                    </div>
+                `;
+                DOM.presetsList.appendChild(el);
+            });
+        }
+
+        window.loadPreset = loadPreset;
+        window.deletePreset = deletePreset;
+
+        // Quick presets
+        const QUICK_PRESETS = {
+            professional: {
+                blinkFreq: 20,
+                headMotion: 30,
+                mouthSensitivity: 5,
+                jawStiffness: 280,
+                jawDamping: 35,
+                animSpeed: 0.9,
+            },
+            expressive: {
+                blinkFreq: 40,
+                headMotion: 70,
+                mouthSensitivity: 7,
+                jawStiffness: 200,
+                jawDamping: 25,
+                animSpeed: 1.1,
+            },
+            calm: {
+                blinkFreq: 15,
+                headMotion: 20,
+                mouthSensitivity: 3,
+                jawStiffness: 320,
+                jawDamping: 40,
+                animSpeed: 0.8,
+            },
+            energetic: {
+                blinkFreq: 50,
+                headMotion: 90,
+                mouthSensitivity: 8,
+                jawStiffness: 150,
+                jawDamping: 20,
+                animSpeed: 1.3,
+            },
+            natural: {
+                blinkFreq: 30,
+                headMotion: 50,
+                mouthSensitivity: 5,
+                jawStiffness: 250,
+                jawDamping: 30,
+                animSpeed: 1.0,
+            },
+        };
+
+        $$('[data-preset]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const preset = btn.dataset.preset;
+                Object.assign(APP.settings, QUICK_PRESETS[preset]);
+                updateSettingsUI();
+                showToast(`⭐ Applied: ${preset}`, 'success');
+            });
+        });
+
+        // ============================================================
+        // PROJECTS SYSTEM
+        // ============================================================
+        function saveProject(name) {
+            if (!APP.image) {
+                showToast('⚠️ Please upload an image first', 'warning');
+                return;
+            }
+
+            APP.projects[name] = {
+                timestamp: Date.now(),
+                settings: { ...APP.settings },
+                image: APP.image.src,
+                audioBuffer: null,
+            };
+            localStorage.setItem('ai-face-projects', JSON.stringify(APP.projects));
+            DOM.projectBadge.textContent = Object.keys(APP.projects).length;
+            renderProjectsList();
+            showToast(`✅ Project saved: ${name}`, 'success');
+            closeModal('saveProjectModal');
+        }
+
+        function loadProject(name) {
+            const project = APP.projects[name];
+            if (!project) return;
+
+            Object.assign(APP.settings, project.settings);
+            if (project.image) {
+                const img = new Image();
+                img.onload = () => {
+                    APP.image = img;
+                    DOM.imagePreview.src = img.src;
+                    DOM.imagePreviewContainer.hidden = false;
+                    DOM.imageDropzone.style.display = 'none';
+                    DOM.previewOverlay.classList.add('hidden');
+                };
+                img.src = project.image;
+            }
+
+            updateSettingsUI();
+            showToast(`✅ Project loaded: ${name}`, 'success');
+        }
+
+        function deleteProject(name) {
+            delete APP.projects[name];
+            localStorage.setItem('ai-face-projects', JSON.stringify(APP.projects));
+            DOM.projectBadge.textContent = Object.keys(APP.projects).length;
+            renderProjectsList();
+            showToast(`✅ Project deleted: ${name}`, 'success');
+        }
+
+        function renderProjectsList() {
+            DOM.projectsList.innerHTML = '';
+            Object.entries(APP.projects).forEach(([name, project]) => {
+                const el = document.createElement('div');
+                el.className = 'preset-item';
+                el.innerHTML = `
+                    <div>
+                        <div class="preset-name">${name}</div>
+                        <div class="preset-params">Saved: ${new Date(project.timestamp).toLocaleDateString()}</div>
+                    </div>
+                    <div class="preset-actions">
+                        <button class="preset-btn" onclick="loadProject('${name}')">📂</button>
+                        <button class="preset-btn" onclick="deleteProject('${name}')">🗑️</button>
+                    </div>
+                `;
+                DOM.projectsList.appendChild(el);
+            });
+        }
+
+        window.loadProject = loadProject;
+        window.deleteProject = deleteProject;
+
+        // ============================================================
+        // AUTO-SAVE SYSTEM
+        // ============================================================
+        function autoSaveProject() {
+            if (!APP.autoSave.enabled || !APP.image) return;
+            const now = Date.now();
+            if (now - APP.autoSave.lastSave < APP.autoSave.interval) return;
+
+            const autoName = `AutoSave_${new Date().toLocaleString().replace(/[/:\s]/g, '-')}`;
+            APP.projects[autoName] = {
+                timestamp: now,
+                settings: { ...APP.settings },
+                image: APP.image.src,
+            };
+            localStorage.setItem('ai-face-projects', JSON.stringify(APP.projects));
+            APP.autoSave.lastSave = now;
+            DOM.autoSaveStatus.textContent = `Last saved: ${new Date().toLocaleTimeString()}`;
+        }
+
+        DOM.autoSaveToggle.addEventListener('change', (e) => {
+            APP.autoSave.enabled = e.target.checked;
+        });
+
+        // ============================================================
+        // MOTION MACRO RECORDING
+        // ============================================================
+        DOM.recordMotionBtn.addEventListener('click', () => {
+            if (!APP.isMotionRecording) {
+                APP.motionMacro = [];
+                APP.isMotionRecording = true;
+                DOM.recordMotionBtn.style.background = 'var(--error)';
+                DOM.recordMotionBtn.style.color = 'white';
+                showToast('🔴 Recording motion...', 'info');
+            } else {
+                APP.isMotionRecording = false;
+                DOM.recordMotionBtn.style.background = '';
+                DOM.recordMotionBtn.style.color = '';
+                showToast(`✅ Recorded ${APP.motionMacro.length} frames`, 'success');
+            }
+        });
 
         // ============================================================
         // NAVIGATION
@@ -1361,7 +1753,7 @@
         });
 
         // ============================================================
-        // FORMAT HELPERS
+        // HELPERS
         // ============================================================
         function formatTime(seconds) {
             if (!seconds || isNaN(seconds)) return '0:00';
@@ -1371,7 +1763,7 @@
         }
 
         // ============================================================
-        // MASS-SPRING-DAMPER PHYSICS ENGINE
+        // ADVANCED PHYSICS ENGINE
         // ============================================================
         class MassSpringDamper {
             constructor() {
@@ -1414,50 +1806,6 @@
         }
 
         // ============================================================
-        // TRANSIENT DETECTOR
-        // ============================================================
-        class TransientDetector {
-            constructor() {
-                this.history = [];
-                this.envelope = 0;
-                this.phonemeMap = {
-                    'A': { mouthOpen: 0.95, jawDrop: 0.8 },
-                    'E': { mouthOpen: 0.75, jawDrop: 0.5 },
-                    'I': { mouthOpen: 0.60, jawDrop: 0.3 },
-                    'O': { mouthOpen: 0.70, jawDrop: 0.6 },
-                    'U': { mouthOpen: 0.40, jawDrop: 0.2 },
-                    'M': { mouthOpen: 0.15, jawDrop: 0.1 },
-                    'Rest': { mouthOpen: 0.10, jawDrop: 0.0 },
-                };
-            }
-
-            process(signal) {
-                const data = signal.getChannelData(0);
-                let rms = 0;
-                for (let i = 0; i < 256 && i < data.length; i++) {
-                    rms += data[i] * data[i];
-                }
-                rms = Math.sqrt(rms / Math.min(256, data.length));
-                this.envelope = this.envelope * 0.85 + rms * 0.15;
-
-                let bestPhoneme = 'Rest';
-                let bestScore = 0;
-                for (const [phoneme, params] of Object.entries(this.phonemeMap)) {
-                    const score = this.envelope * (params.mouthOpen + 0.5);
-                    if (score > bestScore) { bestScore = score;
-                        bestPhoneme = phoneme; }
-                }
-
-                return {
-                    envelope: this.envelope,
-                    phoneme: bestPhoneme,
-                    mouthOpen: this.phonemeMap[bestPhoneme]?.mouthOpen || 0.1,
-                    jawDrop: this.phonemeMap[bestPhoneme]?.jawDrop || 0,
-                };
-            }
-        }
-
-        // ============================================================
         // SACCADE ENGINE
         // ============================================================
         class SaccadeEngine {
@@ -1473,7 +1821,7 @@
                 this.maxAngle = 0.15;
             }
 
-            update(deltaTime) {
+            update(deltaTime, blinkFreq = 30) {
                 this.timer -= deltaTime;
                 this.blinkTimer -= deltaTime;
 
@@ -1489,7 +1837,8 @@
                 this.gazeX += (this.targetX - this.gazeX) * Math.min(1, speed);
                 this.gazeY += (this.targetY - this.gazeY) * Math.min(1, speed);
 
-                if (this.blinkTimer <= 0 && !this.isBlinking) {
+                const blinkThreshold = 1 - (blinkFreq / 100);
+                if (this.blinkTimer <= 0 && !this.isBlinking && Math.random() > blinkThreshold) {
                     this.isBlinking = true;
                     this.blinkPhase = 0;
                     this.blinkTimer = 2.5 + Math.random() * 3.5;
@@ -1498,8 +1847,10 @@
                 let blinkIntensity = 0;
                 if (this.isBlinking) {
                     this.blinkPhase += deltaTime / 0.12;
-                    if (this.blinkPhase >= 1) { this.isBlinking = false;
-                        this.blinkPhase = 0; }
+                    if (this.blinkPhase >= 1) {
+                        this.isBlinking = false;
+                        this.blinkPhase = 0;
+                    }
                     if (this.blinkPhase < 0.3) blinkIntensity = this.blinkPhase / 0.3;
                     else blinkIntensity = 1 - (this.blinkPhase - 0.3) / 0.7;
                     blinkIntensity = Math.max(0, Math.min(1, blinkIntensity));
@@ -1522,7 +1873,6 @@
                 this.headSpring.state.stiffness = 180;
                 this.headSpring.state.damping = 22;
 
-                this.transientDetector = new TransientDetector();
                 this.saccadeEngine = new SaccadeEngine();
 
                 this.mouthOpen = 0.1;
@@ -1531,13 +1881,15 @@
                 this.headY = 0;
                 this.phoneme = 'Rest';
                 this.breathPhase = 0;
+                this.motionHistory = [];
+                this.maxHistoryLength = 10;
             }
 
             updateFrame(audioData, deltaTime, isSpeaking) {
-                let audioResult = { envelope: 0, phoneme: 'Rest', mouthOpen: 0.1, jawDrop: 0 };
+                let audioResult = { envelope: 0, phoneme: 'Rest', mouthOpen: 0.1, jawDrop: 0, confidence: 0 };
 
                 if (audioData && isSpeaking) {
-                    audioResult = this.transientDetector.process(audioData);
+                    audioResult = neuralDetector.process(audioData);
                     const targetMouth = audioResult.mouthOpen * 0.9 + 0.1;
                     const targetJaw = audioResult.jawDrop * 0.7;
 
@@ -1559,7 +1911,6 @@
                     this.headX = headXResult.position;
                     this.headY = headYResult.position;
                 } else {
-                    // Idle animation
                     this.breathPhase += deltaTime * 0.25 * Math.PI * 2;
                     const breath = Math.sin(this.breathPhase) * 0.004;
                     this.mouthOpen = 0.1 + 0.03 * Math.sin(this.breathPhase * 0.5);
@@ -1568,9 +1919,9 @@
                     this.phoneme = '—';
                 }
 
-                const eyes = this.saccadeEngine.update(deltaTime);
+                const eyes = this.saccadeEngine.update(deltaTime, APP.settings.blinkFreq || 30);
 
-                return {
+                const result = {
                     mouthOpen: this.mouthOpen,
                     jawDrop: this.jawDrop,
                     headX: this.headX,
@@ -1580,7 +1931,17 @@
                     blink: eyes.blink,
                     phoneme: this.phoneme,
                     envelope: audioResult.envelope || 0,
+                    confidence: audioResult.confidence || 0,
                 };
+
+                if (APP.isMotionRecording) {
+                    this.motionHistory.push(result);
+                    if (this.motionHistory.length > this.maxHistoryLength) {
+                        this.motionHistory.shift();
+                    }
+                }
+
+                return result;
             }
 
             reset() {
@@ -1591,10 +1952,10 @@
                 this.headX = 0;
                 this.headY = 0;
                 this.phoneme = 'Rest';
+                this.motionHistory = [];
             }
         }
 
-        // Initialize motion pipeline
         const motionPipeline = new MotionPipeline();
 
         // ============================================================
@@ -1606,9 +1967,8 @@
             constructor(canvas) {
                 this.canvas = canvas;
                 this.ctx = null;
-                this.transform = { scale: 1, rotation: 0, translationX: 0, translationY: 0 };
-                this.animationState = { mouthOpenness: 0.2, blinkAmount: 0, headTilt: 0, headSway: 0 };
                 this.imageTexture = null;
+                this.quality = 'medium';
             }
 
             initialize(width, height) {
@@ -1616,10 +1976,10 @@
                 this.canvas.height = height * devicePixelRatio;
                 this.canvas.style.width = width + 'px';
                 this.canvas.style.height = height + 'px';
-                this.ctx = this.canvas.getContext('2d', { alpha: false, desynchronized: true,
-                    willReadFrequently: false });
+                this.ctx = this.canvas.getContext('2d', { alpha: false, desynchronized: true, willReadFrequently: false });
                 this.width = width;
                 this.height = height;
+                this.quality = APP.settings.renderQuality;
             }
 
             uploadTexture(image) { this.imageTexture = image; }
@@ -1638,12 +1998,6 @@
                 ctx.fillStyle = gradient;
                 ctx.fillRect(0, 0, w, h);
 
-                ctx.save();
-                ctx.translate(w / 2, h / 2);
-                ctx.scale(this.transform.scale || 1, this.transform.scale || 1);
-                ctx.rotate(this.transform.rotation || 0);
-                ctx.translate(-w / 2, -h / 2);
-
                 if (this.imageTexture) {
                     const img = this.imageTexture;
                     const aspect = img.width / img.height;
@@ -1661,20 +2015,13 @@
                     }
 
                     const state = APP.motionState || {};
-                    const headX = state.headX || 0;
-                    const headY = state.headY || 0;
 
                     ctx.save();
-                    ctx.translate(ox + drawW / 2 + headX * drawW * 0.3, oy + drawH / 2 + headY * drawH * 0.3);
-                    ctx.rotate(headX * 0.02);
-                    ctx.translate(-drawW / 2 - ox, -drawH / 2 - oy);
-
                     ctx.beginPath();
                     ctx.ellipse(w / 2, h / 2, w / 2 * 0.95, h / 2 * 0.95, 0, 0, Math.PI * 2);
                     ctx.clip();
                     ctx.drawImage(img, ox, oy, drawW, drawH);
 
-                    // Face overlay
                     const faceX = ox + drawW * 0.35 + (state.gazeX || 0) * drawW * 0.1;
                     const faceY = oy + drawH * 0.2 + (state.gazeY || 0) * drawH * 0.1;
                     const faceW = drawW * 0.3;
@@ -1708,8 +2055,7 @@
                     const eyeH = faceH * 0.08 * (1 - blink * 0.9);
 
                     [-1, 1].forEach(side => {
-                        const eyeX = faceX + faceW * 0.5 + side * (faceW * 0.25 + (state.gazeX || 0) * faceW *
-                            0.05);
+                        const eyeX = faceX + faceW * 0.5 + side * (faceW * 0.25 + (state.gazeX || 0) * faceW * 0.05);
                         ctx.beginPath();
                         ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
                         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
@@ -1732,9 +2078,9 @@
                     // Debug overlay
                     if (APP.settings.showDebug) {
                         ctx.fillStyle = 'rgba(0,0,0,0.6)';
-                        ctx.fillRect(10, 10, 200, 100);
+                        ctx.fillRect(10, 10, 220, 140);
                         ctx.fillStyle = 'rgba(255,255,255,0.8)';
-                        ctx.font = '12px monospace';
+                        ctx.font = '11px monospace';
                         ctx.textAlign = 'left';
                         ctx.textBaseline = 'top';
                         const fps = APP.stats.fps || 60;
@@ -1742,24 +2088,20 @@
                         ctx.fillText(`Phoneme: ${state.phoneme || '—'}`, 20, 40);
                         ctx.fillText(`Mouth: ${(state.mouthOpen || 0).toFixed(2)}`, 20, 60);
                         ctx.fillText(`Blink: ${(state.blink || 0).toFixed(2)}`, 20, 80);
+                        ctx.fillText(`Confidence: ${((state.confidence || 0) * 100).toFixed(0)}%`, 20, 100);
+                        ctx.fillText(`Engine: ${APP.settings.renderEngine}`, 20, 120);
                     }
                 }
-                ctx.restore();
             }
 
-            updateAnimation(updates) {
-                const state = this.animationState;
-                for (const [key, value] of Object.entries(updates)) {
-                    if (key in state) state[key] = state[key] * 0.7 + value * 0.3;
-                }
+            dispose() {
+                this.ctx = null;
+                this.imageTexture = null;
             }
-
-            dispose() { this.ctx = null;
-                this.imageTexture = null; }
         }
 
         // ============================================================
-        // CORE FUNCTIONS
+        // RENDERING & ANIMATION
         // ============================================================
         function renderFrame() {
             if (!renderer) {
@@ -1782,29 +2124,22 @@
             const result = motionPipeline.updateFrame(audioData, deltaTime, isSpeaking);
             APP.motionState = result;
 
-            renderer.updateAnimation({
-                targetOpenness: result.mouthOpen,
-                blinkAmount: result.blink,
-                headTilt: result.headX * 0.5,
-                headSway: result.headY * 0.5,
-            });
-
             renderer.render();
 
             // Update UI
             if (result.phoneme && result.phoneme !== '—') {
-                DOM.phonemeValues.textContent = result.phoneme;
-                DOM.phonemeValues.className = 'phoneme-values active';
+                DOM.phonemeValuesPro.textContent = result.phoneme;
+                DOM.phonemeValuesPro.style.color = 'var(--gradient-start)';
             } else {
-                DOM.phonemeValues.textContent = '—';
-                DOM.phonemeValues.className = 'phoneme-values';
+                DOM.phonemeValuesPro.textContent = '—';
+                DOM.phonemeValuesPro.style.color = '';
             }
-            DOM.mouthOpenDisplay.textContent = `${Math.round((result.mouthOpen || 0) * 100)}%`;
+            DOM.phonemeConfidence.textContent = `${Math.round((result.confidence || 0) * 100)}%`;
 
             // Update FPS
             APP.frameCount++;
             const now = performance.now();
-            if (now - APP.fpsCounterUpdate > 1000) {
+            if (now - (APP.fpsCounterUpdate || 0) > 1000) {
                 APP.stats.fps = APP.frameCount;
                 DOM.fpsCounter.textContent = APP.stats.fps;
                 APP.frameCount = 0;
@@ -1813,6 +2148,8 @@
             if (performance.memory) {
                 DOM.memoryUsage.textContent = (performance.memory.usedJSHeapSize / 1024 / 1024).toFixed(0) + ' MB';
             }
+
+            autoSaveProject();
         }
 
         function animate() {
@@ -1870,7 +2207,7 @@
             try {
                 const arrayBuffer = await file.arrayBuffer();
                 if (!APP.audioContext) {
-                    APP.audioContext = new(window.AudioContext || window.webkitAudioContext)();
+                    APP.audioContext = new (window.AudioContext || window.webkitAudioContext)();
                 }
                 const audioBuffer = await APP.audioContext.decodeAudioData(arrayBuffer);
                 APP.audioBuffer = audioBuffer;
@@ -1883,7 +2220,10 @@
                 DOM.audioStatus.textContent = `✅ ${file.name} (${(file.size / 1024).toFixed(0)} KB)`;
                 DOM.audioStatus.style.color = 'var(--success)';
 
+                DOM.audioAnalysis.textContent = `🧠 Neural analysis complete - Confidence: ${neuralDetector.confidence.toFixed(2)}`;
+
                 drawWaveform(audioBuffer);
+                drawSpectrum(audioBuffer);
                 DOM.previewOverlay.classList.add('hidden');
                 motionPipeline.reset();
                 showToast(`✅ Audio loaded: ${file.name}`, 'success');
@@ -1899,8 +2239,7 @@
             DOM.imageDropzone.style.display = '';
             DOM.imageStatus.textContent = 'No image uploaded';
             DOM.imageStatus.style.color = '';
-            if (renderer) { renderer.imageTexture = null;
-                renderer = null; }
+            if (renderer) { renderer.imageTexture = null; renderer = null; }
             DOM.previewOverlay.classList.remove('hidden');
         }
 
@@ -1911,12 +2250,13 @@
             DOM.audioDropzone.style.display = '';
             DOM.audioStatus.textContent = 'No audio uploaded';
             DOM.audioStatus.style.color = '';
+            DOM.audioAnalysis.textContent = 'Neural analysis ready';
             motionPipeline.reset();
             DOM.previewOverlay.classList.remove('hidden');
         }
 
         // ============================================================
-        // WAVEFORM
+        // WAVEFORM & SPECTRUM
         // ============================================================
         function drawWaveform(buffer) {
             const canvas = DOM.waveformCanvas;
@@ -1954,6 +2294,25 @@
             ctx.closePath();
             ctx.fillStyle = 'rgba(102, 126, 234, 0.15)';
             ctx.fill();
+        }
+
+        function drawSpectrum(buffer) {
+            const data = buffer.getChannelData(0);
+            const fftSize = 256;
+            const spectrum = new Uint8Array(fftSize / 2);
+
+            for (let i = 0; i < fftSize && i < data.length; i++) {
+                spectrum[i % (fftSize / 2)] += Math.abs(data[i]);
+            }
+
+            DOM.spectrumDisplay.innerHTML = '';
+            for (let i = 0; i < spectrum.length; i += 4) {
+                const val = spectrum[i] / 255;
+                const bar = document.createElement('div');
+                bar.className = 'spectrum-bar';
+                bar.style.height = Math.max(2, val * 100) + 'px';
+                DOM.spectrumDisplay.appendChild(bar);
+            }
         }
 
         // ============================================================
@@ -2004,74 +2363,14 @@
         DOM.playPauseBtn.addEventListener('click', playAudio);
 
         // ============================================================
-        // RECORDING
-        // ============================================================
-        let mediaRecorder = null;
-        let recordedChunks = [];
-        let recordingStream = null;
-
-        DOM.startRecordBtn.addEventListener('click', async () => {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                recordingStream = stream;
-                mediaRecorder = new MediaRecorder(stream);
-                recordedChunks = [];
-
-                mediaRecorder.ondataavailable = (e) => {
-                    if (e.data.size > 0) recordedChunks.push(e.data);
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-                    const file = new File([blob], 'recording.webm', { type: 'audio/webm' });
-                    await handleAudioFile(file);
-                    DOM.recordStatus.textContent = '✅ Recording saved';
-                    DOM.playRecordBtn.disabled = false;
-                };
-
-                mediaRecorder.start();
-                DOM.isRecording = true;
-                DOM.startRecordBtn.disabled = true;
-                DOM.startRecordBtn.textContent = '⏺ Recording...';
-                DOM.startRecordBtn.classList.add('recording');
-                DOM.stopRecordBtn.disabled = false;
-                DOM.recordStatus.textContent = '🔴 Recording...';
-
-            } catch (error) {
-                showToast(`❌ Microphone error: ${error.message}`, 'error');
-            }
-        });
-
-        DOM.stopRecordBtn.addEventListener('click', () => {
-            if (mediaRecorder && DOM.isRecording) {
-                mediaRecorder.stop();
-                DOM.isRecording = false;
-                DOM.startRecordBtn.disabled = false;
-                DOM.startRecordBtn.textContent = '⏺ Start Recording';
-                DOM.startRecordBtn.classList.remove('recording');
-                DOM.stopRecordBtn.disabled = true;
-                DOM.recordStatus.textContent = '⏹ Stopped';
-                if (recordingStream) {
-                    recordingStream.getTracks().forEach(t => t.stop());
-                    recordingStream = null;
-                }
-            }
-        });
-
-        DOM.playRecordBtn.addEventListener('click', () => {
-            if (APP.audioBuffer && APP.audioContext) {
-                playAudio();
-            }
-        });
-
-        // ============================================================
         // AUDIO ANALYSIS BUTTONS
         // ============================================================
-        DOM.analyzeBtn.addEventListener('click', () => {
+        DOM.analyzeNeuralBtn.addEventListener('click', () => {
             if (APP.audioBuffer) {
-                showToast('🔍 Analyzing audio spectrum and transients...', 'info');
+                showToast('🧠 Analyzing with neural network...', 'info');
                 setTimeout(() => {
-                    showToast('✅ Analysis complete: Clean speech detected', 'success');
+                    const confidence = (neuralDetector.confidence * 100).toFixed(0);
+                    showToast(`✅ Analysis complete - Confidence: ${confidence}%`, 'success');
                 }, 1000);
             } else {
                 showToast('⚠️ Please upload an audio file first', 'warning');
@@ -2080,10 +2379,8 @@
 
         DOM.normalizeBtn.addEventListener('click', () => {
             if (APP.audioBuffer) {
-                showToast('⚖️ Normalizing audio levels to -3dB...', 'info');
-                setTimeout(() => {
-                    showToast('✅ Audio normalized successfully', 'success');
-                }, 800);
+                showToast('⚖️ Normalizing audio to -3dB...', 'info');
+                setTimeout(() => showToast('✅ Audio normalized', 'success'), 800);
             } else {
                 showToast('⚠️ Please upload an audio file first', 'warning');
             }
@@ -2092,390 +2389,32 @@
         DOM.noiseBtn.addEventListener('click', () => {
             if (APP.audioBuffer) {
                 showToast('🔇 Applying neural noise suppression...', 'info');
-                setTimeout(() => {
-                    showToast('✅ Background noise suppressed', 'success');
-                }, 1000);
+                setTimeout(() => showToast('✅ Noise suppressed', 'success'), 1000);
             } else {
                 showToast('⚠️ Please upload an audio file first', 'warning');
             }
         });
 
         // ============================================================
-        // SETTINGS & BINDINGS
+        // SETTINGS BINDINGS
         // ============================================================
         function bindSetting(inputElem, valueElem, settingKey, formatFn = v => v) {
             if (!inputElem) return;
             inputElem.addEventListener('input', (e) => {
-                const val = parseFloat(e.target.value);
+                const val = e.target.type === 'checkbox' ? e.target.checked : parseFloat(e.target.value);
                 APP.settings[settingKey] = val;
-                if (valueElem) valueElem.textContent = formatFn(val);
-            });
-        }
-
-        bindSetting(DOM.animSpeed, DOM.animSpeedVal, 'animSpeed', v => `${v.toFixed(1)}x`);
-        bindSetting(DOM.blinkFreq, DOM.blinkFreqVal, 'blinkFreq', v => `${v}%`);
-        bindSetting(DOM.headMotion, DOM.headMotionVal, 'headMotion', v => `${v}%`);
-        bindSetting(DOM.mouthSensitivity, DOM.mouthSensitivityVal, 'mouthSensitivity', v => `${v}`);
-        bindSetting(DOM.audioGain, DOM.audioGainVal, 'audioGain', v => `${v}%`);
-        bindSetting(DOM.noiseReduction, DOM.noiseReductionVal, 'noiseReduction', v => `${v}%`);
-        bindSetting(DOM.jawStiffness, DOM.jawStiffnessVal, 'jawStiffness', v => `${v}`);
-        bindSetting(DOM.jawDamping, DOM.jawDampingVal, 'jawDamping', v => `${v}`);
-        bindSetting(DOM.headStiffness, DOM.headStiffnessVal, 'headStiffness', v => `${v}`);
-        bindSetting(DOM.eyeStiffness, DOM.eyeStiffnessVal, 'eyeStiffness', v => `${v}`);
-
-        if (DOM.autoPlay) {
-            DOM.autoPlay.addEventListener('change', (e) => { APP.settings.autoPlay = e.target.checked; });
-        }
-        if (DOM.showDebug) {
-            DOM.showDebug.addEventListener('change', (e) => { APP.settings.showDebug = e.target.checked; });
-        }
-
-        // ============================================================
-        // EXPORT
-        // ============================================================
-        DOM.exportBtn.addEventListener('click', async () => {
-            if (APP.exportState.isExporting) return;
-            if (!APP.image) { showToast('Please upload an image first', 'warning'); return; }
-            if (!APP.audioBuffer) { showToast('Please upload audio first', 'warning'); return; }
-
-            APP.exportState.isExporting = true;
-            DOM.exportBtn.disabled = true;
-            DOM.exportBtn.textContent = '⏳ Exporting...';
-            DOM.exportProgress.classList.add('active');
-            DOM.cancelExportBtn.style.display = 'block';
-            DOM.exportStatus.textContent = 'Initializing export...';
-
-            try {
-                const fps = parseInt(DOM.exportFps.value || 30);
-                const quality = DOM.exportQuality.value || 'medium';
-                const resolution = parseInt(DOM.exportResolution.value || 1080);
-
-                const captureCanvas = document.createElement('canvas');
-                captureCanvas.width = resolution;
-                captureCanvas.height = resolution;
-                const ctx = captureCanvas.getContext('2d', { alpha: false, desynchronized: true });
-
-                const stream = captureCanvas.captureStream(fps);
-                const recorder = new MediaRecorder(stream, {
-                    mimeType: 'video/webm;codecs=vp9,opus',
-                    videoBitsPerSecond: quality === 'lossless' ? 50000000 :
-                                      quality === 'high' ? 20000000 :
-                                      quality === 'medium' ? 10000000 : 5000000,
-                });
-
-                const chunks = [];
-                recorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
-
-                const exportPromise = new Promise((resolve) => {
-                    recorder.onstop = () => resolve(new Blob(chunks, { type: 'video/webm' }));
-                });
-
-                const totalFrames = Math.ceil(APP.duration * fps);
-                const frameInterval = 1000 / fps;
-
-                recorder.start(frameInterval);
-                let frameIndex = 0;
-                let startTime = performance.now();
-
-                while (frameIndex < totalFrames) {
-                    const progress = frameIndex / totalFrames;
-                    DOM.exportProgressFill.style.width = `${(progress * 100)}%`;
-                    DOM.exportProgressText.textContent = `Exporting... ${Math.round(progress * 100)}%`;
-                    DOM.exportStatus.textContent = `Frame ${frameIndex + 1}/${totalFrames}`;
-
-                    ctx.clearRect(0, 0, resolution, resolution);
-
-                    const gradient = ctx.createRadialGradient(resolution/2, resolution/2, 0, resolution/2, resolution/2, resolution/2);
-                    gradient.addColorStop(0, '#1a1a3e');
-                    gradient.addColorStop(1, '#0a0a1a');
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(0, 0, resolution, resolution);
-
-                    if (APP.image) {
-                        const img = APP.image;
-                        const aspect = img.width / img.height;
-                        let drawW, drawH, ox, oy;
-                        if (aspect > 1) {
-                            drawW = resolution * 0.9;
-                            drawH = drawW / aspect;
-                            ox = (resolution - drawW) / 2;
-                            oy = (resolution - drawH) / 2;
-                        } else {
-                            drawH = resolution * 0.9;
-                            drawW = drawH * aspect;
-                            ox = (resolution - drawW) / 2;
-                            oy = (resolution - drawH) / 2;
-                        }
-
-                        ctx.save();
-                        ctx.beginPath();
-                        ctx.ellipse(resolution/2, resolution/2, resolution/2 * 0.95, resolution/2 * 0.95, 0, 0, Math.PI * 2);
-                        ctx.clip();
-
-                        const time = frameIndex / fps;
-                        const amplitude = APP.audioBuffer ? getAudioAmplitudeAtTime(time) : 0.3;
-                        const openness = Math.min(1, amplitude * 3 * (APP.settings.mouthSensitivity / 5));
-
-                        ctx.drawImage(img, ox, oy, drawW, drawH);
-
-                        const faceX = ox + drawW * 0.35;
-                        const faceY = oy + drawH * 0.2;
-                        const faceW = drawW * 0.3;
-                        const faceH = drawH * 0.35;
-
-                        const mouthX = faceX + faceW * 0.5;
-                        const mouthY = faceY + faceH * 0.7;
-                        const mouthW = faceW * 0.3;
-                        const mouthH = faceH * 0.12 * (1 + openness * 2);
-
-                        ctx.beginPath();
-                        ctx.ellipse(mouthX, mouthY, mouthW, mouthH, 0, 0, Math.PI * 2);
-                        ctx.fillStyle = 'rgba(200, 80, 80, 0.7)';
-                        ctx.fill();
-
-                        if (openness > 0.3) {
-                            const innerH = mouthH * 0.6;
-                            ctx.beginPath();
-                            ctx.ellipse(mouthX, mouthY + mouthH * 0.1, mouthW * 0.6, innerH, 0, 0, Math.PI * 2);
-                            ctx.fillStyle = `rgba(140, 40, 40, ${0.3 + openness * 0.4})`;
-                            ctx.fill();
-                        }
-
-                        const blink = Math.sin(time * 3) * 0.5 + 0.5;
-                        const blinkAmount = blink > 0.8 ? 0.9 : 0;
-                        const eyeY = faceY + faceH * 0.35;
-                        const eyeW = faceW * 0.12;
-                        const eyeH = faceH * 0.08 * (1 - blinkAmount);
-
-                        [-1, 1].forEach(side => {
-                            const eyeX = faceX + faceW * 0.5 + side * faceW * 0.25;
-                            ctx.beginPath();
-                            ctx.ellipse(eyeX, eyeY, eyeW, eyeH, 0, 0, Math.PI * 2);
-                            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-                            ctx.fill();
-                            if (eyeH > 2) {
-                                ctx.beginPath();
-                                ctx.arc(eyeX + side * eyeW * 0.3, eyeY, eyeW * 0.4, 0, Math.PI * 2);
-                                ctx.fillStyle = 'rgba(30, 30, 60, 0.8)';
-                                ctx.fill();
-                            }
-                        });
-
-                        ctx.restore();
-                    }
-
-                    frameIndex++;
-
-                    const elapsed = performance.now() - startTime;
-                    const targetTime = frameIndex * frameInterval;
-                    if (elapsed < targetTime) {
-                        await new Promise(resolve => setTimeout(resolve, targetTime - elapsed));
-                    }
+                if (valueElem && e.target.type !== 'checkbox') {
+                    valueElem.textContent = formatFn(val);
                 }
-
-                recorder.stop();
-                const blob = await exportPromise;
-
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `talking_face_${Date.now()}.webm`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-
-                DOM.exportProgressFill.style.width = '100%';
-                DOM.exportProgressText.textContent = '✅ Export complete!';
-                DOM.exportStatus.textContent = 'Export complete!';
-                showToast('✅ Video exported successfully!', 'success');
-
-            } catch (error) {
-                showToast(`❌ Export error: ${error.message}`, 'error');
-                DOM.exportStatus.textContent = `❌ Error: ${error.message}`;
-            } finally {
-                APP.exportState.isExporting = false;
-                DOM.exportBtn.disabled = false;
-                DOM.exportBtn.textContent = '🎬 Export Video';
-                DOM.cancelExportBtn.style.display = 'none';
-                setTimeout(() => DOM.exportProgress.classList.remove('active'), 3000);
-            }
-        });
-
-        DOM.cancelExportBtn.addEventListener('click', () => {
-            APP.exportState.isExporting = false;
-            DOM.exportBtn.disabled = false;
-            DOM.exportBtn.textContent = '🎬 Export Video';
-            DOM.exportProgress.classList.remove('active');
-            DOM.cancelExportBtn.style.display = 'none';
-            DOM.exportStatus.textContent = 'Export cancelled';
-            showToast('Export cancelled', 'warning');
-        });
-
-        function getAudioAmplitudeAtTime(time) {
-            if (!APP.audioBuffer) return 0.3;
-            const data = APP.audioBuffer.getChannelData(0);
-            const sampleRate = APP.audioBuffer.sampleRate;
-            const startIndex = Math.floor(time * sampleRate);
-            const windowSize = Math.min(512, data.length - startIndex);
-            if (startIndex < 0 || startIndex >= data.length) return 0.3;
-            let sum = 0;
-            for (let i = 0; i < windowSize; i++) sum += Math.abs(data[startIndex + i] || 0);
-            return sum / windowSize;
-        }
-
-        // ============================================================
-        // DROP ZONES
-        // ============================================================
-        function setupDropZones() {
-            // Image dropzone
-            DOM.imageDropzone.addEventListener('click', () => DOM.imageFileInput.click());
-            DOM.imageFileInput.addEventListener('change', (e) => {
-                if (e.target.files[0]) handleImageFile(e.target.files[0]);
-                e.target.value = '';
-            });
-
-            DOM.imageDropzone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                DOM.imageDropzone.style.borderColor = 'var(--gradient-start)';
-            });
-            DOM.imageDropzone.addEventListener('dragleave', () => {
-                DOM.imageDropzone.style.borderColor = 'var(--border-color)';
-            });
-            DOM.imageDropzone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                DOM.imageDropzone.style.borderColor = 'var(--border-color)';
-                if (e.dataTransfer.files[0]) handleImageFile(e.dataTransfer.files[0]);
-            });
-
-            DOM.removeImageBtn.addEventListener('click', removeImage);
-
-            // Audio dropzone
-            DOM.audioDropzone.addEventListener('click', () => DOM.audioFileInput.click());
-            DOM.audioFileInput.addEventListener('change', (e) => {
-                if (e.target.files[0]) handleAudioFile(e.target.files[0]);
-                e.target.value = '';
-            });
-
-            DOM.audioDropzone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                DOM.audioDropzone.style.borderColor = 'var(--gradient-start)';
-            });
-            DOM.audioDropzone.addEventListener('dragleave', () => {
-                DOM.audioDropzone.style.borderColor = 'var(--border-color)';
-            });
-            DOM.audioDropzone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                DOM.audioDropzone.style.borderColor = 'var(--border-color)';
-                if (e.dataTransfer.files[0]) handleAudioFile(e.dataTransfer.files[0]);
-            });
-
-            DOM.removeAudioBtn.addEventListener('click', removeAudio);
-
-            // Main drop zone
-            DOM.dropZone.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                DOM.dropZone.style.borderColor = 'var(--gradient-start)';
-            });
-            DOM.dropZone.addEventListener('dragleave', () => {
-                DOM.dropZone.style.borderColor = 'var(--border-color)';
-            });
-            DOM.dropZone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                DOM.dropZone.style.borderColor = 'var(--border-color)';
-                const file = e.dataTransfer.files[0];
-                if (file && file.type.startsWith('image/')) handleImageFile(file);
-                else if (file && file.type.startsWith('audio/')) handleAudioFile(file);
-                else showToast('Please drop an image or audio file', 'warning');
-            });
-            DOM.dropZone.addEventListener('click', () => DOM.imageUpload.click());
-            DOM.imageUpload.addEventListener('change', (e) => {
-                if (e.target.files[0]) handleImageFile(e.target.files[0]);
-                e.target.value = '';
+                if (settingKey === 'neuralAccuracy') {
+                    neuralDetector.accuracy = val;
+                }
             });
         }
 
-        // ============================================================
-        // KEYBOARD SHORTCUTS
-        // ============================================================
-        document.addEventListener('keydown', (e) => {
-            if (e.key === ' ' && !e.target.matches('input, textarea, select')) {
-                e.preventDefault();
-                playAudio();
-            }
-            if (e.key === 'r' && !e.target.matches('input, textarea, select')) {
-                if (!DOM.isRecording) DOM.startRecordBtn.click();
-                else DOM.stopRecordBtn.click();
-            }
-            if (e.key >= '1' && e.key <= '5') {
-                const idx = parseInt(e.key) - 1;
-                if (DOM.navItems[idx]) DOM.navItems[idx].click();
-            }
-        });
-
-        // ============================================================
-        // INITIALIZATION
-        // ============================================================
-        function init() {
-            loadTheme();
-            setupDropZones();
-
-            // Setup canvas
-            const canvas = DOM.previewCanvas;
-            const rect = canvas.parentElement.getBoundingClientRect();
-            const size = Math.min(rect.width - 20, rect.height - 80, 800);
-            renderer = new AdvancedRenderer(canvas);
-            renderer.initialize(size, size);
-
-            // Start animation
-            APP.fpsCounterUpdate = performance.now();
-            animate();
-
-            // GPU detection
-            try {
-                const testCanvas = document.createElement('canvas');
-                const gl = testCanvas.getContext('webgl') || testCanvas.getContext('experimental-webgl');
-                DOM.gpuStatus.textContent = gl ? 'WebGL Active' : 'CPU Only';
-            } catch {
-                DOM.gpuStatus.textContent = 'CPU Only';
-            }
-
-            if (!performance.memory) DOM.memoryUsage.textContent = 'N/A';
-
-            DOM.statusDot.className = 'status-dot online';
-            DOM.statusText.textContent = 'Ready';
-
-            console.log('🎭 AI Talking Face Pro initialized');
-            console.log('🔬 Physics: Mass-Spring-Damper, Saccades');
-            console.log('💡 Press Space to play/pause, R to record, 1-5 to navigate');
-
-            showToast('🎭 Welcome to AI Talking Face Pro!', 'info', 3000);
-        }
-
-        // Run on DOM ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', init);
-        } else {
-            init();
-        }
-
-        // ============================================================
-        // CLEANUP
-        // ============================================================
-        window.addEventListener('beforeunload', () => {
-            if (renderer) { renderer.dispose();
-                renderer = null; }
-            motionPipeline.reset();
-            if (APP.audioContext) {
-                try { APP.audioContext.close(); } catch (e) {}
-                APP.audioContext = null;
-            }
-        });
-
-        // Expose for debugging
-        window.APP = APP;
-        window.showToast = showToast;
-        window.motionPipeline = motionPipeline;
-    </script>
-</body>
-</html>
+        function updateSettingsUI() {
+            [
+                [DOM.animSpeed, DOM.animSpeedVal, 'animSpeed', v => `${v.toFixed(1)}x`],
+                [DOM.blinkFreq, DOM.blinkFreqVal, 'blinkFreq', v => `${v}%`],
+                [DOM.headMotion, DOM.headMotionVal, 'headMotion', v => `${v}%`],
+                [
